@@ -28,9 +28,12 @@ import org.apache.jena.query.QuerySolutionMap ;
 import org.apache.jena.rdf.model.RDFNode ;
 import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.syntax.syntaxtransform.QueryTransformOps ;
+import org.apache.jena.sparql.syntax.syntaxtransform.UpdateTransformOps ;
+import org.apache.jena.update.Update ;
+import org.apache.jena.update.UpdateRequest ;
 
 /**
- *
+ * <code>ParameterizedQuery</code> - use a {@link Query} as a template; replace variables by values.   
  *
  * <pre>Query template = Queryfactory.create(" ...  ") ;
  * Map<String, RDFNode> params =
@@ -38,11 +41,10 @@ import org.apache.jena.sparql.syntax.syntaxtransform.QueryTransformOps ;
  * <pre>
  * <p><b>Examples</b></p>
  * 
- *
- * {@link ParameterizedSparqlString} is another approach based on building 
- * 
- * 
- * @see ParameterizedSparqlString
+ *<p>
+ * {@link ParameterizedSparqlString} is another approach based on building a string. See
+ * <a href="http://jena.apache.org/documentation/query/parameterized-query.html">Parameterized SPARQL Queries</a>
+ * </p>
  */
 
 public class ParameterizedQuery {
@@ -57,6 +59,23 @@ public class ParameterizedQuery {
         return q2 ; 
     }
     
+    /** Create a new UpdateRequest with occurences of specific variables replaced by some node value. 
+     * @param request UpdateRequest
+     * @param map Mapping from {@link Var} to {@link Node}
+     * @return Query, with replacements 
+     */
+    public static UpdateRequest parameterize(UpdateRequest request, Map<Var, Node> map) {
+        return UpdateTransformOps.transform(request, map) ;
+    }
+
+    /** Create a new Update with occurences of specific variables replaced by some node value. 
+     * @param request Update
+     * @param map Mapping from {@link Var} to {@link Node}
+     * @return Query, with replacements 
+     */
+    public static Update parameterize(Update request, Map<Var, Node> map) {
+        return UpdateTransformOps.transform(request, map) ;
+    }
     /** Create a new query with occurences of variables replaced by constants. 
      * @param query
      * @param map Mapping from variable name to {@link RDFNode}
