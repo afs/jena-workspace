@@ -46,8 +46,11 @@ public class MainElt
     // Test with Q->A->Subst->OpAsQ->Q2
     
     public static void main(String[] args) {
-        mainPQ2(args) ;
-        //mainPSS(args) ;
+        String x[] = { x1 } ;
+        mainPQ2(x) ;
+//        mainPQ(x) ;
+//        mainPSS(args) ;
+//        mainPSS2(args);
     }
     
     static String PRE = "PREFIX : <http://example/>" ; 
@@ -87,8 +90,7 @@ public class MainElt
     
     static String x99 = PRE+"\n"+"ASK { FILTER (?x = <http://example/X>) }";
     
-    public static void mainPQ(String[] args) {
-        String x[] = { x8 } ;
+    public static void mainPQ(String[] x) {
         BiFunction<String, Map<Var, Node>, Query> producer = (qs, map) -> {
             Query q = QueryFactory.create(qs, Syntax.syntaxARQ) ;
             return ParameterizedQuery.parameterize(q, map) ;
@@ -98,16 +100,12 @@ public class MainElt
     }
     
     public static void mainPQ2(String[] args) {
-        
-
-        
-        String x[] = { x1 } ;
         BiFunction<String, Map<Var, Node>, Query> producer = (qs, map) -> {
             Query q = QueryFactory.create(qs, Syntax.syntaxARQ) ;
             return ParameterizedQuery2.parameterize(q, map) ;
         } ;
             
-        execute(x, producer) ;
+        execute(args, producer) ;
     }
 
     
@@ -147,33 +145,13 @@ public class MainElt
     }
     //Works on INSERT DATA.
     
-    public static void mainPSS(String[] args) {
-        String x[] = { x1 } ;
+    public static void mainPSS(String[] x) {
         BiFunction<String, Map<Var, Node>, Query> producer = (qs, map) -> {
             ParameterizedSparqlString pss = new ParameterizedSparqlString(qs) ;
             map.forEach((v,n)->pss.setParam(v.getName(), n)) ;
             return pss.asQuery() ; 
         } ;
-            
         execute(x, producer) ;
-        
-//        ParameterizedSparqlString pss = new ParameterizedSparqlString() ;
-//        String s = "SELECT ?x { BIND(1 AS ?x) }" ;
-//        pss.setCommandText(s) ;
-//        pss.setIri("x", "abcdef") ;
-//        String qs1 = pss.toString() ;
-//        System.out.println(qs1) ;
-//        System.exit(0) ;
-//        
-//        //pss.setCommandText("PREFIX : <http://example/> # Comment ?x\nSELECT (str(?x) as ?xs) { ?s :p ?x . OPTIONAL { ?x :r '?x' }  FILTER ( ?x > ?y ) }") ;
-//        pss.setCommandText("PREFIX : <http://example/> SELECT * { : :p :o\\?x}") ;
-//        pss.setIri("x", "abcdef") ;
-//        
-//        String qs = pss.toString() ;
-//        System.out.println(qs) ;
-//        Query query = QueryFactory.create(qs) ;
-//        System.out.print(query) ;
-//        
     }
     
     public static void mainPSS2(String[] args) {
