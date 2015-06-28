@@ -19,6 +19,7 @@ package syntaxtransform;
 
 import java.util.HashMap ;
 import java.util.Map ;
+import java.util.function.BiFunction ;
 
 import org.apache.jena.atlas.lib.StrUtils ;
 import org.apache.jena.graph.Node ;
@@ -38,61 +39,89 @@ public class MainElt
     //   DESCRIBE
     //   All the updates.
     //   Injecting blanknodes : <_:abc>
-    
-    // Missed: HAVING, VALUE
+    //   BIND, VALUE
+    // Full testing.
     
     // Subquery { SELECT ?x }
-    // Q->A->Subst->OpAsQ->Q2
+    // Test with Q->A->Subst->OpAsQ->Q2
     
     public static void main(String[] args) {
-        mainPSS2(args) ; 
+        mainPQ2(args) ;
+        //mainPSS(args) ;
     }
     
-    public static void mainPQ(String[] args) {
-        
-        String PRE = "PREFIX : <http://example/>" ; 
-        String x1 = StrUtils.strjoinNL
-            ( PRE,  "# Comment ?x"
-              , "SELECT (str(?x) as ?xs) { ?s :p ?x . OPTIONAL { ?x :r '?x' }  FILTER ( ?x > ?y ) }"
-            );
-        String x2 = StrUtils.strjoinNL
-            ( PRE
-            , "SELECT ?x { ?s :p ?x . FILTER NOT EXISTS { ?x :r ?x }} GROUP BY ?x ORDER BY ?x"
-            );
-        String x3 = StrUtils.strjoinNL
-            ( PRE
-            , "SELECT (123 as ?x) { }"
-            );
-        String x4 = StrUtils.strjoinNL
-            ( PRE
-            , "SELECT * { :s :p :o\\?x}"
-            );
-        // ==> Double SELECT (:X AS ?x)
-        String x5 = StrUtils.strjoinNL
-            ( PRE
-            , "SELECT ?x { {SELECT ?x { ?s ?p ?x } } ?s ?p ?o }"
-            );
-        
-        String x6 = StrUtils.strjoinNL
-            ( PRE
-            , "DESCRIBE ?x {}"
-            );
-        
-        String x7 = StrUtils.strjoinNL
-            ( PRE
-            , "SELECT * { VALUES ?x { 123 } ?s ?p ?o }"
-            );
+    static String PRE = "PREFIX : <http://example/>" ; 
+    static String x1 = StrUtils.strjoinNL
+        ( PRE,  "# Comment ?x"
+          , "SELECT (str(?x) as ?xs) { ?s :p ?x . OPTIONAL { ?x :r '?x' }  FILTER ( ?x > ?y ) }"
+        );
+    static String x2 = StrUtils.strjoinNL
+        ( PRE
+        , "SELECT ?x { ?s :p ?x . FILTER NOT EXISTS { ?x :r ?x }} GROUP BY ?x ORDER BY ?x"
+        );
+    static String x3 = StrUtils.strjoinNL
+        ( PRE
+        , "SELECT (123 as ?x) { }"
+        );
+    static String x4 = StrUtils.strjoinNL
+        ( PRE
+        , "SELECT * { :s :p :o\\?x}"
+        );
+    // ==> Double SELECT (:X AS ?x)
+    static String x5 = StrUtils.strjoinNL
+        ( PRE
+        , "SELECT ?x { {SELECT ?x { ?s ?p ?x } } ?s ?p ?o }"
+        );
+    
+    static String x6 = StrUtils.strjoinNL
+        ( PRE
+        , "DESCRIBE ?x {}"
+        );
+    
+    static String x7 = StrUtils.strjoinNL
+        ( PRE
+        , "SELECT * { VALUES ?x { 123 } ?s ?p ?o }"
+        );
 
-        String x9 = PRE+"\n"+"ASK { FILTER (?x = <http://example/X>) }";
+    static String x8 = "SELECT ?x { BIND(1 AS ?x) }" ;
+    
+    static String x99 = PRE+"\n"+"ASK { FILTER (?x = <http://example/X>) }";
+    
+    public static void mainPQ(String[] args) {
+        String x[] = { x8 } ;
+        BiFunction<String, Map<Var, Node>, Query> producer = (qs, map) -> {
+            Query q = QueryFactory.create(qs, Syntax.syntaxARQ) ;
+            return ParameterizedQuery.parameterize(q, map) ;
+        } ;
+            
+        execute(x, producer) ;
+    }
+    
+    public static void mainPQ2(String[] args) {
         
-        String x[] = { x7 } ;
+
+        
+        String x[] = { x1 } ;
+        BiFunction<String, Map<Var, Node>, Query> producer = (qs, map) -> {
+            Query q = QueryFactory.create(qs, Syntax.syntaxARQ) ;
+            return ParameterizedQuery2.parameterize(q, map) ;
+        } ;
+            
+        execute(x, producer) ;
+    }
+
+    
+    static void execute(String x[], BiFunction<String, Map<Var, Node>, Query> producer) {
         
         for ( String qs : x ) {
+            
             Query q = QueryFactory.create(qs, Syntax.syntaxARQ) ;
-    
             Map<Var, Node> map = new HashMap<Var, Node>() ;
             map.put(Var.alloc("x"), NodeFactory.createURI("http://example/X")) ; 
-            Query q2 = ParameterizedQuery.parameterize(q, map) ;
+            Query q2 = producer.apply(qs, map) ;
+            
+//            Query q = QueryFactory.create(qs, Syntax.syntaxARQ) ;
+//            Query q2 = ParameterizedQuery.parameterize(q, map) ;
             System.out.print(q) ;
             System.out.println("-------------");
             System.out.print(q2) ;
@@ -116,26 +145,35 @@ public class MainElt
 //        System.out.println("-------------");
         
     }
-    
     //Works on INSERT DATA.
     
     public static void mainPSS(String[] args) {
-        ParameterizedSparqlString pss = new ParameterizedSparqlString() ;
-        pss.setCommandText("{ : :p ?x}") ;
-        pss.setIri("x", "abcdef") ;
-        String qs1 = pss.toString() ;
-        System.out.println(qs1) ;
-        System.exit(0) ;
+        String x[] = { x1 } ;
+        BiFunction<String, Map<Var, Node>, Query> producer = (qs, map) -> {
+            ParameterizedSparqlString pss = new ParameterizedSparqlString(qs) ;
+            map.forEach((v,n)->pss.setParam(v.getName(), n)) ;
+            return pss.asQuery() ; 
+        } ;
+            
+        execute(x, producer) ;
         
-        //pss.setCommandText("PREFIX : <http://example/> # Comment ?x\nSELECT (str(?x) as ?xs) { ?s :p ?x . OPTIONAL { ?x :r '?x' }  FILTER ( ?x > ?y ) }") ;
-        pss.setCommandText("PREFIX : <http://example/> SELECT * { : :p :o\\?x}") ;
-        pss.setIri("x", "abcdef") ;
-        
-        String qs = pss.toString() ;
-        System.out.println(qs) ;
-        Query query = QueryFactory.create(qs) ;
-        System.out.print(query) ;
-        
+//        ParameterizedSparqlString pss = new ParameterizedSparqlString() ;
+//        String s = "SELECT ?x { BIND(1 AS ?x) }" ;
+//        pss.setCommandText(s) ;
+//        pss.setIri("x", "abcdef") ;
+//        String qs1 = pss.toString() ;
+//        System.out.println(qs1) ;
+//        System.exit(0) ;
+//        
+//        //pss.setCommandText("PREFIX : <http://example/> # Comment ?x\nSELECT (str(?x) as ?xs) { ?s :p ?x . OPTIONAL { ?x :r '?x' }  FILTER ( ?x > ?y ) }") ;
+//        pss.setCommandText("PREFIX : <http://example/> SELECT * { : :p :o\\?x}") ;
+//        pss.setIri("x", "abcdef") ;
+//        
+//        String qs = pss.toString() ;
+//        System.out.println(qs) ;
+//        Query query = QueryFactory.create(qs) ;
+//        System.out.print(query) ;
+//        
     }
     
     public static void mainPSS2(String[] args) {
