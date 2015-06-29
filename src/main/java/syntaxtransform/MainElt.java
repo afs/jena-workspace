@@ -46,7 +46,7 @@ public class MainElt
     // Test with Q->A->Subst->OpAsQ->Q2
     
     public static void main(String[] args) {
-        String x[] = { x1 } ;
+        String x[] = { x0 } ;
         mainPQ2(x) ;
 //        mainPQ(x) ;
 //        mainPSS(args) ;
@@ -54,6 +54,10 @@ public class MainElt
     }
     
     static String PRE = "PREFIX : <http://example/>" ; 
+    static String x0 = StrUtils.strjoinNL
+        ( PRE
+        , "SELECT ?x { ?s :p ?x . FILTER ( ?x > 57 ) }"
+        ) ;
     static String x1 = StrUtils.strjoinNL
         ( PRE,  "# Comment ?x"
           , "SELECT (str(?x) as ?xs) { ?s :p ?x . OPTIONAL { ?x :r '?x' }  FILTER ( ?x > ?y ) }"
@@ -110,9 +114,7 @@ public class MainElt
 
     
     static void execute(String x[], BiFunction<String, Map<Var, Node>, Query> producer) {
-        
         for ( String qs : x ) {
-            
             Query q = QueryFactory.create(qs, Syntax.syntaxARQ) ;
             Map<Var, Node> map = new HashMap<Var, Node>() ;
             map.put(Var.alloc("x"), NodeFactory.createURI("http://example/X")) ; 
@@ -124,7 +126,7 @@ public class MainElt
             System.out.println("-------------");
             System.out.print(q2) ;
             try {
-             SyntaxVarScope.check(q2) ;
+                SyntaxVarScope.check(q2) ;
             } catch (Exception ex) {
                 System.out.println(ex.getMessage()) ;
             }
