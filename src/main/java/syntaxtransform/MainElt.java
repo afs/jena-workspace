@@ -28,6 +28,9 @@ import org.apache.jena.query.ParameterizedSparqlString ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.query.QueryFactory ;
 import org.apache.jena.query.Syntax ;
+import org.apache.jena.rdf.model.AnonId ;
+import org.apache.jena.sparql.algebra.Algebra ;
+import org.apache.jena.sparql.algebra.Op ;
 import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.lang.SyntaxVarScope ;
 import org.apache.jena.update.UpdateRequest ;
@@ -47,8 +50,8 @@ public class MainElt
     
     public static void main(String[] args) {
         String x[] = { x0 } ;
-        mainPQ2(x) ;
-//        mainPQ(x) ;
+        mainPQ(x) ;
+//        mainPQ2(x) ;
 //        mainPSS(args) ;
 //        mainPSS2(args);
     }
@@ -56,7 +59,7 @@ public class MainElt
     static String PRE = "PREFIX : <http://example/>" ; 
     static String x0 = StrUtils.strjoinNL
         ( PRE
-        , "SELECT ?x { ?s :p ?x . FILTER ( ?x > 57 ) }"
+        , "SELECT ?x { [] :p ?x . FILTER ( bound(?x) ) }"
         ) ;
     static String x1 = StrUtils.strjoinNL
         ( PRE,  "# Comment ?x"
@@ -117,8 +120,11 @@ public class MainElt
         for ( String qs : x ) {
             Query q = QueryFactory.create(qs, Syntax.syntaxARQ) ;
             Map<Var, Node> map = new HashMap<Var, Node>() ;
-            map.put(Var.alloc("x"), NodeFactory.createURI("http://example/X")) ; 
+            //map.put(Var.alloc("x"), NodeFactory.createURI("http://example/X")) ; 
+            map.put(Var.alloc("x"), NodeFactory.createAnon(new AnonId())) ;
             Query q2 = producer.apply(qs, map) ;
+            Op op = Algebra.compile(q2) ;
+            System.out.println(op) ;
             
 //            Query q = QueryFactory.create(qs, Syntax.syntaxARQ) ;
 //            Query q2 = ParameterizedQuery.parameterize(q, map) ;
