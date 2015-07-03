@@ -41,12 +41,15 @@ public class MainElt
     //   CONSTRUCT
     //   DESCRIBE
     //   All the updates.
-    //   Injecting blanknodes : <_:abc>
+    //   Injecting blanknodes : <_:abc> [*]
     //   BIND, VALUE
     // Full testing.
     
     // Subquery { SELECT ?x }
     // Test with Q->A->Subst->OpAsQ->Q2
+    
+    // [*] NodeToLabelMapBNode.asString : bnode -> <_:label> form
+    
     
     public static void main(String[] args) {
         String x[] = { x0 } ;
