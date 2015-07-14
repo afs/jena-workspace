@@ -26,7 +26,6 @@ import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.NodeFactory ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.query.QueryFactory ;
-import org.apache.jena.rdf.model.AnonId ;
 import org.apache.jena.sparql.sse.SSE ;
 import org.apache.jena.sparql.syntax.Element ;
 import org.apache.jena.sparql.syntax.ElementGroup ;
@@ -143,7 +142,7 @@ public abstract class AbstractTestParameterized {
     @Test public void params_bnode_01() {
         Map<String, Node> map = new HashMap<>() ;
         // Force the label.
-        Node n = NodeFactory.createAnon(new AnonId("ABCDE")) ;
+        Node n = NodeFactory.createBlankNode("ABCDE") ;
         map.put("bnode", n) ;
         Query query2 = process("SELECT * { ?x ?p ?bnode }", map) ;
         Element elt0 = ((ElementGroup)query2.getQueryPattern()).get(0) ;

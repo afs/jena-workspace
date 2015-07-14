@@ -28,7 +28,6 @@ import org.apache.jena.query.ParameterizedSparqlString ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.query.QueryFactory ;
 import org.apache.jena.query.Syntax ;
-import org.apache.jena.rdf.model.AnonId ;
 import org.apache.jena.sparql.algebra.Algebra ;
 import org.apache.jena.sparql.algebra.Op ;
 import org.apache.jena.sparql.core.Var ;
@@ -124,7 +123,7 @@ public class MainElt
             Query q = QueryFactory.create(qs, Syntax.syntaxARQ) ;
             Map<Var, Node> map = new HashMap<Var, Node>() ;
             //map.put(Var.alloc("x"), NodeFactory.createURI("http://example/X")) ; 
-            map.put(Var.alloc("x"), NodeFactory.createAnon(new AnonId())) ;
+            map.put(Var.alloc("x"), NodeFactory.createBlankNode()) ;
             Query q2 = producer.apply(qs, map) ;
             Op op = Algebra.compile(q2) ;
             System.out.println(op) ;
