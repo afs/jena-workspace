@@ -23,14 +23,15 @@ import org.apache.jena.query.DatasetFactory ;
 import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.DatasetGraphFactory ;
 import org.apache.jena.sparql.transaction.AbstractTestTransaction ;
+import transdsg.DatasetGraphChangeLog ;
 
-/** Tests for a transactional dataset using {@link DatasetGraphPatchTransaction}. */ 
+/** Tests for a transactional dataset using {@link DatasetGraphChangeLog}. */ 
 public class TestDatasetGraphPatchTransaction extends AbstractTestTransaction
 {
     @Override
     protected Dataset create() {
         DatasetGraph dsg1 = DatasetGraphFactory.createMem() ;
-        DatasetGraphPatchTransaction dsg = new  DatasetGraphPatchTransaction(dsg1) ;
+        DatasetGraphChangeLog dsg = new  DatasetGraphChangeLog(dsg1) ;
         return DatasetFactory.create(dsg) ;
     }
 }

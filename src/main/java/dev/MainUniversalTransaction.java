@@ -25,15 +25,15 @@ import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.DatasetGraphFactory ;
 import org.apache.jena.sparql.core.Quad ;
 import org.apache.jena.sparql.sse.SSE ;
-import rdfpatch.DatasetGraphPatchTransaction ;
+import transdsg.DatasetGraphChangeLog ;
 
-public class MainTransactionByPatch
+public class MainUniversalTransaction
 {
     static { LogCtl.setCmdLogging() ; }
     
     public static void main(String[] args) {
         DatasetGraph dsg1 = DatasetGraphFactory.createMem() ;
-        DatasetGraphPatchTransaction dsg = new  DatasetGraphPatchTransaction(dsg1) ;
+        DatasetGraphChangeLog dsg = new  DatasetGraphChangeLog(dsg1) ;
         Quad q1 = SSE.parseQuad("(:g1 <s> <p> <o>)") ;
         Quad q2 = SSE.parseQuad("(:g2 <s> <p> <o>)") ;
         // Write-abort.

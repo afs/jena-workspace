@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-package rdfpatch;
+package transdsg;
 
 import org.apache.jena.query.ReadWrite ;
 import org.apache.jena.sparql.core.DatasetChangesCapture ;
 import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.DatasetGraphMonitor ;
 import org.apache.jena.sparql.core.DatasetGraphWithLock ;
-import rdfpatch.DatasetGraphPlayer.Direction ;
+import transdsg.DatasetGraphPlayer.Direction ;
 
 /** Provide transactional semantics to a DatasetGraph.
  *  Changes are made the dataset immediately and an undo log is kept.
@@ -32,24 +32,20 @@ import rdfpatch.DatasetGraphPlayer.Direction ;
  *  when a write transaction is active.
  */
 
-public class DatasetGraphPatchTransaction extends DatasetGraphWithLock { 
+public class DatasetGraphChangeLog extends DatasetGraphWithLock { 
     private final DatasetChangesCapture delta ;
     // The original dataset.  Used as the replay target.  
     private final DatasetGraph dataset ;
     // The dataset with a change monitor. 
     private final DatasetGraph datasetMonitor ;
     
-    public DatasetGraphPatchTransaction(DatasetGraph dsg) {
-        // Instead of passing in the dataset, we override get()
-        super(null) ;
+    public DatasetGraphChangeLog(DatasetGraph dsg) {
+        super(dsg) ;
         delta = new DatasetChangesCapture() ;
         this.dataset = dsg ;
         DatasetGraphMonitor dsgm = new DatasetGraphMonitor(dsg, delta) ;
         datasetMonitor = dsgm  ;
     }
-    
-    @Override
-    protected DatasetGraph get() { return datasetMonitor ; }
     
     @Override
     protected void _begin(ReadWrite readWrite) {

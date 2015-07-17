@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package rdfpatch;
+package transdsg;
 
 import java.util.ListIterator ;
 
