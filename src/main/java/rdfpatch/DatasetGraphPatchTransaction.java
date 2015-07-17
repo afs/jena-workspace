@@ -18,9 +18,11 @@
 
 package rdfpatch;
 
-import org.apache.jena.graph.Node ;
 import org.apache.jena.query.ReadWrite ;
-import org.apache.jena.sparql.core.* ;
+import org.apache.jena.sparql.core.DatasetChangesCapture ;
+import org.apache.jena.sparql.core.DatasetGraph ;
+import org.apache.jena.sparql.core.DatasetGraphMonitor ;
+import org.apache.jena.sparql.core.DatasetGraphWithLock ;
 import rdfpatch.DatasetGraphPlayer.Direction ;
 
 /** Provide transactional semantics to a DatasetGraph.
@@ -31,7 +33,7 @@ import rdfpatch.DatasetGraphPlayer.Direction ;
  */
 
 public class DatasetGraphPatchTransaction extends DatasetGraphWithLock { 
-    private final DatasetChangesTransaction delta ;
+    private final DatasetChangesCapture delta ;
     // The original dataset.  Used as the replay target.  
     private final DatasetGraph dataset ;
     // The dataset with a change monitor. 
@@ -40,7 +42,7 @@ public class DatasetGraphPatchTransaction extends DatasetGraphWithLock {
     public DatasetGraphPatchTransaction(DatasetGraph dsg) {
         // Instead of passing in the dataset, we override get()
         super(null) ;
-        delta = new DatasetChangesTransaction() ;
+        delta = new DatasetChangesCapture() ;
         this.dataset = dsg ;
         DatasetGraphMonitor dsgm = new DatasetGraphMonitor(dsg, delta) ;
         datasetMonitor = dsgm  ;
@@ -51,6 +53,7 @@ public class DatasetGraphPatchTransaction extends DatasetGraphWithLock {
     
     @Override
     protected void _begin(ReadWrite readWrite) {
+        delta.reset() ;
         switch (readWrite) {
             case READ : break ;
             case WRITE :
@@ -70,7 +73,7 @@ public class DatasetGraphPatchTransaction extends DatasetGraphWithLock {
     @Override
     protected void _abort() {
         if ( isTransactionType(ReadWrite.WRITE) )
-            DatasetGraphPlayer.play(delta.get().getActions(), dataset, Direction.BACKWARDS) ;
+            DatasetGraphPlayer.play(delta.getActions(), dataset, Direction.BACKWARDS) ;
         super._abort() ;
     }
 
@@ -78,33 +81,9 @@ public class DatasetGraphPatchTransaction extends DatasetGraphWithLock {
     protected void _end() {
         delta.finish() ;
         super._end() ;
+        delta.reset() ;
     }
     
     @Override
     protected boolean abortImplemented() { return true ; }
-    
-    static class DatasetChangesTransaction implements DatasetChanges {
-        private DatasetChangesCapture changes ;
-        public DatasetChangesCapture get()  { return changes ; } 
-
-        public DatasetChangesTransaction() {
-        }
-
-        @Override
-        public void start() {
-            changes = new DatasetChangesCapture() ;
-            changes.start() ;
-        }
-
-        @Override
-        public void change(QuadAction qaction, Node g, Node s, Node p, Node o) {
-            changes.change(qaction, g, s, p, o) ;
-        }
-
-        @Override
-        public void finish() {
-            if ( changes != null )
-                changes.finish() ;
-        }
-    }
 }

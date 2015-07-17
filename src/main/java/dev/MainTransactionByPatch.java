@@ -34,19 +34,31 @@ public class MainTransactionByPatch
     public static void main(String[] args) {
         DatasetGraph dsg1 = DatasetGraphFactory.createMem() ;
         DatasetGraphPatchTransaction dsg = new  DatasetGraphPatchTransaction(dsg1) ;
-        Quad q = SSE.parseQuad("(:g <s> <p> _:a)") ;
+        Quad q1 = SSE.parseQuad("(:g1 <s> <p> <o>)") ;
+        Quad q2 = SSE.parseQuad("(:g2 <s> <p> <o>)") ;
+        // Write-abort.
         dsg.begin(ReadWrite.WRITE);
-        dsg.add(q) ;
+        dsg.add(q1) ;
         SSE.write(dsg) ;
         dsg.abort() ;
         dsg.end();
         SSE.write(dsg) ;
         
         dsg.begin(ReadWrite.WRITE);
-        dsg.add(q) ;
+        dsg.add(q1) ;
         dsg.commit() ;
         dsg.end();
         SSE.write(dsg) ;
+        
+        // Write-abort.
+        dsg.begin(ReadWrite.WRITE);
+        dsg.add(q1) ;
+        dsg.add(q2) ;
+        SSE.write(dsg) ;
+        dsg.abort() ;
+        dsg.end();
+        SSE.write(dsg) ;
+        
         
         dsg.begin(ReadWrite.READ);
         Iter.toList(dsg.find()) ;
