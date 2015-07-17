@@ -59,7 +59,6 @@ public class MainTransactionByPatch
         dsg.end();
         SSE.write(dsg) ;
         
-        
         dsg.begin(ReadWrite.READ);
         Iter.toList(dsg.find()) ;
         dsg.end();
