@@ -37,9 +37,8 @@ public class DatasetGraphPlayer
      */
     public static void play(List<Pair<QuadAction, Quad>> actions, DatasetGraph dsg, Direction direction)
     {
-        Iterator<Pair<QuadAction, Quad>> iter = 
-            (Direction.BACKWARDS == direction) 
-            ? new ListIteratorReverse<Pair<QuadAction, Quad>>(actions.listIterator(actions.size())) 
+        Iterator<Pair<QuadAction, Quad>> iter = (Direction.BACKWARDS == direction)
+            ? new ListIteratorReverse<Pair<QuadAction, Quad>>(actions.listIterator(actions.size()))
             : actions.listIterator() ;
 
         loop: 
