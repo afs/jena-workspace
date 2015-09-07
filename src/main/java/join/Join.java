@@ -55,5 +55,7 @@ public class Join {
         return new QueryIterNestedLoopJoin(left, right, cxt) ;
     }
 
+    public static final boolean JOIN_EXPLAIN = false;
+
 }
 

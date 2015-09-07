@@ -22,11 +22,11 @@ import org.apache.jena.graph.Node ;
 import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.engine.binding.Binding ;
 
+/** Operations in support of join algorithms. */
 public class JoinLib {
 
     // No hash key marker.
     public static final Object noKeyHash = new Object() ;
-    public static final boolean JOIN_EXPLAIN = false;
     public static final long nullHashCode = 5 ;
 
     public static long hash(Var v, Node x) {
@@ -58,6 +58,5 @@ public class JoinLib {
               return noKeyHash ;
           return x ;
       }
-
 }
 

@@ -126,7 +126,7 @@ class QueryIterHashJoin extends QueryIter2 {
     @Override
     protected void closeSubIterator() {
         finished = true ;
-        if ( JoinLib.JOIN_EXPLAIN ) {
+        if ( Join.JOIN_EXPLAIN ) {
             String x = String.format(
                          "HashJoin: LHS=%d RHS=%d Results=%d RightMisses=%d MaxBucket=%d NoKeyBucket=%d",
                          s_countLHS, s_countRHS, s_countResults, 

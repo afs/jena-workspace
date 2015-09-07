@@ -106,7 +106,7 @@ public class QueryIterNestedLoopJoin extends QueryIter2 {
 
     @Override
     protected void closeSubIterator() {
-        if ( JoinLib.JOIN_EXPLAIN ) {
+        if ( Join.JOIN_EXPLAIN ) {
             String x = String.format("InnerLoopJoin: LHS=%d RHS=%d Results=%d", s_countLHS, s_countRHS, s_countResults);
             System.out.println(x);
         }
