@@ -19,7 +19,13 @@
 package join;
 
 public class TODO_HashJoin {
-    // Use hash join in TableJoin
+    // Left join support.
+    // Use hash join in QueryIterJoinBase
     // Antijoin
+    // keep EvaluatorSimpl simple. TableJoin
+    
+    public static void foo() {
+        
+    }
 }
 

@@ -20,7 +20,7 @@ package join.test;
 
 import java.util.Iterator ;
 
-import join.HashJoin ;
+import join.Join ;
 import join.JoinKey ;
 import org.apache.jena.sparql.algebra.Table ;
 import org.apache.jena.sparql.engine.QueryIterator ;
@@ -31,7 +31,7 @@ public class TestHashJoin extends AbstractTestJoin {
 
     @Override
     public QueryIterator join(JoinKey joinKey, Table left, Table right) {
-        Iterator<Binding> data = HashJoin.hashJoin(joinKey, left.iterator(null), right.iterator(null), null) ;
+        Iterator<Binding> data = Join.hashJoin(joinKey, left.iterator(null), right.iterator(null), null) ;
         QueryIterator qIter = new QueryIterPlainWrapper(data) ;
         return qIter ;
     }

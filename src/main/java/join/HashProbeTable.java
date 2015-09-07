@@ -46,8 +46,8 @@ class HashProbeTable {
 
     public void put(Binding row) {
         s_count++;
-        Object longHash = HashJoin.hash(joinKey, row);
-        if ( longHash == HashJoin.noKeyHash ) {
+        Object longHash = JoinLib.hash(joinKey, row);
+        if ( longHash == JoinLib.noKeyHash ) {
             noKeyBucket.add(row);
             return;
         }
@@ -56,8 +56,8 @@ class HashProbeTable {
 
     public Iterator<Binding> getCandidates(Binding row) {
         Iterator<Binding> iter = null;
-        Object longHash = HashJoin.hash(joinKey, row);
-        if ( longHash == HashJoin.noKeyHash )
+        Object longHash = JoinLib.hash(joinKey, row);
+        if ( longHash == JoinLib.noKeyHash )
             iter = buckets.values().iterator();
         else {
             Collection<Binding> x = buckets.get(longHash);
@@ -94,8 +94,8 @@ class HashProbeTable {
     }
 
     public Collection<Binding> getHashMatch$(Binding row) {
-        Object longHash = HashJoin.hash(joinKey, row);
-        if ( longHash == HashJoin.noKeyHash )
+        Object longHash = JoinLib.hash(joinKey, row);
+        if ( longHash == JoinLib.noKeyHash )
             return noKeyBucket;
         Collection<Binding> list = buckets.get(longHash);
         return list;
