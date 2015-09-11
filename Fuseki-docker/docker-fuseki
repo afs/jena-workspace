@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Installation directory
+DIR="/home/afs/jlib/apache-jena-fuseki-2.3.0"
+
+## # -it
+## docker run -t --rm --name Fuseki2 \
+##        -v ${DIR}:/fuseki \
+##        --net=host \
+##        java:8 \
+##        env FUSEKI_HOME=/fuseki /fuseki/fuseki-server --update --mem /ds
+
+DATA="$PWD/DB"
+
+# -it
+## "--rm" does not seem to work when a data volume is mounted : mmap files?
+
+docker run -t --rm=true --name Fuseki2 \
+       -v ${DIR}:/fuseki \
+       -v ${DATA}:/fuseki/DB \
+       --net=host \
+       java:8 \
+       env FUSEKI_HOME=/fuseki /fuseki/fuseki-server --update --loc=/fuseki/DB /ds
+
+## Our own "rm"
+(
+    docker kill  Fuseki2
+    docker rm Fuseki2
+) > /dev/null
