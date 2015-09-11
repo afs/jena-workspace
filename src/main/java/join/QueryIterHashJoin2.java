@@ -21,6 +21,7 @@ package join;
 import org.apache.jena.atlas.logging.Log ;
 import org.apache.jena.sparql.engine.ExecutionContext ;
 import org.apache.jena.sparql.engine.QueryIterator ;
+import org.apache.jena.sparql.engine.binding.Binding ;
 import org.apache.jena.sparql.engine.iterator.QueryIterNullIterator ;
 import org.apache.jena.sparql.engine.join.JoinKey ;
 
@@ -69,6 +70,16 @@ public class QueryIterHashJoin2 extends AbstractIterHashJoin {
     private QueryIterHashJoin2(JoinKey joinKey, QueryIterator left, QueryIterator right, ExecutionContext execCxt) {
         super(joinKey, left, right, execCxt) ;
     }
+
+    @Override
+    protected void yieldOneResult(Binding rowCurrentProbe, Binding rowStream, Binding rowResult) {}
+
+    @Override
+    protected QueryIterator joinFinished() {
+        return null;
+    }
+    
+    
 }
 
 

@@ -18,9 +18,11 @@
 
 package join;
 
+import org.apache.jena.atlas.lib.NotImplemented ;
 import org.apache.jena.atlas.logging.Log ;
 import org.apache.jena.sparql.engine.ExecutionContext ;
 import org.apache.jena.sparql.engine.QueryIterator ;
+import org.apache.jena.sparql.engine.binding.Binding ;
 import org.apache.jena.sparql.engine.iterator.QueryIterNullIterator ;
 import org.apache.jena.sparql.engine.join.JoinKey ;
 
@@ -77,13 +79,21 @@ public class QueryIterHashLeftJoin extends AbstractIterHashJoin {
      * @param execCxt
      * @return QueryIterator
      */
- 
     public static QueryIterator create(QueryIterator left, QueryIterator right, ExecutionContext execCxt) {
         return create(null, left, right, execCxt) ;
     }
     
     private QueryIterHashLeftJoin(JoinKey joinKey, QueryIterator left, QueryIterator right, ExecutionContext execCxt) {
         super(joinKey, left, right, execCxt) ;
+    }
+
+    @Override
+    protected void yieldOneResult(Binding rowCurrentProbe, Binding rowStream, Binding rowResult) {}
+
+    @Override
+    protected QueryIterator joinFinished() {
+        throw new NotImplemented() ;
+        //return null;
     }
 }
 
