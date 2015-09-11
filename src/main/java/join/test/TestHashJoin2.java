@@ -16,21 +16,23 @@
  * limitations under the License.
  */
 
-package join;
+package join.test;
 
-public class TODO_HashJoin {
-    // Left join support / hash join.
-    
-    // Activate LJ code.
-    
-    // Compound join key (any point?)
-    // OpJoin - choose key.
-    
-    // Left join , condition tests
-    
-    // QueryIterNestedLoopJoin that materialises left, not right.
-    //   ==> Common QueryIterNestedLoop?
-    
-    // Migrate LJ code to quack
+import join.QueryIterHashJoin2 ;
+import org.apache.jena.sparql.algebra.Table ;
+import org.apache.jena.sparql.engine.QueryIterator ;
+import org.apache.jena.sparql.engine.join.AbstractTestInnerJoin ;
+//import org.apache.jena.sparql.engine.join.Join ;
+import org.apache.jena.sparql.engine.join.JoinKey ;
+import org.apache.jena.sparql.expr.ExprList ;
+
+public class TestHashJoin2 extends AbstractTestInnerJoin {
+
+    @Override
+    public QueryIterator join(JoinKey joinKey, Table left, Table right, ExprList conditions) {
+        //return Join.hashJoin(joinKey, left.iterator(null), right.iterator(null), null) ;
+        QueryIterator qIter = QueryIterHashJoin2.create(joinKey, left.iterator(null), right.iterator(null), null) ;
+        return qIter ;
+    }
 }
 
