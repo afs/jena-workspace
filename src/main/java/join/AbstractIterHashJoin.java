@@ -38,23 +38,26 @@ import org.apache.jena.sparql.engine.join.JoinKey ;
  */
 
 public abstract class AbstractIterHashJoin extends QueryIter2 {
-    private long s_countProbe           = 0 ;       // Count of the probe data size
-    private long s_countScan            = 0 ;       // Count of the scan data size
-    private long s_countResults         = 0 ;       // Overall result size.
-    private long s_trailerResults       = 0 ;       // Results from the trailer iterator.
+    protected long s_countProbe           = 0 ;       // Count of the probe data size
+    protected long s_countScan            = 0 ;       // Count of the scan data size
+    protected long s_countResults         = 0 ;       // Overall result size.
+    protected long s_trailerResults       = 0 ;       // Results from the trailer iterator.
     // See also stats in the probe table.
     
-    private final JoinKey               joinKey ;
-    private final HashProbeTable        hashTable ;
+    protected final JoinKey               joinKey ;
+    protected final HashProbeTable        hashTable ;
 
     private Iterator<Binding>           iterStream ;
     private Binding                     rowStream       = null ;
     private Iterator<Binding>           iterCurrent ;
+    private boolean                     yielded ;       // Flag to note when current probe causes a result. 
     // Hanlde any "post join" additions.
     private Iterator<Binding>           iterTail        = null ;
     
+    enum Phase { INIT, HASH , STREAM, TRAILER, DONE }
+    Phase state = Phase.INIT ;
+    
     private Binding slot = null ;
-    private boolean finished = false ; 
 
     protected AbstractIterHashJoin(JoinKey joinKey, QueryIterator probeIter, QueryIterator streamIter, ExecutionContext execCxt) {
         super(probeIter, streamIter, execCxt) ;
@@ -77,21 +80,24 @@ public abstract class AbstractIterHashJoin extends QueryIter2 {
         this.iterStream = streamIter ;
         this.hashTable = new HashProbeTable(joinKey) ;
         this.iterCurrent = null ;
-        phase1(probeIter) ;
+        buildHashTable(probeIter) ;
+        
     }
         
-    private void phase1(Iterator<Binding> iter1) {
-        // Phase 1 : Build hash table. 
+    private void buildHashTable(QueryIterator iter1) {
+        state = Phase.HASH ;
         for (; iter1.hasNext();) {
             Binding row1 = iter1.next() ;
             s_countProbe ++ ;
             hashTable.put(row1) ;
         }
+        iter1.close() ;
+        state = Phase.STREAM ;
     }
 
     @Override
     protected boolean hasNextBinding() {
-        if ( finished ) 
+        if ( isFinished() ) 
             return false ;
         if ( slot == null ) {
             slot = moveToNextBindingOrNull() ;
@@ -115,48 +121,74 @@ public abstract class AbstractIterHashJoin extends QueryIter2 {
         // probe hashed table for the current stream row.     
         // iterStream is the stream of incoming rows.
         
-        Binding b = doOneTail() ;
-        if ( b != null )
-            return b ;
+        switch ( state ) {
+            case DONE : return null ;
+            case HASH : 
+            case INIT :
+                throw new IllegalStateException() ;
+            case TRAILER :
+                return doOneTail() ;
+            case STREAM :
+        }
         
         for(;;) {
             // Ensure we are processing a row. 
             while ( iterCurrent == null ) {
                 // Move on to the next row from the right.
                 if ( ! iterStream.hasNext() ) {
+                    state = Phase.TRAILER ;
                     iterTail = joinFinished() ;
-                    return doOneTail() ;
+                    if ( iterTail != null )
+                        return doOneTail() ;
+                    return null ;
                 }
-                
-                rowStream = iterStream.next() ;    
+                rowStream = iterStream.next() ;
                 s_countScan ++ ;
                 iterCurrent = hashTable.getCandidates(rowStream) ;
+                yielded = false ;
             }
             
             // Emit one row using the rightRow and the current matched left rows. 
             if ( ! iterCurrent.hasNext() ) {
                 iterCurrent = null ;
+                if ( ! yielded ) {
+                    Binding b = noYieldedRows(rowStream) ;
+                    if ( b != null ) {
+                        s_countScan ++ ;
+                        return b ;
+                    }
+                }
                 continue ;
             }
 
+            // Nested loop join, only on less.
+            //Iterator<Binding> iter = nestedLoop(iterCurrent, rowStream) ;
+            
             Binding rowCurrentProbe = iterCurrent.next() ;
             Binding r = Algebra.merge(rowCurrentProbe, rowStream) ;
-            if (r != null) {
+            Binding r2 = null ;
+            
+            if (r != null)
+                r2 = yieldOneResult(rowCurrentProbe, rowStream, r) ;
+            if ( r2 == null ) {
+                // Reject
+            } else {
+                yielded = true ;
                 s_countResults ++ ;
-                yieldOneResult(rowCurrentProbe, rowStream, r) ;
-                return r ;
+                return r2 ;
             }
         }
-    }        
-
+    }    
+    
+    
     private Binding doOneTail() {
-        if ( iterTail == null )
-            return null ;
+        // Only in TRAILING
         if ( iterTail.hasNext() ) {
             s_countResults ++ ;
             s_trailerResults ++ ;
             return iterTail.next() ;
         }
+        state = Phase.DONE ;
         // Completely finished now.
         iterTail = null ;
         return null ;
@@ -167,8 +199,17 @@ public abstract class AbstractIterHashJoin extends QueryIter2 {
      * @param rowCurrentProbe
      * @param rowStream
      * @param rowResult
+     * @return 
      */
-    protected abstract void yieldOneResult(Binding rowCurrentProbe, Binding rowStream, Binding rowResult) ;
+    protected abstract Binding yieldOneResult(Binding rowCurrentProbe, Binding rowStream, Binding rowResult) ;
+
+    /** Signal a row that yields no matches.
+     *  This method can return a binding (the outer join case)
+     *  which will then be yielded. {@code yieldOneResult} will <em>not</em> be called. 
+     * @param rowStream
+     * @return
+     */
+    protected abstract Binding noYieldedRows(Binding rowStream) ;
 
     /**
      * Signal the end of the hash join.
@@ -179,7 +220,6 @@ public abstract class AbstractIterHashJoin extends QueryIter2 {
         
     @Override
     protected void closeSubIterator() {
-        finished = true ;
         if ( JoinLib.JOIN_EXPLAIN ) {
             String x = String.format(
                          "HashJoin: LHS=%d RHS=%d Results=%d RightMisses=%d MaxBucket=%d NoKeyBucket=%d",
@@ -187,11 +227,12 @@ public abstract class AbstractIterHashJoin extends QueryIter2 {
                          hashTable.s_countScanMiss, hashTable.s_maxBucketSize, hashTable.s_noKeyBucketSize) ;
             System.out.println(x) ;
         }
+        hashTable.clear(); 
     }
 
     @Override
-    protected void requestSubCancel() { 
-        finished = true ;
+    protected void requestSubCancel() {
+        hashTable.clear(); 
     }
 }
 

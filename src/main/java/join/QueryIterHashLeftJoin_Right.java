@@ -18,43 +18,41 @@
 
 package join;
 
-import org.apache.jena.atlas.lib.NotImplemented ;
 import org.apache.jena.atlas.logging.Log ;
 import org.apache.jena.sparql.engine.ExecutionContext ;
 import org.apache.jena.sparql.engine.QueryIterator ;
 import org.apache.jena.sparql.engine.binding.Binding ;
 import org.apache.jena.sparql.engine.iterator.QueryIterNullIterator ;
 import org.apache.jena.sparql.engine.join.JoinKey ;
+import org.apache.jena.sparql.expr.ExprList ;
 
-/** Hash left join. 
- *  v1
+/**
+ * Hash left join.
  * 
- * This code materializes the right into a probe table
- * then hash joins from the left.
+ * This code materializes the right hand side into a probe table then hash joins
+ * from the left.
  * 
- *
- * Alternative:
-"Hash left. Stream right"
-Need to find unused left.
-1/ Mark left matched.
-2/ move to another hash table, check both each time.
-Set<Binding> (IdentityHashMap<Binding, Null>) used 
+ * See {@link QueryIterHashLeftJoin_Left} for one that uses the right hand side
+ * to make the probe table.
  */
 
 //* This code materializes the left into a probe table
 //* then hash joins from the right.
 
-public class QueryIterHashLeftJoin extends AbstractIterHashJoin {
+public class QueryIterHashLeftJoin_Right extends AbstractIterHashJoin {
+    // Left join conditions
+    private final ExprList conditions;   
     
     /**
      * Create a hashjoin QueryIterator.
      * @param joinKey  Join key - if null, one is guessed by snooping the input QueryIterators
      * @param left
      * @param right
+     * @param conditions 
      * @param execCxt
      * @return QueryIterator
      */
-    public static QueryIterator create(JoinKey joinKey, QueryIterator left, QueryIterator right, ExecutionContext execCxt) {
+    public static QueryIterator create(JoinKey joinKey, QueryIterator left, QueryIterator right, ExprList conditions, ExecutionContext execCxt) {
         // Easy cases.
         if ( ! left.hasNext() ) {
             left.close() ;
@@ -67,9 +65,9 @@ public class QueryIterHashLeftJoin extends AbstractIterHashJoin {
         }
 
         if ( joinKey != null && joinKey.length() > 1 )
-            Log.warn(QueryIterHashLeftJoin.class, "Multivariable join key") ; 
+            Log.warn(QueryIterHashLeftJoin_Right.class, "Multivariable join key") ; 
         
-        return new QueryIterHashLeftJoin(joinKey, left, right, execCxt) ; 
+        return new QueryIterHashLeftJoin_Right(joinKey, left, right, conditions, execCxt) ; 
     }
     
     /**
@@ -79,21 +77,31 @@ public class QueryIterHashLeftJoin extends AbstractIterHashJoin {
      * @param execCxt
      * @return QueryIterator
      */
-    public static QueryIterator create(QueryIterator left, QueryIterator right, ExecutionContext execCxt) {
-        return create(null, left, right, execCxt) ;
+    public static QueryIterator create(QueryIterator left, QueryIterator right, ExprList conditions, ExecutionContext execCxt) {
+        return create(null, left, right, conditions, execCxt) ;
     }
     
-    private QueryIterHashLeftJoin(JoinKey joinKey, QueryIterator left, QueryIterator right, ExecutionContext execCxt) {
-        super(joinKey, left, right, execCxt) ;
+    private QueryIterHashLeftJoin_Right(JoinKey joinKey, QueryIterator left, QueryIterator right, ExprList conditions, ExecutionContext execCxt) {
+        // NB Right. Left
+        super(joinKey, right, left, execCxt) ;
+        this.conditions = conditions ;
     }
 
     @Override
-    protected void yieldOneResult(Binding rowCurrentProbe, Binding rowStream, Binding rowResult) {}
+    protected Binding yieldOneResult(Binding rowCurrentProbe, Binding rowStream, Binding rowResult) {
+        if ( conditions != null && ! conditions.isSatisfied(rowResult, getExecContext()) )
+            return null ;
+        return rowResult ; 
+    }
 
     @Override
+    protected Binding noYieldedRows(Binding rowCurrentProbe) {
+        return rowCurrentProbe;
+    }
+    
+    @Override
     protected QueryIterator joinFinished() {
-        throw new NotImplemented() ;
-        //return null;
+        return null ;
     }
 }
 

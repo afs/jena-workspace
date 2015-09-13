@@ -16,11 +16,33 @@
  * limitations under the License.
  */
 
-package join;
+package iterator;
 
-public class TODO_HashJoin {
-    // Activate LJ code.
-    // OpJoin - choose key.
-    // Migrate LJ code to quack
+import java.util.Iterator ;
+
+import org.apache.jena.atlas.iterator.Iter ;
+import org.junit.Test ;
+
+public class TestIteratorChained {
+    @Test public void iterator_chained_01() {
+        
+        IteratorChained.Generator<String> gen = new IteratorChained.Generator<String>() {
+            int k = 0 ; 
+            @Override
+            public Iterator<String> next() {
+                if ( k >= 3 )
+                    return null ;
+                k++ ;
+                return Iter.singleton(""+k) ;
+            }
+        } ;
+        
+        for ( int i = 0 ; i < 5; i++ ) {
+            System.out.println("i = "+i) ;
+            String label = ""+i ;
+            Iterator<String> iter = new IteratorChained<>(gen) ;
+            Iter.print(iter) ;
+        }
+    }
 }
 

@@ -16,11 +16,21 @@
  * limitations under the License.
  */
 
-package join;
+package join.test;
 
-public class TODO_HashJoin {
-    // Activate LJ code.
-    // OpJoin - choose key.
-    // Migrate LJ code to quack
+import join.QueryIterHashLeftJoin_Right ;
+import org.apache.jena.sparql.algebra.Table ;
+import org.apache.jena.sparql.engine.QueryIterator ;
+import org.apache.jena.sparql.engine.join.AbstractTestLeftJoin ;
+//import org.apache.jena.sparql.engine.join.Join ;
+import org.apache.jena.sparql.engine.join.JoinKey ;
+import org.apache.jena.sparql.expr.ExprList ;
+
+public class TestHashLeftJoin_Right extends AbstractTestLeftJoin {
+
+    @Override
+    public QueryIterator join(JoinKey joinKey, Table left, Table right, ExprList conditions) {
+        return QueryIterHashLeftJoin_Right.create(joinKey, left.iterator(null), right.iterator(null), conditions, null) ;
+    }
 }
 

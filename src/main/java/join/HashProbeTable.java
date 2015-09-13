@@ -106,6 +106,11 @@ class HashProbeTable {
         return list;
     }
 
+    public Iterator<Binding> values() {
+        return Iter.concat(buckets.values().iterator(),
+                           noKeyBucket.iterator()) ;
+    }
+    
     public void clear() {
         buckets.clear();
     }

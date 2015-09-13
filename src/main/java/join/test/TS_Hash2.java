@@ -16,11 +16,27 @@
  * limitations under the License.
  */
 
-package join;
+package join.test;
 
-public class TODO_HashJoin {
-    // Activate LJ code.
-    // OpJoin - choose key.
-    // Migrate LJ code to quack
+import org.apache.jena.sparql.engine.join.TestLeftJoinNestedLoop ;
+import org.apache.jena.sparql.engine.join.TestLeftJoinNestedLoopSimple ;
+import org.apache.jena.sparql.engine.join.TestLeftJoinSimple ;
+import org.junit.runner.RunWith ;
+import org.junit.runners.Suite ;
+import org.junit.runners.Suite.SuiteClasses ;
+
+@RunWith(Suite.class)
+@SuiteClasses( {
+    TestHashJoin2.class
+
+    // Left outer join
+    , TestLeftJoinSimple.class
+    , TestLeftJoinNestedLoopSimple.class
+    , TestLeftJoinNestedLoop.class
+    , TestHashLeftJoin_Left.class
+    , TestHashLeftJoin_Right.class
+})
+public class TS_Hash2 {
+
 }
 
