@@ -26,11 +26,14 @@ import org.apache.jena.atlas.iterator.IteratorConcat ;
 
 /** A chained iterator 
  *  
- *  It is like {@link IteratorConcat} excpet it delays the creation of
+ *  It is like {@link IteratorConcat} except it delays the creation of
  *  the next iterator. 
  */
 public class IteratorChained<X> implements Iterator<X> {
-    interface Generator<X> { Iterator<X> next() ; }
+    interface Generator<X> {
+        /** Return the next iterator, or null for finished. */
+        Iterator<X> next() ;
+    }
 
     private Iterator<X> current = null ;
     boolean finished = false ;
