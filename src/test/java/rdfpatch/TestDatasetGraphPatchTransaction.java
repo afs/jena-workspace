@@ -32,7 +32,7 @@ public class TestDatasetGraphPatchTransaction extends AbstractTestTransaction
     protected Dataset create() {
         DatasetGraph dsg1 = DatasetGraphFactory.createMem() ;
         DatasetGraphChangeLog dsg = new  DatasetGraphChangeLog(dsg1) ;
-        return DatasetFactory.create(dsg) ;
+        return DatasetFactory.wrap(dsg) ;
     }
 }
 

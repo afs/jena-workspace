@@ -20,11 +20,10 @@ package dev;
 
 import org.apache.jena.atlas.logging.LogCtl ;
 
-public class DevMain
+public class DevWorkspace
 {
     static { LogCtl.setCmdLogging() ; }
     
-    public static void main(String[] args) {
-        
+    public static void main(String ... a) {
     }
 }
