@@ -18,11 +18,25 @@
 
 package tuple;
 
+import java.util.ArrayList ;
+import java.util.List ;
+
 /** A Tuple is the same class of item */
 public interface Tuple<X> {
     /** Get the i'th element, for i in the range 0 to len()-1 
      * @throws IndexOutOfBoundsException for i out of range 
      */
     public X get(int i) ;
+    
+    /** length : element are 0 to len()-1 */ 
     public int len() ;
+
+    /** Convert to a List */
+    public default List<X> asList() {
+        List<X> list = new ArrayList<>(len()) ;
+        for ( int i = 0 ; i < len() ; i++ ) {
+            list.set(i, get(i)) ;
+        }
+        return list ;
+    }
 }

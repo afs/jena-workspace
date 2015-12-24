@@ -26,14 +26,14 @@ public class Tuple3<X> implements Tuple<X> {
     protected final X x2 ;
     protected final X x3 ;
     
-    public Tuple3(X x1, X x2, X x3) {
+    /*package*/ Tuple3(X x1, X x2, X x3) {
         this.x1 = x1 ;
         this.x2 = x2 ;
         this.x3 = x3 ;
     }
     
     @Override
-    public X get(int i) {
+    public final X get(int i) {
         switch (i) {
             case 0: return x1 ;
             case 1: return x2 ;
@@ -47,12 +47,12 @@ public class Tuple3<X> implements Tuple<X> {
     }
 
     @Override
-    public int len() {
+    public final int len() {
         return 3 ;
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((x1 == null) ? 0 : x1.hashCode());
@@ -62,7 +62,7 @@ public class Tuple3<X> implements Tuple<X> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(Object obj) {
         if ( this == obj )
             return true;
         if ( obj == null )

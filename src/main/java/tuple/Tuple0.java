@@ -18,19 +18,40 @@
 
 package tuple;
 
-import java.util.Objects ;
-
-import org.apache.jena.graph.Node ;
-
-/** Dummy version of Triple */
-public final class TripleX extends Tuple3<Node> {
-    public TripleX(Node s, Node p, Node o) {
-        super(Objects.requireNonNull(s),
-              Objects.requireNonNull(p),
-              Objects.requireNonNull(o)) ;
+/**
+ * A tuple of 0 nodes.
+ */
+public class Tuple0<X> implements Tuple<X> {
+    
+    /*package*/ Tuple0() {
+    }
+    
+    @Override
+    public final X get(int i) {
+        throw new IndexOutOfBoundsException() ;
+    }
+    
+    @Override public String toString() {
+        return "[ ]" ;
     }
 
-    public Node getSubject()    { return super.x1 ; }
-    public Node getPredicate()  { return super.x2 ; }
-    public Node getObject()     { return super.x3 ; }
+    @Override
+    public final int len() {
+        return 0 ;
+    }
+
+    @Override 
+    public int hashCode() { return 59 ; }
+    
+    @Override
+    public final boolean equals(Object obj) {
+        if ( this == obj )
+            return true;
+        if ( obj == null )
+            return false;
+        if ( getClass() != obj.getClass() )
+            return false;
+        return true ; 
+    }
+    
 }

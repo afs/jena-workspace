@@ -25,13 +25,20 @@ public class TripleOps {
 
     // Index mapping.
     public static Tuple3<Node> map(TupleMap tupleMap, TripleX triple) {
+        check(tupleMap, triple.len()) ;
         Node x1 = triple.get(tupleMap.mapSlotIdx(0)) ;
         Node x2 = triple.get(tupleMap.mapSlotIdx(1)) ;
         Node x3 = triple.get(tupleMap.mapSlotIdx(2)) ;
         return new Tuple3<>(x1, x2, x3) ;
     }
 
+    private static void check(TupleMap tupleMap, int len) {
+        if ( tupleMap.length() != len )
+            throw new IllegalArgumentException("TupleMap expected to be of length "+len) ;
+    }
+
     public static TripleX unmap(TupleMap tupleMap, Tuple3<Node> nt3) {
+        check(tupleMap, nt3.len()) ;
         Node x1 = nt3.get(tupleMap.unmapSlotIdx(0)) ;
         Node x2 = nt3.get(tupleMap.unmapSlotIdx(1)) ;
         Node x3 = nt3.get(tupleMap.unmapSlotIdx(2)) ;

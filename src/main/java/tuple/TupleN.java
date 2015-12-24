@@ -31,7 +31,7 @@ public class TupleN<X> implements Tuple<X> {
     }
     
     @Override
-    public X get(int i) {
+    public final X get(int i) {
         return tuple[i] ;
     }
 
@@ -43,5 +43,27 @@ public class TupleN<X> implements Tuple<X> {
     @Override
     public String toString() {
         return Arrays.asList(tuple).toString() ;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + Arrays.hashCode(tuple);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if ( this == obj )
+            return true;
+        if ( obj == null )
+            return false;
+        if ( getClass() != obj.getClass() )
+            return false;
+        TupleN<?> other = (TupleN<?>)obj;
+        if ( !Arrays.equals(tuple, other.tuple) )
+            return false;
+        return true;
     }
 }
