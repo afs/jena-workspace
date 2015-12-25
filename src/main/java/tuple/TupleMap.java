@@ -39,6 +39,8 @@ public class TupleMap {
        (Different primary uses)
        ************
      */
+    
+    // Could special case Triple to avoid retro fitting Tuple to it. 
 
     // Map from tuple order to index order
     // So SPO->POS is (0->2, 1->0, 2->1)
@@ -108,6 +110,7 @@ public class TupleMap {
      * SPO->POS : 0'th slot is P from SPO
      */
     public <T> T mapSlot(int idx, Tuple<T> tuple) {
+        checkLength(tuple) ;
         idx = fetchOrder[idx];
         return tuple.get(idx);
     }
@@ -127,6 +130,7 @@ public class TupleMap {
      * mapping : SPO->POS : 0'th slot is S from POS
      */
     public <T> T unmapSlot(int idx, Tuple<T> tuple) {
+        checkLength(tuple) ;
         idx = insertOrder[idx];
         return tuple.get(idx);
     }
@@ -269,4 +273,19 @@ public class TupleMap {
         }
         return new String(chars);
     }
+
+    //    /**
+    //     * Apply to an <em>unmapped</em> tuple to get the i'th slot after mapping :
+    //     * SPO->POS : 0'th slot is P from SPO
+    //     */
+    //    public <T> T mapSlot(int idx, T[] tuple) {
+    //        idx = fetchOrder[idx]; // Apply the reverse mapping as we are doing zero
+    //                               // is P, so it's an unmap.
+    //        return tuple[idx];
+    //    }
+    
+        private void checkLength(Tuple<?> tuple) {
+            if ( tuple.len() != length() )
+                throw new IllegalArgumentException("Tuple length "+tuple.len()+": not of length "+length()) ; 
+        }
 }

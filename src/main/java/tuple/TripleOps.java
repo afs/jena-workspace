@@ -23,40 +23,33 @@ import org.apache.jena.graph.Node ;
 /** Operation on Triples */
 public class TripleOps {
 
-    // Index mapping.
-    public static Tuple3<Node> map(TupleMap tupleMap, TripleX triple) {
-        check(tupleMap, triple.len()) ;
-        Node x1 = triple.get(tupleMap.mapSlotIdx(0)) ;
-        Node x2 = triple.get(tupleMap.mapSlotIdx(1)) ;
-        Node x3 = triple.get(tupleMap.mapSlotIdx(2)) ;
-        return new Tuple3<>(x1, x2, x3) ;
-    }
-
-    private static void check(TupleMap tupleMap, int len) {
-        if ( tupleMap.length() != len )
-            throw new IllegalArgumentException("TupleMap expected to be of length "+len) ;
-    }
-
-    public static TripleX unmap(TupleMap tupleMap, Tuple3<Node> nt3) {
-        check(tupleMap, nt3.len()) ;
-        Node x1 = nt3.get(tupleMap.unmapSlotIdx(0)) ;
-        Node x2 = nt3.get(tupleMap.unmapSlotIdx(1)) ;
-        Node x3 = nt3.get(tupleMap.unmapSlotIdx(2)) ;
-        return new TripleX(x1, x2, x3) ;
-    }
-
     // TupleMap
-    public static Tuple3<Node> map_(TupleMap tupleMap, TripleX triple) {
+    public static Tuple3<Node> map(TupleMap tupleMap, TripleX triple) {
         Node x1 = tupleMap.mapSlot(0, triple) ;
         Node x2 = tupleMap.mapSlot(1, triple) ;
         Node x3 = tupleMap.mapSlot(2, triple) ;
         return new Tuple3<>(x1, x2, x3) ;
     }
 
-    public static TripleX unmap_(TupleMap tupleMap, Tuple3<Node> nt3) {
+    public static TripleX unmap(TupleMap tupleMap, Tuple3<Node> nt3) {
         Node x1 = tupleMap.unmapSlot(0, nt3) ;
         Node x2 = tupleMap.unmapSlot(1, nt3) ;
         Node x3 = tupleMap.unmapSlot(2, nt3) ;
+        return new TripleX(x1, x2, x3) ;
+    }
+
+    // Index mapping.
+    public static Tuple3<Node> map_(TupleMap tupleMap, TripleX triple) {
+        Node x1 = triple.get(tupleMap.mapSlotIdx(0)) ;
+        Node x2 = triple.get(tupleMap.mapSlotIdx(1)) ;
+        Node x3 = triple.get(tupleMap.mapSlotIdx(2)) ;
+        return new Tuple3<>(x1, x2, x3) ;
+    }
+
+    public static TripleX unmap_(TupleMap tupleMap, Tuple3<Node> nt3) {
+        Node x1 = nt3.get(tupleMap.unmapSlotIdx(0)) ;
+        Node x2 = nt3.get(tupleMap.unmapSlotIdx(1)) ;
+        Node x3 = nt3.get(tupleMap.unmapSlotIdx(2)) ;
         return new TripleX(x1, x2, x3) ;
     }
     
@@ -69,22 +62,22 @@ public class TripleOps {
         return doEverything(tupleMap::unmapSlotIdx, nt3, TripleX::new) ;
     }
     
-    private static <X> X doEverything(AtoB f, Tuple3<Node> nt3, C3<Node, X> maker) {
+    private static <X> X doEverything(AtoB f, Tuple3<Node> nt3, Maker3<Node, X> maker) {
         Node x1 = function(f, nt3, 0) ;
         Node x2 = function(f, nt3, 1) ;
         Node x3 = function(f, nt3, 2) ;
         return maker.make(x1, x2, x3) ;
     }
     
-    interface C3<X, T> {
+    private interface Maker3<X, T> {
         T make(X x1, X x2, X x3) ;
     }
     
-    interface AtoB {
+    private interface AtoB {
         int convert(int i) ;
     }
 
-    static Node function(AtoB f, Tuple3<Node> nt3, int i) {
+    private static Node function(AtoB f, Tuple3<Node> nt3, int i) {
         return nt3.get(f.convert(i)) ; 
     }
 
