@@ -68,11 +68,7 @@ public class TupleMap {
      * ColumnMap. That has confusing/inconsistent usage.
      */
     
-    
     // SPO->POS: get:{0<-1, 1<-2, 2<-0} put:{0->2, 1->0, 2->1}
-    
-    
-    private final int len ;
     
     // Map by where to fetch from source.
     // For SPO -> POS, get from 1 to go into 0 so (0->, 1->0 2->   
@@ -84,6 +80,8 @@ public class TupleMap {
     // So SPO->POS is (0->2, 1->0, 2->1)
     // i.e. the location of the element after mapping.
     private final int[]  putTransform ; // putTransform, insertOrder
+
+    private final int len ;
     private final String label;
 
     /**
@@ -164,42 +162,46 @@ public class TupleMap {
         return putTransform[idx]; 
     }
     
-    /** Apply to an <em>unmapped</em> tuple to get a tuple with the column mapping applied.
+    /** Apply to an <em>unmapped</em> tuple to get a tuple with the tuple mapping applied.
 */
     public <T> Tuple<T> map(Tuple<T> src) {
         return apply(src, getTransform) ;
     }
 
-    /** Apply to a <em>mapped</em> tuple to get a tuple with the column mapping reverse-applied. */
+    /** Apply to a <em>mapped</em> tuple to get a tuple with the tuple mapping reverse-applied. */
     public <T> Tuple<T> unmap(Tuple<T> src) {
         return apply(src, putTransform) ;
     }
 
-    // Does not work (java8) - assigning the return cause sa runtime case exception 
-//    /** Apply to an <em>unmapped</em> tuple to get a tuple with the column mapping applied */
+    // Does not work (java8) - assigning the return causes a runtime case exception 
+//    /** Apply to an <em>unmapped</em> tuple to get a tuple with the tuple mapping applied */
 //    public <T> T[] map(T[] src) {
 //        @SuppressWarnings("unchecked")
 //        T[]dst = (T[])new Object[src.length] ;
-//        map(src, dst) ;
+//        applyArray(src, dst, getTransform) ;
 //        return dst ;
 //    }
 
-    /** Apply to an <em>unmapped</em> tuple to get a tuple with the column mapping applied */
+    /** Apply to an <em>unmapped</em> tuple to get a tuple with the tuple mapping applied */
     public <T> void map(T[] src, T[] dst) {
+        if ( src == dst )
+            throw new IllegalArgumentException("Source and destination are the same array") ;
         applyArray(src, dst, getTransform) ;
     }
 
-    // Does not work (java8) - assigning the return cause sa runtime case exception 
-//    /** Apply to a <em>mapped</em> tuple to get a tuple with the column mapping reverse-applied */
+    // Does not work (java8) - assigning the return causes a runtime case exception 
+//    /** Apply to a <em>mapped</em> tuple to get a tuple with the tuple mapping reverse-applied */
 //    public <T> T[] unmap(T[] src) {
 //        @SuppressWarnings("unchecked")
 //        T[]dst = (T[])new Object[src.length] ;
-//        unmap(src, dst) ;
+//        applyArray(src, dst, putTransform) ;
 //        return dst ;
 //    }
 
-    /** Apply to a <em>mapped</em> tuple to get a tuple with the column mapping reverse-applied */
+    /** Apply to a <em>mapped</em> tuple to get a tuple with the tuple mapping reverse-applied */
     public <T> void unmap(T[] src, T[] dst) {
+        if ( src == dst )
+            throw new IllegalArgumentException("Source and destination are the same array") ;
         applyArray(src, dst, putTransform) ;
     }
 
