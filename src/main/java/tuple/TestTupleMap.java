@@ -45,8 +45,10 @@ public class TestTupleMap {
     @Test
     public void compile1() {
         TupleMap map = TupleMap.create("SPO", "POS");
-        // SPO -> POS so col 0 goes to col 2, col 1 goes to col 0 and col 2 goes
-        // to col 1
+        // SPO -> POS 
+        // col 0 goes to col 2
+        // col 1 goes to col 0
+        // col 2 goes to col 1
         Integer[] expectedPut = {2, 0, 1};
         assertEquals(Arrays.asList(expectedPut), map.transformPut());
         Integer[] expectedGet = {1, 2, 0};
@@ -73,8 +75,6 @@ public class TestTupleMap {
         assertEquals("P", tmap.unmapSlot(1, tuple1));
         assertEquals("O", tmap.unmapSlot(2, tuple1));
     }
-
-    // Column Map tests ported.
 
     @Test
     public void map_transforms() {
