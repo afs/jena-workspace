@@ -18,10 +18,13 @@
 
 package tuple;
 
+import java.util.Iterator ;
 import java.util.List ;
+import java.util.function.Consumer ;
+import java.util.stream.Stream ;
 
 /** A Tuple is the same class of item */
-public interface Tuple<X> {
+public interface Tuple<X> extends Iterable<X> {
     /** Get the i'th element, for i in the range 0 to len()-1 
      * @throws IndexOutOfBoundsException for i out of range 
      */
@@ -33,5 +36,22 @@ public interface Tuple<X> {
     /** Convert to a List */
     public default List<X> asList() {
         return new TupleList<>(this) ;
+    }
+    
+    /** Iterable */
+    @Override
+    public default Iterator<X> iterator() {
+        return asList().iterator() ;
+    }
+    
+    /** stream */
+    public default Stream<X> stream() { 
+        return asList().stream() ;
+    }
+    
+    /** forEach */
+    @Override
+    public default void forEach(Consumer<? super X> action) { 
+        asList().forEach(action) ;
     }
 }
