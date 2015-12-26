@@ -21,6 +21,9 @@ package tuple;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays ;
+import java.util.List ;
+
 import org.junit.Test;
 
 public class TestTupleMap {
@@ -40,6 +43,24 @@ public class TestTupleMap {
     }
 
     @Test
+    public void compile1() {
+        TupleMap map = TupleMap.create("SPO", "POS");
+        // SPO -> POS so col 0 goes to col 2, col 1 goes to col 0 and col 2 goes
+        // to col 1
+        Integer[] expectedPut = {2, 0, 1};
+        assertEquals(Arrays.asList(expectedPut), map.transformPut());
+        Integer[] expectedGet = {1, 2, 0};
+        assertEquals(Arrays.asList(expectedGet), map.transformGet());
+    }
+
+    @Test
+    public void compile2() {
+        TupleMap map = TupleMap.create("SPOG", "GOPS");
+        Integer[] expected = {3, 2, 1, 0};
+        assertEquals(Arrays.asList(expected), map.transformPut());
+    }
+
+    @Test
     public void map_slot_02() {
         TupleMap tmap = TupleMap.create("SPO", "POS");
         Tuple<String> tuple = TupleFactory.create("S", "P", "O");
@@ -56,8 +77,21 @@ public class TestTupleMap {
     // Column Map tests ported.
 
     @Test
+    public void map_transforms() {
+        TupleMap x = TupleMap.create("SPO","POS"); 
+        List<Integer> listGet = x.transformPut() ;
+        List<Integer> listGetExpected = Arrays.asList(2, 0, 1) ;
+        assertEquals(listGetExpected, listGet) ;
+
+        List<Integer> listPut = x.transformGet() ;
+        List<Integer> listPutExpected = Arrays.asList(1, 2, 0) ;
+        assertEquals(listGetExpected, listGet) ;
+        
+    }
+    
+    @Test
     public void map_array_01() {
-        TupleMap x = TupleMap.create("SPO->POS", 2, 0, 1); // (0,1,2) -> (2,0,1) S->2 etc
+        TupleMap x = TupleMap.create("SPO","POS"); 
         Tuple<Integer> t = TupleFactory.create(2, 0, 1);
         Tuple<Integer> t1 = x.map(t);
 
@@ -98,7 +132,7 @@ public class TestTupleMap {
     public void map_array_03() {
         // (0,1,2) -> (2,0,1) S->2 etc
         // so (0,1,2) <- (1,2,0)
-        TupleMap x = TupleMap.create("SPO->POS", 2, 0, 1);
+        TupleMap x = TupleMap.create("SPO","POS");
         String[] array = {"Y", "Z", "X"};
         assertEquals("X", x.unmapSlot(0, array)); // The index 0 comes from position 3.
         assertEquals("Y", x.unmapSlot(1, array));
@@ -107,7 +141,7 @@ public class TestTupleMap {
 
     @Test
     public void remap3() {
-        TupleMap x = TupleMap.create("POS", 2, 0, 1);
+        TupleMap x = TupleMap.create("SPO", "POS");
         Tuple<String> tuple = TupleFactory.create("S", "P", "O");
         Tuple<String> mapped = x.map(tuple);
         Tuple<String> expected = TupleFactory.create("P", "O", "S");
@@ -116,27 +150,11 @@ public class TestTupleMap {
 
     @Test
     public void remap4() {
-        TupleMap x = TupleMap.create("POS", 2, 0, 1);
+        TupleMap x = TupleMap.create("SPO", "POS");
         Tuple<String> tuple = TupleFactory.create("S", "P", "O");
         Tuple<String> tuple2 = x.map(tuple);
         tuple2 = x.unmap(tuple2);
         assertEquals(tuple, tuple2);
-    }
-
-    @Test
-    public void compile1() {
-        int[] x = TupleMap.compileMapping("SPO", "POS");
-        // SPO -> POS so col 0 goes to col 2, col 1 goes to col 0 and col 2 goes
-        // to col 1
-        int[] expected = {2, 0, 1};
-        assertArrayEquals(expected, x);
-    }
-
-    @Test
-    public void compile2() {
-        int[] x = TupleMap.compileMapping("SPOG", "GOPS");
-        int[] expected = {3, 2, 1, 0};
-        assertArrayEquals(expected, x);
     }
 
     @Test

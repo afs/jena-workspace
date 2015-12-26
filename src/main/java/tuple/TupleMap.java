@@ -20,7 +20,9 @@ package tuple;
 
 import static java.lang.String.format;
 
+import java.util.ArrayList ;
 import java.util.Arrays;
+import java.util.Collections ;
 import java.util.List;
 
 import org.apache.jena.atlas.AtlasException;
@@ -34,14 +36,18 @@ import org.apache.jena.atlas.lib.StrUtils;
  * <p>
  * 
  * <pre>
- * map(tuple) equiv to
- *   create tuple(mapSlotIdx(0) , mapSlotIdx(1), ... mapSlotIdx(n-1)) ;    
+ * map(tuple) is equivalent to
+ *   create tuple(getSlotIdx(0) , getSlotIdx(1), ... getSlotIdx(n-1)) ;    
  * </pre>
+ * 
+ * A {@code TupleMap} holds twp maps: the "getTransform" and the "putTransform".
+ * The "getTransform" is here to get the item from in the mapper Tuple.
+ * In the case is {@code SPO->POS} this is 
+ * {@code 0<-1, 1<-2, 2<-0} 
+ * and the "putTransform" is where to place the items: {@code 0->2, 1->0, 2->1}.
  */
+final
 public class TupleMap {
-    
-    // Check comments -> remove "column"
-    
     /*
      * Naming.  getTransform (from src), putTransform(into dst)
      * And these are mutual inverses: unmap process is to swap use of getTransform and putTransform
@@ -60,57 +66,65 @@ public class TupleMap {
      * 
      * Warning : map and unmap here do not correspond to fetch and map in
      * ColumnMap. That has confusing/inconsistent usage.
-     ************
-     * 
      */
     
     
     // SPO->POS: get:{0<-1, 1<-2, 2<-0} put:{0->2, 1->0, 2->1}
     
+    
+    private final int len ;
+    
     // Map by where to fetch from source.
     // For SPO -> POS, get from 1 to go into 0 so (0->, 1->0 2->   
     // POS->SPO, is (0->1, 1->2, 2->0)
     // i.e. the location to fetch the mapped element from.
-    private int[]  getTransform ;
-
+    private final int[]  getTransform ;
+    
     // Map by insertion into destination.
     // So SPO->POS is (0->2, 1->0, 2->1)
     // i.e. the location of the element after mapping.
-    private int[]  putTransform ; // putTransform, insertOrder
-
-    private String label;
+    private final int[]  putTransform ; // putTransform, insertOrder
+    private final String label;
 
     /**
-     * Construct a column mapping that maps the input (one col, one char) to the
-     * output
+     * Construct a mapping that maps the input (one col, one char) to the output
      */
     public static TupleMap create(String input, String output) {
         return new TupleMap(input + "->" + output, compileMapping(input, output));
     }
 
+    /**
+     * Construct a mapping, with label, that maps the input (one col, one char) to the output
+     */
+    public static TupleMap create(String label, String input, String output) {
+        return new TupleMap(label, compileMapping(input, output));
+    }
+
+    /**
+     * Construct a mapping that maps the input to the output
+     */
     public static <T> TupleMap create(String label, List<T> input, List<T> output) {
         return new TupleMap(label, compileMapping(input, output));
     }
 
+    /**
+     * Construct a mapping that maps the input to the output
+     */
     public static <T> TupleMap create(String label, T[] input, T[] output) {
         return new TupleMap(label, compileMapping(input, output));
     }
     
-    /*package-testing*/ static <T> TupleMap create(String label, int ... elements) {
-        return new TupleMap(label, elements) ;
-    }
-
     /**
-     * Construct a column map - the elements are the mappings of a tuple
+     * Construct a mapping - the elements are the mappings of a tuple
      * originally in the order 0,1,2,... so SPO->POS is 2,0,1 (SPO->POS so S->2,
      * P->0, O->1) and not 1,2,0 (which is the extraction mapping). The label is
-     * just a lable and is not interpretted.
+     * just a label and is not interpretted here.
      */
     private TupleMap(String label, int... elements) {
+        this.len = elements.length ; 
         this.label = label;
 
         this.putTransform = new int[elements.length];
-        System.arraycopy(elements, 0, elements, 0, elements.length);
         Arrays.fill(putTransform, -1);
 
         this.getTransform = new int[elements.length];
@@ -124,15 +138,14 @@ public class TupleMap {
             if ( putTransform[i] != -1 || getTransform[x] != -1 )
                 throw new IllegalArgumentException("Inconsistent: " + ListUtils.str(elements));
 
-            putTransform[i] = x;
+            putTransform[i] = x;    // The elements are the putTransform.
             getTransform[x] = i;
         }
     }
 
     /** Length of mapping */
-
     public int length() {
-        return getTransform.length;
+        return len;
     }
 
     /** 
@@ -275,7 +288,7 @@ public class TupleMap {
     }
 
     /** Compile a mapping encoded as single charcaters e.g. "SPO", "POS" */
-    /*package-testing*/ static int[] compileMapping(String domain, String range) {
+    private static int[] compileMapping(String domain, String range) {
         List<Character> input = StrUtils.toCharList(domain);
         List<Character> output = StrUtils.toCharList(range);
         return compileMapping(input, output);
@@ -285,12 +298,12 @@ public class TupleMap {
      * Compile a mapping, encoded two list, the domain and range of the mapping
      * function
      */
-    /*package-testing*/ static <T> int[] compileMapping(T[] domain, T[] range) {
+    private static <T> int[] compileMapping(T[] domain, T[] range) {
         return compileMapping(Arrays.asList(domain), Arrays.asList(range));
     }
 
     /** Compile a mapping */
-    /*package-testing*/ static <T> int[] compileMapping(List<T> domain, List<T> range) {
+    private static <T> int[] compileMapping(List<T> domain, List<T> range) {
         if ( domain.size() != range.size() )
             throw new AtlasException("Bad mapping: lengths not the same: " + domain + " -> " + range);
 
@@ -309,6 +322,23 @@ public class TupleMap {
             mapped[j] = true;
         }
         return cols;
+    }
+
+    /** Access to the getTransform */
+    /*package-testing*/ List<Integer> transformGet() {
+        return arrayToList(getTransform) ;
+    }
+
+    /** Access to the putTransform */
+    /*package-testing*/ List<Integer> transformPut() {
+        return arrayToList(putTransform) ;
+    }
+
+    private List<Integer> arrayToList(int[] array) {
+        List<Integer> list = new ArrayList<>(array.length) ;
+        for ( int x : array ) 
+            list.add(x) ;
+        return  Collections.unmodifiableList(list) ;
     }
 
     @Override
@@ -335,34 +365,11 @@ public class TupleMap {
         return label;
     }
 
-    /**
-     * Reorder the letters of a string by the same rules as this column map
-     * (forward, map direction)
-     */
-    public String mapName(String word) {
-        return mapString(word, getTransform);
-    }
-
-    /**
-     * Reorder the letters of a string by the same rules as this column map
-     * (backward, fetch direction)
-     */
-    public String unmapName(String word) {
-        return mapString(word, putTransform);
-    }
-
-    // Map is get from i and put to j
-    private String mapString(String src, int[] map) {
-        char[] chars = new char[src.length()];
-        for ( int i = 0 ; i < src.length() ; i++ ) {
-            int j = map[i] ;
-            chars[i] = src.charAt(j);
-        }
-        return new String(chars);
-    }
-
+    private static boolean CHECKING = true ; 
     private final void checkLength(Tuple<?> tuple) {
-        if ( tuple.len() != length() )
-            throw new IllegalArgumentException("Tuple length "+tuple.len()+": not of length "+length()) ; 
+        if ( CHECKING ) {
+            if ( tuple.len() != length() )
+                throw new IllegalArgumentException("Tuple length "+tuple.len()+": not of length "+length()) ;
+        }
     }
 }
