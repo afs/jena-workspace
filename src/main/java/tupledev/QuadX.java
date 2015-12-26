@@ -16,14 +16,27 @@
  * limitations under the License.
  */
 
-package dev;
+package tupledev;
 
-import org.apache.jena.atlas.logging.LogCtl ;
+import java.util.Objects ;
 
-public class DevWorkspace
-{
-    static { LogCtl.setCmdLogging() ; }
+import org.apache.jena.graph.Node ;
+import tuple.Tuple4 ;
+
+/** Dummy version of Quad */
+public final class QuadX extends Tuple4<Node> {
     
-    public static void main(String ... a) {
+    //  Should get(0) always be the subject?
+    
+    public QuadX(Node g, Node s, Node p, Node o) {
+        super(Objects.requireNonNull(g),
+              Objects.requireNonNull(s),
+              Objects.requireNonNull(p),
+              Objects.requireNonNull(o)) ;
     }
+
+    public Node getGraph()      { return super.x1 ; }
+    public Node getSubject()    { return super.x2 ; }
+    public Node getPredicate()  { return super.x3 ; }
+    public Node getObject()     { return super.x4 ; }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,6 @@
 
 package tuple;
 
-import java.util.ArrayList ;
 import java.util.List ;
 
 /** A Tuple is the same class of item */
@@ -33,10 +32,6 @@ public interface Tuple<X> {
 
     /** Convert to a List */
     public default List<X> asList() {
-        List<X> list = new ArrayList<>(len()) ;
-        for ( int i = 0 ; i < len() ; i++ ) {
-            list.set(i, get(i)) ;
-        }
-        return list ;
+        return new TupleList<>(this) ;
     }
 }

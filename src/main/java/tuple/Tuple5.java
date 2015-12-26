@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,7 +19,7 @@
 package tuple;
 
 /**
- * A tuple of 5 nodes.
+ * A tuple of 5 items.
  */
 public class Tuple5<X> implements Tuple<X> {
     protected final X x1 ; 
@@ -28,7 +28,7 @@ public class Tuple5<X> implements Tuple<X> {
     protected final X x4 ;
     protected final X x5 ;
     
-    /*package*/ Tuple5(X x1, X x2, X x3, X x4, X x5) {
+    protected Tuple5(X x1, X x2, X x3, X x4, X x5) {
         this.x1 = x1 ;
         this.x2 = x2 ;
         this.x3 = x3 ;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,12 +24,24 @@ import java.util.Arrays ;
 public class TupleN<X> implements Tuple<X> {
     private final X[] tuple ;
 
+    /** Create a TupleN - safely copy the input */ 
     @SafeVarargs
-    /*package*/ TupleN(X...xs) {
-        // Avoid leakage?
-        tuple = Arrays.copyOf(xs, xs.length) ;
+    public static <X> TupleN<X> create(X... xs) {
+        X[] xs2 = Arrays.copyOf(xs, xs.length) ;
+        return new TupleN<>(xs2) ;
     }
     
+    // When array will not be modified.
+    /*package*/ static <X> TupleN<X> wrap(X[] xs) {
+        return new TupleN<>(xs) ;
+    }
+    
+    /** Put a TuplN wrapper around a X[].
+     * The statics create and wrap determine whether to copy or not. */
+    private TupleN(X[] xs) {
+        tuple = xs ;
+    }
+
     @Override
     public final X get(int i) {
         return tuple[i] ;

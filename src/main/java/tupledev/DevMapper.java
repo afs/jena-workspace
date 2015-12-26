@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,10 +16,12 @@
  * limitations under the License.
  */
 
-package tuple ;
+package tupledev ;
 
 import org.apache.jena.graph.Node ;
 import org.apache.jena.sparql.sse.SSE ;
+import tuple.Tuple3 ;
+import tuple.TupleMap ;
 
 public class DevMapper {
     public static void main(String ... a) {
@@ -28,9 +30,9 @@ public class DevMapper {
         Node o = SSE.parseNode("'O'") ;
         TripleX triple = new TripleX(s,p,o) ;
         
-        dwim(new TupleMap("SPO", "POS") , triple) ;
-        dwim(new TupleMap("SPO", "OSP") , triple) ;
-        dwim(new TupleMap("SPO", "SPO") , triple) ;
+        dwim(TupleMap.create("SPO", "POS") , triple) ;
+        dwim(TupleMap.create("SPO", "OSP") , triple) ;
+        dwim(TupleMap.create("SPO", "SPO") , triple) ;
     }
         
     public static void dwim(TupleMap tupleMap,  TripleX triple) {

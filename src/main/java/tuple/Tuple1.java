@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,12 +19,12 @@
 package tuple;
 
 /**
- * A tuple of 1 node.
+ * A tuple of 1 item.
  */
 public class Tuple1<X> implements Tuple<X> {
     protected final X x1 ; 
     
-    /*package*/ Tuple1(X x1) {
+    protected Tuple1(X x1) {
         this.x1 = x1 ;
     }
     

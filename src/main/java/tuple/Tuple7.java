@@ -19,23 +19,25 @@
 package tuple;
 
 /**
- * A tuple of 6 items.
+ * A tuple of 7 items.
  */
-public class Tuple6<X> implements Tuple<X> {
+public class Tuple7<X> implements Tuple<X> {
     protected final X x1 ; 
     protected final X x2 ;
     protected final X x3 ;
     protected final X x4 ;
     protected final X x5 ;
     protected final X x6 ;
+    protected final X x7 ;
     
-    protected Tuple6(X x1, X x2, X x3, X x4, X x5, X x6) {
+    protected Tuple7(X x1, X x2, X x3, X x4, X x5, X x6, X x7) {
         this.x1 = x1 ;
         this.x2 = x2 ;
         this.x3 = x3 ;
         this.x4 = x4 ;
         this.x5 = x5 ;
         this.x6 = x6 ;
+        this.x7 = x7 ;
     }
     
     @Override
@@ -47,17 +49,18 @@ public class Tuple6<X> implements Tuple<X> {
             case 3: return x4 ;
             case 4: return x5 ;
             case 5: return x6 ;
+            case 6: return x7 ;
         }
         throw new IndexOutOfBoundsException() ;
     }
     
     @Override public String toString() {
-        return "[ "+x1+", "+x2+", "+x3+", "+x4+", "+x5+" ]" ;
+        return "[ "+x1+", "+x2+", "+x3+", "+x4+", "+x5+", "+x6+", "+x7+" ]" ;
     }
 
     @Override
     public final int len() {
-        return 6 ;
+        return 7 ;
     }
 
     @Override
@@ -70,6 +73,7 @@ public class Tuple6<X> implements Tuple<X> {
         result = prime * result + ((x4 == null) ? 0 : x4.hashCode());
         result = prime * result + ((x5 == null) ? 0 : x5.hashCode());
         result = prime * result + ((x6 == null) ? 0 : x6.hashCode());
+        result = prime * result + ((x7 == null) ? 0 : x7.hashCode());
         return result;
     }
 
@@ -81,7 +85,7 @@ public class Tuple6<X> implements Tuple<X> {
             return false;
         if ( getClass() != obj.getClass() )
             return false;
-        Tuple6<?> other = (Tuple6<?>)obj;
+        Tuple7<?> other = (Tuple7<?>)obj;
         if ( x1 == null ) {
             if ( other.x1 != null )
                 return false;
@@ -111,6 +115,11 @@ public class Tuple6<X> implements Tuple<X> {
             if ( other.x6 != null )
                 return false;
         } else if ( !x6.equals(other.x6) )
+            return false;
+        if ( x7 == null ) {
+            if ( other.x7 != null )
+                return false;
+        } else if ( !x7.equals(other.x7) )
             return false;
         return true;
     }

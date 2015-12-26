@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -46,11 +46,29 @@ public class TupleFactory {
             case 4 : return create4(xs[0], xs[1], xs[2], xs[3]) ;
             case 5 : return create5(xs[0], xs[1], xs[2], xs[3], xs[4]) ;
             case 6 : return create6(xs[0], xs[1], xs[2], xs[3], xs[4], xs[5]) ;
+            case 7 : return create7(xs[0], xs[1], xs[2], xs[3], xs[4], xs[5], xs[6]) ;
+            case 8 : return create8(xs[0], xs[1], xs[2], xs[3], xs[4], xs[5], xs[6], xs[7]) ;
             default:
-                return new TupleN<>(xs) ;
+                return TupleN.create(xs) ;
         }
     }
     
+    public static <X> Tuple<X> createTuple(X[] xs ) {
+        switch(xs.length) {
+            case 0 : return create0() ;
+            case 1 : return create1(xs[0]) ;
+            case 2 : return create2(xs[0], xs[1]) ;
+            case 3 : return create3(xs[0], xs[1], xs[2]) ;
+            case 4 : return create4(xs[0], xs[1], xs[2], xs[3]) ;
+            case 5 : return create5(xs[0], xs[1], xs[2], xs[3], xs[4]) ;
+            case 6 : return create6(xs[0], xs[1], xs[2], xs[3], xs[4], xs[5]) ;
+            case 7 : return create7(xs[0], xs[1], xs[2], xs[3], xs[4], xs[5], xs[6]) ;
+            case 8 : return create8(xs[0], xs[1], xs[2], xs[3], xs[4], xs[5], xs[6], xs[7]) ;
+            default:
+                return TupleN.create(xs) ;
+        }
+    }
+
     public static <X> Tuple0<X> create0() {
         return new Tuple0<>() ;
     }
@@ -78,5 +96,14 @@ public class TupleFactory {
     public static <X> Tuple6<X> create6(X x1, X x2, X x3, X x4, X x5, X x6) {
         return new Tuple6<>(x1, x2, x3, x4, x5, x6) ;
     }
+
+    public static <X> Tuple7<X> create7(X x1, X x2, X x3, X x4, X x5, X x6, X x7) {
+        return new Tuple7<>(x1, x2, x3, x4, x5, x6, x7) ;
+    }
+
+    public static <X> Tuple8<X> create8(X x1, X x2, X x3, X x4, X x5, X x6, X x7, X x8) {
+        return new Tuple8<>(x1, x2, x3, x4, x5, x6, x7, x8) ;
+    }
+
 
 }

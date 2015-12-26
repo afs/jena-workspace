@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,24 +18,13 @@
 
 package tuple;
 
-import java.util.Objects ;
+import org.junit.runner.RunWith ;
+import org.junit.runners.Suite ;
 
-import org.apache.jena.graph.Node ;
-
-/** Dummy version of Quad */
-public final class QuadX extends Tuple4<Node> {
-    
-    //  Should get(0) always be the subject?
-    
-    public QuadX(Node g, Node s, Node p, Node o) {
-        super(Objects.requireNonNull(g),
-              Objects.requireNonNull(s),
-              Objects.requireNonNull(p),
-              Objects.requireNonNull(o)) ;
-    }
-
-    public Node getGraph()      { return super.x1 ; }
-    public Node getSubject()    { return super.x2 ; }
-    public Node getPredicate()  { return super.x3 ; }
-    public Node getObject()     { return super.x4 ; }
+@RunWith(Suite.class)
+@Suite.SuiteClasses( {
+    TestTuple.class
+    , TestTupleMap.class
+})
+public class TS_Tuple {
 }

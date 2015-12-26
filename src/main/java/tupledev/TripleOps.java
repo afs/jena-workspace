@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,19 +16,37 @@
  * limitations under the License.
  */
 
-package tuple;
+package tupledev;
 
 import org.apache.jena.graph.Node ;
+import tuple.Tuple ;
+import tuple.Tuple3 ;
+import tuple.TupleFactory ;
+import tuple.TupleMap ;
 
 /** Operation on Triples */
 public class TripleOps {
+    
+    public static Node get(TripleX triple, int i) {
+        switch (i) {
+            case 0: return triple.getSubject() ;
+            case 1: return triple.getPredicate() ;
+            case 2: return triple.getObject() ;
+            default:
+                throw new IndexOutOfBoundsException("index = "+i) ; 
+        }
+    }
+    
 
-    // TupleMap
+    // Triple not a Tuple
     public static Tuple3<Node> map(TupleMap tupleMap, TripleX triple) {
-        Node x1 = tupleMap.mapSlot(0, triple) ;
-        Node x2 = tupleMap.mapSlot(1, triple) ;
-        Node x3 = tupleMap.mapSlot(2, triple) ;
-        return new Tuple3<>(x1, x2, x3) ;
+        Node x1 = get(triple, tupleMap.mapSlotIdx(0)) ;
+        Node x2 = get(triple, tupleMap.mapSlotIdx(1)) ;
+        Node x3 = get(triple, tupleMap.mapSlotIdx(2)) ;
+//        Node x1 = tupleMap.mapSlot(0, triple) ;
+//        Node x2 = tupleMap.mapSlot(1, triple) ;
+//        Node x3 = tupleMap.mapSlot(2, triple) ;
+        return TupleFactory.create3(x1, x2, x3) ;
     }
 
     public static TripleX unmap(TupleMap tupleMap, Tuple3<Node> nt3) {
@@ -43,7 +61,7 @@ public class TripleOps {
         Node x1 = triple.get(tupleMap.mapSlotIdx(0)) ;
         Node x2 = triple.get(tupleMap.mapSlotIdx(1)) ;
         Node x3 = triple.get(tupleMap.mapSlotIdx(2)) ;
-        return new Tuple3<>(x1, x2, x3) ;
+        return TupleFactory.create3(x1, x2, x3) ;
     }
 
     public static TripleX unmap_(TupleMap tupleMap, Tuple3<Node> nt3) {
@@ -55,17 +73,17 @@ public class TripleOps {
     
     // Functional style.
     public static Tuple3<Node> map__(TupleMap tupleMap, TripleX triple) {
-        return doEverything(tupleMap::mapSlotIdx, triple, TupleFactory::create3) ;
+        return doEverything(tupleMap::mapSlot, triple, TupleFactory::create3) ;
     }
 
     public static TripleX unmap__(TupleMap tupleMap, Tuple3<Node> nt3) {
-        return doEverything(tupleMap::unmapSlotIdx, nt3, TripleX::new) ;
+        return doEverything(tupleMap::unmapSlot, nt3, TripleX::new) ;
     }
     
-    private static <X> X doEverything(AtoB f, Tuple3<Node> nt3, Maker3<Node, X> maker) {
-        Node x1 = function(f, nt3, 0) ;
-        Node x2 = function(f, nt3, 1) ;
-        Node x3 = function(f, nt3, 2) ;
+    private static <T> T doEverything(AtoB<Node> f, Tuple<Node> nt3, Maker3<Node, T> maker) {
+        Node x1 = applyAndGet(f, nt3, 0) ;
+        Node x2 = applyAndGet(f, nt3, 1) ;
+        Node x3 = applyAndGet(f, nt3, 2) ;
         return maker.make(x1, x2, x3) ;
     }
     
@@ -73,12 +91,12 @@ public class TripleOps {
         T make(X x1, X x2, X x3) ;
     }
     
-    private interface AtoB {
-        int convert(int i) ;
+    private interface AtoB<X> {
+        X access(int i, Tuple<X> tuple) ;
     }
 
-    private static Node function(AtoB f, Tuple3<Node> nt3, int i) {
-        return nt3.get(f.convert(i)) ; 
+    private static <X> X applyAndGet(AtoB<X> f, Tuple<X> nt3, int i) {
+        return f.access(i, nt3) ; 
     }
 
 }

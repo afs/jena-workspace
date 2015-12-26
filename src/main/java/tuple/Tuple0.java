@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,11 +19,11 @@
 package tuple;
 
 /**
- * A tuple of 0 nodes.
+ * A tuple of 0 items.
  */
 public class Tuple0<X> implements Tuple<X> {
     
-    /*package*/ Tuple0() {
+    protected Tuple0() {
     }
     
     @Override

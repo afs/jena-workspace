@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,19 +18,25 @@
 
 package tuple;
 
-import java.util.Objects ;
+import java.util.AbstractList ;
+import java.util.RandomAccess ;
 
-import org.apache.jena.graph.Node ;
+/*package*/ class TupleList<X> extends AbstractList<X> implements RandomAccess {
 
-/** Dummy version of Triple */
-public final class TripleX extends Tuple3<Node> {
-    public TripleX(Node s, Node p, Node o) {
-        super(Objects.requireNonNull(s),
-              Objects.requireNonNull(p),
-              Objects.requireNonNull(o)) ;
+    private final Tuple<X> tuple;
+
+    TupleList(Tuple<X> tuple) {
+        this.tuple = tuple ;
+    }
+    
+    @Override
+    public X get(int index) {
+        return tuple.get(index) ;
     }
 
-    public Node getSubject()    { return super.x1 ; }
-    public Node getPredicate()  { return super.x2 ; }
-    public Node getObject()     { return super.x3 ; }
+    @Override
+    public int size() {
+        return tuple.len() ;
+    }
+    
 }

@@ -34,9 +34,11 @@ import org.apache.jena.atlas.lib.StrUtils;
  */
 public class TupleMap {
     
+    // Check comments -> remove "column"
+    
     /* *************
-       Warning : map and unmap here correspond to fetch and map in ColumnMap.
-       (Different primary uses)
+       Warning : map and unmap here do not correspond to fetch and map in ColumnMap.
+       That has confusing/inconsistent usage.
        ************
      */
     
@@ -45,11 +47,13 @@ public class TupleMap {
     // Map from tuple order to index order
     // So SPO->POS is (0->2, 1->0, 2->1)
     // i.e. the location of the element after mapping.
+    // Where to insert it in the mapped tuple. ("put")
     private int[]  insertOrder;
 
     // The mapping from index to tuple order
     // For POS->SPO, is (0->1, 1->2, 2->0)
     // i.e. the location to fetch the mapped element from.
+    // Where to fetch it from in the mapped tuple.
     private int[]  fetchOrder;
 
     private String label;
@@ -58,16 +62,20 @@ public class TupleMap {
      * Construct a column mapping that maps the input (one col, one char) to the
      * output
      */
-    public TupleMap(String input, String output) {
-        this(input + "->" + output, compileMapping(input, output));
+    public static TupleMap create(String input, String output) {
+        return new TupleMap(input + "->" + output, compileMapping(input, output));
     }
 
-    public <T> TupleMap(String label, List<T> input, List<T> output) {
-        this(label, compileMapping(input, output));
+    public static <T> TupleMap create(String label, List<T> input, List<T> output) {
+        return new TupleMap(label, compileMapping(input, output));
     }
 
-    public <T> TupleMap(String label, T[] input, T[] output) {
-        this(label, compileMapping(input, output));
+    public static <T> TupleMap create(String label, T[] input, T[] output) {
+        return new TupleMap(label, compileMapping(input, output));
+    }
+    
+    /*package-testing*/ static <T> TupleMap create(String label, int ... elements) {
+        return new TupleMap(label, elements) ;
     }
 
     /**
@@ -114,16 +122,104 @@ public class TupleMap {
         idx = fetchOrder[idx];
         return tuple.get(idx);
     }
+    
+    /** Apply to an <em>unmapped</em> tuple to get a tuple with the column mapping applied */
+    public <T> Tuple<T> map(Tuple<T> src) {
+        return apply(src, insertOrder, fetchOrder) ;
+    }
 
-//    /**
-//     * Apply to an <em>unmapped</em> tuple to get the i'th slot after mapping :
-//     * SPO->POS : 0'th slot is P from SPO
-//     */
-//    public <T> T mapSlot(int idx, T[] tuple) {
-//        idx = fetchOrder[idx]; // Apply the reverse mapping as we are doing zero
-//                               // is P, so it's an unmap.
-//        return tuple[idx];
+    /** Apply to a <em>mapped</em> tuple to get a tuple with the column mapping reverse-applied */
+    public <T> Tuple<T> unmap(Tuple<T> src) {
+        return apply(src, fetchOrder, insertOrder) ;
+    }
+
+    // Does not work (java8) - assigning the return cause sa runtime case exception 
+//    /** Apply to an <em>unmapped</em> tuple to get a tuple with the column mapping applied */
+//    public <T> T[] map(T[] src) {
+//        @SuppressWarnings("unchecked")
+//        T[]dst = (T[])new Object[src.length] ;
+//        map(src, dst) ;
+//        return dst ;
 //    }
+
+    /** Apply to an <em>unmapped</em> tuple to get a tuple with the column mapping applied */
+    public <T> void map(T[] src, T[] dst) {
+        applyArray(src, dst, insertOrder) ;
+    }
+
+    // Does not work (java8) - assigning the return cause sa runtime case exception 
+//    /** Apply to a <em>mapped</em> tuple to get a tuple with the column mapping reverse-applied */
+//    public <T> T[] unmap(T[] src) {
+//        @SuppressWarnings("unchecked")
+//        T[]dst = (T[])new Object[src.length] ;
+//        unmap(src, dst) ;
+//        return dst ;
+//    }
+
+    /** Apply to a <em>mapped</em> tuple to get a tuple with the column mapping reverse-applied */
+    public <T> void unmap(T[] src, T[] dst) {
+        applyArray(src, dst, fetchOrder) ;
+    }
+
+    /** Apply an index transformation
+     *  "transform" is the "put" direction (where to put the i'th element)  
+     *  "antiTransform" is the "get" direction (where to get i'th element) 
+     */
+    private static <T> Tuple<T> apply(Tuple<T> src, int[] putTransform, int[] getTransform) {
+        if ( src.len() != putTransform.length )
+            throw new IllegalArgumentException("Lengths do not match: Tuple:"+src.len()+"; transform:"+putTransform.length) ;
+        // Fast-track 1,2,3,4 ?
+        if ( putTransform.length != getTransform.length )
+            throw new IllegalArgumentException() ;
+//        // All this to avoid the temp array.
+//        switch(src.len()) {
+//            case 0: return src ;
+//            case 1: return src ;
+//            case 2: {
+//                T x1 = src.get(antiTransform[0]);
+//                T x2 = src.get(antiTransform[1]);
+//                return TupleFactory.create2(x1, x2) ;
+//            }
+//            case 3: {
+//                T x1 = src.get(antiTransform[0]);
+//                T x2 = src.get(antiTransform[1]);
+//                T x3 = src.get(antiTransform[2]);
+//                return TupleFactory.create3(x1, x2, x3) ;
+//            }
+//            case 4: {
+//                T x1 = src.get(antiTransform[0]);
+//                T x2 = src.get(antiTransform[1]);
+//                T x3 = src.get(antiTransform[2]);
+//                T x4 = src.get(antiTransform[3]);
+//                return TupleFactory.create4(x1, x2, x3, x4) ;
+//            }
+//        }
+        
+        @SuppressWarnings("unchecked")
+        T[] elts = (T[])new Object[src.len()] ;
+        
+        for ( int i = 0 ; i < src.len() ; i++ ) {
+            int j = putTransform[i] ;
+            elts[j] = src.get(i) ;
+        }
+        return TupleFactory.create(elts) ;
+    }
+    
+    /** Apply an index transformation */
+    private <T> void applyArray(T[] src, T[] dst, int[] transform) {
+        for ( int i = 0 ; i < src.length ; i++ ) {
+            int j = transform[i] ;
+            dst[j] = src[i] ;
+        }
+    }
+    
+    /**
+     * Apply to an <em>unmapped</em> tuple to get the i'th slot after mapping :
+     * SPO->POS : 0'th slot is P from SPO
+     */
+    public <T> T mapSlot(int idx, T[] tuple) {
+        return tuple[mapSlotIdx(idx)] ;
+    }
 
     /**
      * Apply to a <em>mapped</em> tuple to get the i'th slot as it appears after
@@ -135,14 +231,13 @@ public class TupleMap {
         return tuple.get(idx);
     }
 
-//    /**
-//     * Apply to a <em>mapped</em> tuple to get the i'th slot as it appears after
-//     * mapping : SPO->POS : 0'th slot is S from POS
-//     */
-//    public <T> T unmapSlot(int idx, T[] tuple) {
-//        idx = insertOrder[idx];
-//        return tuple[idx];
-//    }
+    /**
+     * Apply to a <em>mapped</em> tuple to get the i'th slot as it appears after
+     * mapping : SPO->POS : 0'th slot is S from POS
+     */
+    public <T> T unmapSlot(int idx, T[] tuple) {
+        return tuple[unmapSlotIdx(idx)] ;
+    }
 
     /**
      * Get the index of the i'th slot as it appears after mapping : SPO->POS :
@@ -160,35 +255,8 @@ public class TupleMap {
         return fetchOrder[idx];
     }
 
-//    /**
-//     * Apply to an <em>unmapped</em> tuple to get a tuple with the column
-//     * mapping applied
-//     */
-//    public <T> Tuple<T> map(Tuple<T> src) {
-//        return map(src, insertOrder);
-//    }
-//
-//    /**
-//     * Apply to a <em>mapped</em> tuple to get a tuple with the column mapping
-//     * reverse-applied
-//     */
-//    public <T> Tuple<T> unmap(Tuple<T> src) {
-//        return map(src, fetchOrder);
-//    }
-//
-//    private <T> Tuple<T> map(Tuple<T> src, int[] map) {
-//        @SuppressWarnings("unchecked")
-//        T[] elts = (T[])new Object[src.size()];
-//
-//        for ( int i = 0 ; i < src.size() ; i++ ) {
-//            int j = map[i];
-//            elts[j] = src.get(i);
-//        }
-//        return Tuple.create(elts);
-//    }
-
     /** Compile a mapping encoded as single charcaters e.g. "SPO", "POS" */
-    private static int[] compileMapping(String domain, String range) {
+    /*package-testing*/ static int[] compileMapping(String domain, String range) {
         List<Character> input = StrUtils.toCharList(domain);
         List<Character> output = StrUtils.toCharList(range);
         return compileMapping(input, output);
@@ -198,12 +266,12 @@ public class TupleMap {
      * Compile a mapping, encoded two list, the domain and range of the mapping
      * function
      */
-    private static <T> int[] compileMapping(T[] domain, T[] range) {
+    /*package-testing*/ static <T> int[] compileMapping(T[] domain, T[] range) {
         return compileMapping(Arrays.asList(domain), Arrays.asList(range));
     }
 
     /** Compile a mapping */
-    private static <T> int[] compileMapping(List<T> domain, List<T> range) {
+    /*package-testing*/ static <T> int[] compileMapping(List<T> domain, List<T> range) {
         if ( domain.size() != range.size() )
             throw new AtlasException("Bad mapping: lengths not the same: " + domain + " -> " + range);
 

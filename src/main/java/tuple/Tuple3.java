@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,14 +19,14 @@
 package tuple;
 
 /**
- * A tuple of 3 nodes.
+ * A tuple of 3 items.
  */
 public class Tuple3<X> implements Tuple<X> {
     protected final X x1 ; 
     protected final X x2 ;
     protected final X x3 ;
     
-    /*package*/ Tuple3(X x1, X x2, X x3) {
+    protected Tuple3(X x1, X x2, X x3) {
         this.x1 = x1 ;
         this.x2 = x2 ;
         this.x3 = x3 ;
