@@ -22,7 +22,6 @@ import java.util.Objects ;
 
 import org.apache.jena.graph.Node ;
 import tuple.Tuple ;
-import tuple.Tuple3 ;
 
 /** Dummy version of Triple */
 public final class TripleX  implements Tuple<Node> // Only so alternative designs elsewhere can be experimented with 
@@ -38,6 +37,7 @@ public final class TripleX  implements Tuple<Node> // Only so alternative design
     }
 
     //---- Tuple
+    // This imposes the idea that Triples are S-P-O tuples. 
     @Override
     public Node get(int i) {
         switch (i) {
@@ -95,5 +95,9 @@ public final class TripleX  implements Tuple<Node> // Only so alternative design
         } else if ( !object.equals(other.object) )
             return false;
         return true;
+    }
+    
+    @Override public String toString() {
+        return "[ "+subject+", "+predicate+", "+object+" ]" ;
     }
 }

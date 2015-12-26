@@ -24,6 +24,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 public class TestTupleMap {
+    // Check coverage
+    
     @Test
     public void map_tuple_01() {
         TupleMap tmap = TupleMap.create("SPO", "POS");

@@ -20,16 +20,15 @@
  * Tuples.
  * <p>
  * A Tuple is a fixed length sequence of the objects of the same type. They are
- * immutable and provide value-based {@code hashCode} and {@code .equals()}
+ * immutable and provide value-based {@code hashCode} and {@code .equals()}.
  * <p>
- * There are space saving implementations for tuples of length 0 to small N and
+ * There are space-saving implementations for tuples of length 0 to small N and
  * a general purpose implementation.
- * <p>
- * {@link tuple.TupleMap} provides transformations of order.
- * <p>
- * TupleN + names.
- * <p>
- * TupleFactory
+ * <ul>
+ * <li>{@code Tuple} -- the interface 
+ * <li>{@code TupleFactory} -- creates {@code Tuples} 
+ * <li>{@code TupleMap} -- provides transformations of order of elements
+ * </ul>
  */
 
 package tuple;

@@ -19,19 +19,19 @@
 package rdfpatch;
 
 import org.apache.jena.atlas.junit.BaseTest ;
-import org.junit.Test ;
 import org.apache.jena.query.ReadWrite ;
 import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.DatasetGraphFactory ;
 import org.apache.jena.sparql.core.Quad ;
 import org.apache.jena.sparql.sse.SSE ;
+import org.junit.Test ;
 import transdsg.DatasetGraphChangeLog ;
 
 /** Tests directly of the replay-based transaction mechanism */ 
 public class TestPatchTransaction extends BaseTest
 {
     private static DatasetGraphChangeLog create(Quad...quads) {
-        DatasetGraph dsg1 = DatasetGraphFactory.createMem() ;
+        DatasetGraph dsg1 = DatasetGraphFactory.create() ;
         for ( Quad quad : quads )
             dsg1.add(quad) ;
         DatasetGraphChangeLog dsg = new  DatasetGraphChangeLog(dsg1) ;

@@ -30,9 +30,8 @@ public class TestDatasetGraphPatchTransaction extends AbstractTestTransaction
 {
     @Override
     protected Dataset create() {
-        DatasetGraph dsg1 = DatasetGraphFactory.createMem() ;
+        DatasetGraph dsg1 = DatasetGraphFactory.create() ;
         DatasetGraphChangeLog dsg = new  DatasetGraphChangeLog(dsg1) ;
         return DatasetFactory.wrap(dsg) ;
     }
 }
-

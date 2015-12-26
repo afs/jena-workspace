@@ -40,9 +40,9 @@ public class TripleOps {
 
     // Triple not a Tuple
     public static Tuple3<Node> map(TupleMap tupleMap, TripleX triple) {
-        Node x1 = get(triple, tupleMap.mapSlotIdx(0)) ;
-        Node x2 = get(triple, tupleMap.mapSlotIdx(1)) ;
-        Node x3 = get(triple, tupleMap.mapSlotIdx(2)) ;
+        Node x1 = get(triple, tupleMap.getSlotIdx(0)) ;
+        Node x2 = get(triple, tupleMap.getSlotIdx(1)) ;
+        Node x3 = get(triple, tupleMap.getSlotIdx(2)) ;
 //        Node x1 = tupleMap.mapSlot(0, triple) ;
 //        Node x2 = tupleMap.mapSlot(1, triple) ;
 //        Node x3 = tupleMap.mapSlot(2, triple) ;
@@ -58,16 +58,16 @@ public class TripleOps {
 
     // Index mapping.
     public static Tuple3<Node> map_(TupleMap tupleMap, TripleX triple) {
-        Node x1 = triple.get(tupleMap.mapSlotIdx(0)) ;
-        Node x2 = triple.get(tupleMap.mapSlotIdx(1)) ;
-        Node x3 = triple.get(tupleMap.mapSlotIdx(2)) ;
+        Node x1 = triple.get(tupleMap.getSlotIdx(0)) ;
+        Node x2 = triple.get(tupleMap.getSlotIdx(1)) ;
+        Node x3 = triple.get(tupleMap.getSlotIdx(2)) ;
         return TupleFactory.create3(x1, x2, x3) ;
     }
 
     public static TripleX unmap_(TupleMap tupleMap, Tuple3<Node> nt3) {
-        Node x1 = nt3.get(tupleMap.unmapSlotIdx(0)) ;
-        Node x2 = nt3.get(tupleMap.unmapSlotIdx(1)) ;
-        Node x3 = nt3.get(tupleMap.unmapSlotIdx(2)) ;
+        Node x1 = nt3.get(tupleMap.putSlotIdx(0)) ;
+        Node x2 = nt3.get(tupleMap.putSlotIdx(1)) ;
+        Node x3 = nt3.get(tupleMap.putSlotIdx(2)) ;
         return new TripleX(x1, x2, x3) ;
     }
     

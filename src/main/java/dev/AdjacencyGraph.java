@@ -16,9 +16,37 @@
  * limitations under the License.
  */
 
-package syntaxtransform;
+package dev;
 
-public class ExamplesParamQuery {
+import java.util.Iterator ;
 
+import org.apache.jena.tdb.store.NodeId ;
+
+public class AdjacencyGraph {
+    // Use TDB as a cache.
+    /* Interned ids (including triples)
+     *   id = long+long
+     *   This alone should accelerate TDB - work in "Ids"
+     * 
+     * 
+     */
+    
+    // 1. Test for performance
+    // 2. Version of TDB tuples using "Ids"
+    
+    // NodeId ==> long+long internally.
+    NodeId nid ;
+    
+    
+    
+    // Quack.
+    
+    static class Tuple<X> {}
+    
+    static class Pattern<X> {} 
+    
+    static <X> Iterator<X> solve(Pattern<X> pattern, Object dataSource) {
+        return null;
+    }
 }
 

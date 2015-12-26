@@ -16,9 +16,19 @@
  * limitations under the License.
  */
 
-package syntaxtransform;
+package dsg;
 
-public class ExamplesParamQuery {
+import org.apache.jena.atlas.lib.Creator ;
+import org.apache.jena.query.Dataset ;
+import org.apache.jena.sparql.core.TestDynamicDatasetMem ;
 
+public class DevUnionDftGraph extends TestDynamicDatasetMem {
+
+    public DevUnionDftGraph(String name, Creator<Dataset> maker) {
+        super(name, maker);
+    }
+    
+    public static void main(String ... a) {
+        
+    }
 }
-

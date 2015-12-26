@@ -16,9 +16,22 @@
  * limitations under the License.
  */
 
-package syntaxtransform;
+package dev ;
 
-public class ExamplesParamQuery {
-
+public class DevBNode {
+    
+    public static void main(String ... a) {
+        // Problems:
+        // When strict, no combining of a stack of OpAssign is done.
+        // which means each assign is a new binding so "same binding" is false.
+        // Solution? 
+        // 1:: Have a "rowkey" in a binding.  Same for assign (can't be parent-shared)
+        // 2:; Flag on a Binding "can extend".
+        
+//        System.out.println("**** Plain") ;
+//        arq.sparql.main("--data=/home/afs/tmp/D.nt", "SELECT (BNODE('BAZ') AS ?b1) (BNODE('BAZ') AS ?b2) {}") ;
+        System.out.println("**** Strict") ;
+        arq.sparql.main("--strict", "--data=/home/afs/tmp/D.nt", "SELECT (BNODE('BAZ') AS ?b1) (BNODE('BAZ') AS ?b2) {}") ;
+        System.exit(0) ;
+    }
 }
-

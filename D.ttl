@@ -1,0 +1,10 @@
+PREFIX : <http://example/>
+
+:s1 :p :x1 .
+:s2 :p :x1 .
+
+:x1 :q 1 .
+:x1 :q 2 .
+
+:x2 :q 3 .
+:x2 :q 4 .
