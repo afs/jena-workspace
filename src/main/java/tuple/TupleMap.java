@@ -149,6 +149,7 @@ public class TupleMap {
     /** 
      * Get the index of the i'th slot as it appears from a mapping : for
      * SPO->POS : 0'th slot is P so 0 returns 1 (the location in the tuple before mapping)
+     * The 0'th mapped slot is {@code tuple.get(tupleMap.getSlotIdx(0))}.
      */
     public int getSlotIdx(int idx) {
         return getTransform[idx];
@@ -162,8 +163,28 @@ public class TupleMap {
         return putTransform[idx]; 
     }
     
+    /** 
+     * Get the index of the i'th slot as it appears from a mapping : for
+     * SPO->POS : 0'th slot is P so 0 returns 1 (the location in the tuple before mapping)
+     * Equivalent to {@link #getSlotIdx}.
+     * The 0'th mapped slot is {@code tuple.get(tupleMap.mapIdx(0))}.
+     */
+    public int mapIdx(int idx) {
+        return getSlotIdx(idx) ;
+    }
+
+    /**
+     * Get the index of the i'th slot as it appears after unmapping : SPO->POS :
+     * 0'th slot is S from POS so 0 returns 2
+     * Equivalent to {@link #putSlotIdx}.
+     * The 0'th unmapped slot is {@code tuple.get(tupleMap.unmapIdx(0))}.
+     */
+    public int unmapIdx(int idx) {
+        return putSlotIdx(idx) ; 
+    }
+    
     /** Apply to an <em>unmapped</em> tuple to get a tuple with the tuple mapping applied.
-*/
+     */
     public <T> Tuple<T> map(Tuple<T> src) {
         return apply(src, getTransform) ;
     }
@@ -182,11 +203,14 @@ public class TupleMap {
 //        return dst ;
 //    }
 
-    /** Apply to an <em>unmapped</em> tuple to get a tuple with the tuple mapping applied */
-    public <T> void map(T[] src, T[] dst) {
+    /** Apply to an <em>unmapped</em> tuple to get a tuple with the tuple mapping applied.
+     * Returns the destination array.
+     */
+    public <T> T[] map(T[] src, T[] dst) {
         if ( src == dst )
             throw new IllegalArgumentException("Source and destination are the same array") ;
         applyArray(src, dst, getTransform) ;
+        return dst ;
     }
 
     // Does not work (java8) - assigning the return causes a runtime case exception 
@@ -198,11 +222,14 @@ public class TupleMap {
 //        return dst ;
 //    }
 
-    /** Apply to a <em>mapped</em> tuple to get a tuple with the tuple mapping reverse-applied */
-    public <T> void unmap(T[] src, T[] dst) {
+    /** Apply to a <em>mapped</em> tuple to get a tuple with the tuple mapping reverse-applied.
+     * Returns the destination array.
+     */
+    public <T> T[] unmap(T[] src, T[] dst) {
         if ( src == dst )
             throw new IllegalArgumentException("Source and destination are the same array") ;
         applyArray(src, dst, putTransform) ;
+        return dst ;
     }
 
     /** Apply an index transformation

@@ -27,7 +27,7 @@ import tuple.TupleMap ;
 /** Operation on Triples */
 public class TripleOps {
     
-    public static Node get(TripleX triple, int i) {
+    public static Node getSlot(TripleX triple, int i) {
         switch (i) {
             case 0: return triple.getSubject() ;
             case 1: return triple.getPredicate() ;
@@ -40,9 +40,10 @@ public class TripleOps {
 
     // Triple not a Tuple
     public static Tuple3<Node> map(TupleMap tupleMap, TripleX triple) {
-        Node x1 = get(triple, tupleMap.getSlotIdx(0)) ;
-        Node x2 = get(triple, tupleMap.getSlotIdx(1)) ;
-        Node x3 = get(triple, tupleMap.getSlotIdx(2)) ;
+        // Triple not a Tuple3<Node>
+        Node x1 = getSlot(triple, tupleMap.getSlotIdx(0)) ;
+        Node x2 = getSlot(triple, tupleMap.getSlotIdx(1)) ;
+        Node x3 = getSlot(triple, tupleMap.getSlotIdx(2)) ;
 //        Node x1 = tupleMap.mapSlot(0, triple) ;
 //        Node x2 = tupleMap.mapSlot(1, triple) ;
 //        Node x3 = tupleMap.mapSlot(2, triple) ;
@@ -56,7 +57,7 @@ public class TripleOps {
         return new TripleX(x1, x2, x3) ;
     }
 
-    // Index mapping.
+    // Pure index mapping.
     public static Tuple3<Node> map_(TupleMap tupleMap, TripleX triple) {
         Node x1 = triple.get(tupleMap.getSlotIdx(0)) ;
         Node x2 = triple.get(tupleMap.getSlotIdx(1)) ;

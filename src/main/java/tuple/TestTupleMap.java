@@ -42,6 +42,42 @@ public class TestTupleMap {
         assertEquals(tuple, tuple3);
     }
 
+
+    @Test
+    public void map_tuple_02() {
+        TupleMap x = TupleMap.create("SPO", "POS");
+        Tuple<String> tuple = TupleFactory.create("S", "P", "O");
+        Tuple<String> mapped = x.map(tuple);
+        Tuple<String> expected = TupleFactory.create("P", "O", "S");
+        assertEquals(expected, mapped);
+    }
+
+    @Test
+    public void map_tuple_03() {
+        TupleMap tmap = TupleMap.create("GSPO", "OSPG");
+        Tuple<String> tuple = TupleFactory.create("G", "S", "P", "O");
+        Tuple<String> mapped = tmap.map(tuple);
+        Tuple<String> expected = TupleFactory.create("O", "S", "P", "G");
+        assertEquals(expected, mapped);
+        Tuple<String> unmapped = tmap.unmap(mapped);
+        assertEquals(TupleFactory.create("G", "S", "P", "O"), unmapped);
+    }
+
+    @Test
+    public void map_tuple_04() {
+        String[] x = {"G", "S", "P", "O"};
+        String[] y = {"O", "S", "P", "G"};
+
+        TupleMap tmap = TupleMap.create("Test", x, y);
+        Tuple<String> tuple = TupleFactory.create(x);
+        Tuple<String> mapped = tmap.map(tuple);
+
+        Tuple<String> expected = TupleFactory.create(y);
+        assertEquals(expected, mapped);
+        Tuple<String> unmapped = tmap.unmap(mapped);
+        assertEquals(TupleFactory.create(x), unmapped);
+    }
+
     @Test
     public void compile1() {
         TupleMap map = TupleMap.create("SPO", "POS");
@@ -63,7 +99,7 @@ public class TestTupleMap {
     }
 
     @Test
-    public void map_slot_02() {
+    public void map_slot_01() {
         TupleMap tmap = TupleMap.create("SPO", "POS");
         Tuple<String> tuple = TupleFactory.create("S", "P", "O");
         assertEquals("P", tmap.mapSlot(0, tuple));
@@ -75,6 +111,30 @@ public class TestTupleMap {
         assertEquals("P", tmap.unmapSlot(1, tuple1));
         assertEquals("O", tmap.unmapSlot(2, tuple1));
     }
+
+    @Test
+    public void map_slot_02() {
+        TupleMap tmap = TupleMap.create("SPO", "POS");
+        Tuple<String> tuple = TupleFactory.create("S", "P", "O");
+        Tuple<String> tuple1 = TupleFactory.create
+            (tuple.get(tmap.mapIdx(0))
+            ,tuple.get(tmap.mapIdx(1))
+            ,tuple.get(tmap.mapIdx(2)) ) ;
+        Tuple<String> tuple2 = tmap.map(tuple);
+        assertEquals(tuple2, tuple1) ;
+    }        
+
+    @Test
+    public void map_slot_03() {
+        TupleMap tmap = TupleMap.create("POS", "SPO");
+        Tuple<String> tuple = TupleFactory.create("P", "O", "S");
+        Tuple<String> tuple1 = TupleFactory.create
+            (tuple.get(tmap.unmapIdx(0))
+            ,tuple.get(tmap.unmapIdx(1))
+            ,tuple.get(tmap.unmapIdx(2)) ) ;
+        Tuple<String> tuple2 = tmap.unmap(tuple);
+        assertEquals(tuple2, tuple1) ;
+    }        
 
     @Test
     public void map_transforms() {
@@ -110,26 +170,8 @@ public class TestTupleMap {
         assertArrayEquals(array, array3) ;
     }
     
-//    @Test
-//    public void map_array_02() {
-//        TupleMap x = TupleMap.create("SPO->POS", 2, 0, 1); // (0,1,2) -> (2,0,1) S->2 etc
-//        Tuple<Integer> t = TupleFactory.create(2, 0, 1);
-//        Tuple<Integer> t1 = x.map(t);
-//
-//        String[] array = {"X", "Y", "Z"};
-//        
-//        assertEquals("Y", x.mapSlot(0, array)); // The 0th item after mapping is the "1"
-//        assertEquals("Z", x.mapSlot(1, array));
-//        assertEquals("X", x.mapSlot(2, array));
-//        
-//        String[] array2 = x.map(array) ;
-//        assertArrayEquals(new String[] {"Y", "Z", "X"}, array2) ;
-//        String[] array3 = x.unmap(array2) ;
-//        assertArrayEquals(array, array3) ;
-//    }
-
     @Test
-    public void map_array_03() {
+    public void map_array_02() {
         // (0,1,2) -> (2,0,1) S->2 etc
         // so (0,1,2) <- (1,2,0)
         TupleMap x = TupleMap.create("SPO","POS");
@@ -138,49 +180,4 @@ public class TestTupleMap {
         assertEquals("Y", x.unmapSlot(1, array));
         assertEquals("Z", x.unmapSlot(2, array));
     }
-
-    @Test
-    public void remap3() {
-        TupleMap x = TupleMap.create("SPO", "POS");
-        Tuple<String> tuple = TupleFactory.create("S", "P", "O");
-        Tuple<String> mapped = x.map(tuple);
-        Tuple<String> expected = TupleFactory.create("P", "O", "S");
-        assertEquals(expected, mapped);
-    }
-
-    @Test
-    public void remap4() {
-        TupleMap x = TupleMap.create("SPO", "POS");
-        Tuple<String> tuple = TupleFactory.create("S", "P", "O");
-        Tuple<String> tuple2 = x.map(tuple);
-        tuple2 = x.unmap(tuple2);
-        assertEquals(tuple, tuple2);
-    }
-
-    @Test
-    public void map1() {
-        TupleMap tmap = TupleMap.create("GSPO", "OSPG");
-        Tuple<String> tuple = TupleFactory.create("G", "S", "P", "O");
-        Tuple<String> mapped = tmap.map(tuple);
-        Tuple<String> expected = TupleFactory.create("O", "S", "P", "G");
-        assertEquals(expected, mapped);
-        Tuple<String> unmapped = tmap.unmap(mapped);
-        assertEquals(TupleFactory.create("G", "S", "P", "O"), unmapped);
-    }
-
-    @Test
-    public void map2() {
-        String[] x = {"G", "S", "P", "O"};
-        String[] y = {"O", "S", "P", "G"};
-
-        TupleMap tmap = TupleMap.create("Test", x, y);
-        Tuple<String> tuple = TupleFactory.create(x);
-        Tuple<String> mapped = tmap.map(tuple);
-
-        Tuple<String> expected = TupleFactory.create(y);
-        assertEquals(expected, mapped);
-        Tuple<String> unmapped = tmap.unmap(mapped);
-        assertEquals(TupleFactory.create(x), unmapped);
-    }
-
 }
