@@ -26,8 +26,8 @@ import java.util.Collections ;
 import java.util.List;
 
 import org.apache.jena.atlas.AtlasException;
-import org.apache.jena.atlas.lib.ListUtils;
-import org.apache.jena.atlas.lib.StrUtils;
+import org.apache.jena.atlas.lib.ListUtils ;
+import org.apache.jena.atlas.lib.StrUtils ;
 
 /**
  * General descriptor of a reordering (mapping) of slots in tuples
@@ -269,7 +269,7 @@ public class TupleMap {
             int j = getTransform[i] ;
             elts[i] = src.get(j) ;
         }
-        return TupleFactory.create(elts) ;
+        return TupleFactory.tuple(elts) ;
     }
     
     /** Apply an index transformation */

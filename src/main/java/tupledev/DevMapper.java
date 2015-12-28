@@ -18,38 +18,50 @@
 
 package tupledev ;
 
+import java.util.Arrays ;
+
 import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.Triple ;
 import org.apache.jena.sparql.sse.SSE ;
+import tuple.Tuple ;
 import tuple.Tuple3 ;
+import tuple.TupleFactory ;
 import tuple.TupleMap ;
 
 public class DevMapper {
-    public static void main(String ... a) {
+    public static void main(String ... args) {
+//        Tuple<String> t = TupleFactory.tuple("1", "2", "3") ;
+//        String[] a = t.asArray(String.class) ;
+//        System.out.println(Arrays.asList(a)) ;
+//        Tuple<Integer> t2 = TupleOps.map(t, elt -> Integer.parseInt(elt)) ;
+//        System.out.println(t2) ;
+//        System.exit(0) ;
         Node s = SSE.parseNode("'S'") ;
         Node p = SSE.parseNode("'P'") ;
         Node o = SSE.parseNode("'O'") ;
-        TripleX triple = new TripleX(s,p,o) ;
+        Triple triple = new Triple(s,p,o) ;
         
         dwim(TupleMap.create("SPO", "POS") , triple) ;
         dwim(TupleMap.create("SPO", "OSP") , triple) ;
         dwim(TupleMap.create("SPO", "SPO") , triple) ;
     }
         
-    public static void dwim(TupleMap tupleMap,  TripleX triple) {
+    public static void dwim(TupleMap tupleMap,  Triple triple) {
         System.out.println(tupleMap);
         {
             Tuple3<Node> nt3 = TripleOps.map(tupleMap, triple) ;
-            TripleX t2 = TripleOps.unmap(tupleMap, nt3) ;
+            Triple t2 = TripleOps.unmap(tupleMap, nt3) ;
+            System.out.println(nt3+" -- "+t2) ;
+        }
+        TripleX tx = new TripleX(triple.getSubject(), triple.getPredicate(), triple.getObject()) ;  
+        {
+            Tuple3<Node> nt3 = TripleXOps.map_(tupleMap, tx) ;
+            TripleX t2 = TripleXOps.unmap_(tupleMap, nt3) ;
             System.out.println(nt3+" -- "+t2) ;
         }
         {
-            Tuple3<Node> nt3 = TripleOps.map_(tupleMap, triple) ;
-            TripleX t2 = TripleOps.unmap_(tupleMap, nt3) ;
-            System.out.println(nt3+" -- "+t2) ;
-        }
-        {
-            Tuple3<Node> nt3 = TripleOps.map__(tupleMap, triple) ;
-            TripleX t2 = TripleOps.unmap__(tupleMap, nt3) ;
+            Tuple3<Node> nt3 = TripleXOps.map__(tupleMap, tx) ;
+            TripleX t2 = TripleXOps.unmap__(tupleMap, nt3) ;
             System.out.println(nt3+" -- "+t2) ;
         }
         System.out.println();

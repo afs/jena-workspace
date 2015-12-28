@@ -21,7 +21,7 @@ package tuple;
 /**
  * A tuple of 1 item.
  */
-public class Tuple1<X> implements Tuple<X> {
+public class Tuple1<X> extends TupleBase<X> {
     protected final X x1 ; 
     
     protected Tuple1(X x1) {
@@ -35,37 +35,8 @@ public class Tuple1<X> implements Tuple<X> {
         throw new IndexOutOfBoundsException() ;
     }
     
-    @Override public String toString() {
-        return "[ "+x1+" ]" ;
-    }
-
     @Override
     public final int len() {
         return 1 ;
-    }
-
-    @Override
-    public final int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((x1 == null) ? 0 : x1.hashCode());
-        return result;
-    }
-
-    @Override
-    public final boolean equals(Object obj) {
-        if ( this == obj )
-            return true;
-        if ( obj == null )
-            return false;
-        if ( getClass() != obj.getClass() )
-            return false;
-        Tuple1<?> other = (Tuple1<?>)obj;
-        if ( x1 == null ) {
-            if ( other.x1 != null )
-                return false;
-        } else if ( !x1.equals(other.x1) )
-            return false;
-        return true;
     }
 }

@@ -21,37 +21,17 @@ package tuple;
 /**
  * A tuple of 0 items.
  */
-public class Tuple0<X> implements Tuple<X> {
+public class Tuple0<X> extends TupleBase<X> {
     
-    protected Tuple0() {
-    }
+    protected Tuple0() { }
     
     @Override
     public final X get(int i) {
         throw new IndexOutOfBoundsException() ;
     }
     
-    @Override public String toString() {
-        return "[ ]" ;
-    }
-
     @Override
     public final int len() {
         return 0 ;
     }
-
-    @Override 
-    public int hashCode() { return 59 ; }
-    
-    @Override
-    public final boolean equals(Object obj) {
-        if ( this == obj )
-            return true;
-        if ( obj == null )
-            return false;
-        if ( getClass() != obj.getClass() )
-            return false;
-        return true ; 
-    }
-    
 }

@@ -18,6 +18,7 @@
 
 package tupledev;
 
+import java.util.Iterator ;
 import java.util.Objects ;
 
 import org.apache.jena.graph.Node ;
@@ -100,4 +101,12 @@ public final class TripleX  implements Tuple<Node> // Only so alternative design
     @Override public String toString() {
         return "[ "+subject+", "+predicate+", "+object+" ]" ;
     }
+
+    @Override
+    public Iterator<Node> iterator() {
+        return null;
+    }
+
+    @Override
+    public void copyInto(Node[] array, int start, int length) {}
 }

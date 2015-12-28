@@ -19,9 +19,9 @@
 package tuple;
 
 /**
- * A tuple of 6 items.
+ * A tuple of 8 items.
  */
-public class Tuple8<X> implements Tuple<X> {
+public class Tuple8<X> extends TupleBase<X> {
     protected final X x1 ; 
     protected final X x2 ;
     protected final X x3 ;
@@ -57,79 +57,8 @@ public class Tuple8<X> implements Tuple<X> {
         throw new IndexOutOfBoundsException() ;
     }
     
-    @Override public String toString() {
-        return "[ "+x1+", "+x2+", "+x3+", "+x4+", "+x5+", "+x6+", "+x7+", "+x8+" ]" ;
-    }
-
-    @Override
+   @Override
     public final int len() {
         return 8 ;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((x1 == null) ? 0 : x1.hashCode());
-        result = prime * result + ((x2 == null) ? 0 : x2.hashCode());
-        result = prime * result + ((x3 == null) ? 0 : x3.hashCode());
-        result = prime * result + ((x4 == null) ? 0 : x4.hashCode());
-        result = prime * result + ((x5 == null) ? 0 : x5.hashCode());
-        result = prime * result + ((x6 == null) ? 0 : x6.hashCode());
-        result = prime * result + ((x7 == null) ? 0 : x7.hashCode());
-        result = prime * result + ((x8 == null) ? 0 : x8.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if ( this == obj )
-            return true;
-        if ( obj == null )
-            return false;
-        if ( getClass() != obj.getClass() )
-            return false;
-        Tuple8<?> other = (Tuple8<?>)obj;
-        if ( x1 == null ) {
-            if ( other.x1 != null )
-                return false;
-        } else if ( !x1.equals(other.x1) )
-            return false;
-        if ( x2 == null ) {
-            if ( other.x2 != null )
-                return false;
-        } else if ( !x2.equals(other.x2) )
-            return false;
-        if ( x3 == null ) {
-            if ( other.x3 != null )
-                return false;
-        } else if ( !x3.equals(other.x3) )
-            return false;
-        if ( x4 == null ) {
-            if ( other.x4 != null )
-                return false;
-        } else if ( !x4.equals(other.x4) )
-            return false;
-        if ( x5 == null ) {
-            if ( other.x5 != null )
-                return false;
-        } else if ( !x5.equals(other.x5) )
-            return false;
-        if ( x6 == null ) {
-            if ( other.x6 != null )
-                return false;
-        } else if ( !x6.equals(other.x6) )
-            return false;
-        if ( x7 == null ) {
-            if ( other.x7 != null )
-                return false;
-        } else if ( !x7.equals(other.x7) )
-            return false;
-        if ( x8 == null ) {
-            if ( other.x8 != null )
-                return false;
-        } else if ( !x8.equals(other.x8) )
-            return false;
-        return true;
     }
 }

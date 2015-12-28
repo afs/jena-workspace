@@ -18,10 +18,11 @@
 
 package tuple;
 
-import java.util.Iterator ;
 import java.util.List ;
 import java.util.function.Consumer ;
 import java.util.stream.Stream ;
+
+import org.apache.jena.atlas.lib.ArrayUtils ;
 
 /** A Tuple is the same class of item */
 public interface Tuple<X> extends Iterable<X> {
@@ -30,18 +31,12 @@ public interface Tuple<X> extends Iterable<X> {
      */
     public X get(int i) ;
     
-    /** length : element are 0 to len()-1 */ 
+    /** length : elements are 0 to len()-1 */ 
     public int len() ;
 
     /** Convert to a List */
     public default List<X> asList() {
         return new TupleList<>(this) ;
-    }
-    
-    /** Iterable */
-    @Override
-    public default Iterator<X> iterator() {
-        return asList().iterator() ;
     }
     
     /** stream */
@@ -53,5 +48,26 @@ public interface Tuple<X> extends Iterable<X> {
     @Override
     public default void forEach(Consumer<? super X> action) { 
         asList().forEach(action) ;
+    }
+    
+    /** Copy the Tuple into the array */ 
+    public default void copyInto(X[] array) {
+        copyInto(array, 0, len());
+    }
+
+    /** Copy the Tuple into the array */ 
+    public default void copyInto(X[] array, int start) {
+        copyInto(array, start, len());
+    }
+    
+    /** Copy the Tuple into the array */ 
+    public void copyInto(X[] array, int start, int length) ;
+
+    /** Copy the Tuple into the array */ 
+    public default X[] asArray(Class<X> cls) {
+        X[] elts = ArrayUtils.alloc(cls, len()) ;
+        for ( int i = 0 ; i < len() ; i++ )
+            elts[i] = get(i) ;
+        return elts ;
     }
 }

@@ -20,8 +20,8 @@ package tuple;
 
 import java.util.Arrays ;
 
-/** A Tuple is the same class of item */
-public class TupleN<X> implements Tuple<X> {
+/** A Tuple of N items */
+public class TupleN<X> extends TupleBase<X> {
     private final X[] tuple ;
 
     /** Create a TupleN - safely copy the input */ 
@@ -31,13 +31,14 @@ public class TupleN<X> implements Tuple<X> {
         return new TupleN<>(xs2) ;
     }
     
-    // When array will not be modified.
+    // When the array will not be modified.
     /*package*/ static <X> TupleN<X> wrap(X[] xs) {
         return new TupleN<>(xs) ;
     }
     
-    /** Put a TuplN wrapper around a X[].
-     * The statics create and wrap determine whether to copy or not. */
+    /** Put a TupleN wrapper around a X[].
+     * The statics {@link #create} and {@link wrap} determine whether to copy or not.
+     */
     private TupleN(X[] xs) {
         tuple = xs ;
     }
@@ -50,32 +51,5 @@ public class TupleN<X> implements Tuple<X> {
     @Override
     public int len() {
         return tuple.length;
-    }
-    
-    @Override
-    public String toString() {
-        return Arrays.asList(tuple).toString() ;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + Arrays.hashCode(tuple);
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if ( this == obj )
-            return true;
-        if ( obj == null )
-            return false;
-        if ( getClass() != obj.getClass() )
-            return false;
-        TupleN<?> other = (TupleN<?>)obj;
-        if ( !Arrays.equals(tuple, other.tuple) )
-            return false;
-        return true;
     }
 }
