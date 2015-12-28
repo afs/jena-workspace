@@ -18,24 +18,12 @@
 
 package tuple;
 
-import org.apache.jena.graph.Node ;
-import org.apache.jena.graph.Triple ;
-import org.apache.jena.sparql.core.Quad ;
+import java.util.List ;
 
 public class TupleFactory {
     
     private TupleFactory() {}
     
-    // Without interfaces.
-    public static Tuple3<Node> create(Triple triple) {
-        return create3(triple.getSubject(), triple.getPredicate(), triple.getObject()) ;
-    }
-    
-    // Without interfaces.
-    public static Tuple4<Node> create(Quad quad) {
-        return create4(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ;
-    }
-
     @SafeVarargs
     public static <X> Tuple<X> create(X ...xs ) {
         switch(xs.length) {
@@ -66,6 +54,24 @@ public class TupleFactory {
             case 8 : return create8(xs[0], xs[1], xs[2], xs[3], xs[4], xs[5], xs[6], xs[7]) ;
             default:
                 return TupleN.create(xs) ;
+        }
+    }
+
+    public static <X> Tuple<X> createTuple(List<X> xs) {
+        switch(xs.size()) {
+            case 0 : return create0() ;
+            case 1 : return create1(xs.get(0)) ;
+            case 2 : return create2(xs.get(0), xs.get(1)) ;
+            case 3 : return create3(xs.get(0), xs.get(1), xs.get(2)) ;
+            case 4 : return create4(xs.get(0), xs.get(1), xs.get(2), xs.get(3)) ;
+            case 5 : return create5(xs.get(0), xs.get(1), xs.get(2), xs.get(3), xs.get(4)) ;
+            case 6 : return create6(xs.get(0), xs.get(1), xs.get(2), xs.get(3), xs.get(4), xs.get(5)) ;
+            case 7 : return create7(xs.get(0), xs.get(1), xs.get(2), xs.get(3), xs.get(4), xs.get(5), xs.get(6)) ;
+            case 8 : return create8(xs.get(0), xs.get(1), xs.get(2), xs.get(3), xs.get(4), xs.get(5), xs.get(6), xs.get(7)) ;
+            default:
+                @SuppressWarnings("unchecked")
+                X[] xa = (X[])(new Object[0]) ;
+                return TupleN.wrap(xs.toArray(xa)) ;
         }
     }
 
