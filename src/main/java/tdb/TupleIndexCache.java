@@ -26,7 +26,8 @@ import java.util.concurrent.Callable ;
 import org.apache.jena.atlas.iterator.Iter ;
 import org.apache.jena.atlas.lib.Cache ;
 import org.apache.jena.atlas.lib.CacheFactory ;
-import org.apache.jena.atlas.lib.Tuple ;
+import org.apache.jena.atlas.lib.tuple.Tuple ;
+import org.apache.jena.atlas.lib.tuple.TupleFactory ;
 import org.apache.jena.tdb.store.NodeId ;
 import org.apache.jena.tdb.store.tupletable.TupleIndex ;
 import org.apache.jena.tdb.store.tupletable.TupleIndexWrapper ;
@@ -138,12 +139,12 @@ public class TupleIndexCache extends TupleIndexWrapper {
 
     private Tuple<NodeId> cacheKey(Tuple<NodeId> pattern) {
         // Tuple.slice?
-        NodeId[] k = new NodeId[pattern.size()] ; 
+        NodeId[] k = new NodeId[pattern.len()] ; 
         for ( int i = 0 ; i < prefixCount ; i++ ) {
             k[i] = pattern.get(i) ;
         }
         // Rest are nulls.
-        return Tuple.create(k) ;
+        return TupleFactory.create(k) ;
     }
 
     private boolean acceptable(Tuple<NodeId> pattern) {
@@ -163,7 +164,7 @@ public class TupleIndexCache extends TupleIndexWrapper {
     }
     
     public static boolean matchPattern(Tuple<NodeId> pattern, Tuple<NodeId> item) {
-        int tupleLength = pattern.size() ; 
+        int tupleLength = pattern.len() ; 
         for ( int i = 0 ; i < tupleLength ; i++ ) {
             NodeId n = pattern.get(i) ;
             // The pattern must be null/Any or match the tuple being tested.

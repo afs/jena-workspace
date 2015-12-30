@@ -18,11 +18,11 @@
 
 package tupledev;
 
+import org.apache.jena.atlas.lib.tuple.Tuple ;
+import org.apache.jena.atlas.lib.tuple.Tuple3 ;
+import org.apache.jena.atlas.lib.tuple.TupleFactory ;
+import org.apache.jena.atlas.lib.tuple.TupleMap ;
 import org.apache.jena.graph.Node ;
-import tuple.Tuple ;
-import tuple.Tuple3 ;
-import tuple.TupleFactory ;
-import tuple.TupleMap ;
 
 /** Operation on Triples */
 public class TripleXOps {

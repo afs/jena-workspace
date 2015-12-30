@@ -20,8 +20,8 @@ package tupledev;
 
 import java.util.Objects ;
 
+import org.apache.jena.atlas.lib.tuple.Tuple4 ;
 import org.apache.jena.graph.Node ;
-import tuple.Tuple4 ;
 
 /** Dummy version of Quad */
 public final class QuadX extends Tuple4<Node> {

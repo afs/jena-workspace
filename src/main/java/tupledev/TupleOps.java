@@ -20,8 +20,8 @@ package tupledev;
 
 import java.util.function.Function ;
 
-import tuple.Tuple ;
-import tuple.TupleFactory ;
+import org.apache.jena.atlas.lib.tuple.Tuple ;
+import org.apache.jena.atlas.lib.tuple.TupleFactory ;
 
 public class TupleOps {
     public static <X,Y> Tuple<Y> map(Tuple<X> tuple, Function<X,Y> func) {

@@ -18,16 +18,17 @@
 
 package tupledev;
 
+import org.apache.jena.atlas.lib.tuple.Tuple3 ;
+import org.apache.jena.atlas.lib.tuple.TupleFactory ;
+import org.apache.jena.atlas.lib.tuple.TupleMap ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.Triple ;
-import tuple.Tuple3 ;
-import tuple.TupleFactory ;
-import tuple.TupleMap ;
 
 /** Operation on Triples */
 public class TripleOps {
     
-    public static Node getSlot(Triple triple, int i) {
+    /** This code creates the the "triple as SPO" view */ 
+    public static Node getTripleSlot(Triple triple, int i) {
         switch (i) {
             case 0: return triple.getSubject() ;
             case 1: return triple.getPredicate() ;
@@ -39,9 +40,9 @@ public class TripleOps {
 
     public static Tuple3<Node> map(TupleMap tupleMap, Triple triple) {
         // Triple not a Tuple3<Node>
-        Node x1 = getSlot(triple, tupleMap.mapIdx(0)) ;
-        Node x2 = getSlot(triple, tupleMap.mapIdx(1)) ;
-        Node x3 = getSlot(triple, tupleMap.mapIdx(2)) ;
+        Node x1 = getTripleSlot(triple, tupleMap.mapIdx(0)) ;
+        Node x2 = getTripleSlot(triple, tupleMap.mapIdx(1)) ;
+        Node x3 = getTripleSlot(triple, tupleMap.mapIdx(2)) ;
         return TupleFactory.create3(x1, x2, x3) ;
     }
 

@@ -21,8 +21,8 @@ package tupledev;
 import java.util.Iterator ;
 import java.util.Objects ;
 
+import org.apache.jena.atlas.lib.tuple.Tuple ;
 import org.apache.jena.graph.Node ;
-import tuple.Tuple ;
 
 /** Dummy version of Triple */
 public final class TripleX  implements Tuple<Node> // Only so alternative designs elsewhere can be experimented with 
