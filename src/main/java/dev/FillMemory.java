@@ -18,8 +18,64 @@
 
 package dev;
 
+import org.apache.jena.graph.Triple ;
+import org.apache.jena.riot.RDFDataMgr ;
+import org.apache.jena.riot.lang.StreamRDFCounting ;
+import org.apache.jena.riot.system.StreamRDF ;
+import org.apache.jena.riot.system.StreamRDFLib ;
+import org.apache.jena.riot.system.StreamRDFWrapper ;
+import org.apache.jena.sparql.core.DatasetGraph ;
+import org.apache.jena.sparql.core.Quad ;
+
 public class FillMemory {
     public static void main(String ... argv) {
+        String filename = null ; 
+        DatasetGraph dsg = null ;
         
+        StreamRDF s1 = StreamRDFLib.dataset(dsg) ;
+        StreamRDF s2 = new StreamRDFProgress(s1) ;
+        
+        RDFDataMgr.parse(s2, filename); 
+        System.out.println("DONE") ;
+    }
+    
+    
+    /** Wrap another StreamRDF and provide counts of items */
+    public static class StreamRDFProgress extends StreamRDFWrapper implements StreamRDF, StreamRDFCounting {
+        private long countTriples  = 0 ;
+        private long countQuads    = 0 ;
+        private long countBase     = 0 ;
+        private long countPrefixes = 0 ;
+
+        public StreamRDFProgress(StreamRDF other) {
+            super(other) ;
+        }
+
+        @Override
+        public void triple(Triple triple) {
+            countTriples++ ;
+            super.triple(triple) ;
+        }
+
+        @Override
+        public void quad(Quad quad) {
+            countQuads++ ;
+            super.quad(quad) ;
+        }
+
+        @Override
+        public long count() {
+            return countTriples + countQuads ;
+        }
+
+        @Override
+        public long countTriples() {
+            return countTriples ;
+        }
+
+        @Override
+        public long countQuads() {
+            return countQuads ;
+        }
     }
 }
