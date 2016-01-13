@@ -18,13 +18,10 @@
 
 package syntaxtransform;
 
-import java.util.HashMap ;
 import java.util.Map ;
 
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.Query ;
-import org.apache.jena.query.QuerySolutionMap ;
-import org.apache.jena.rdf.model.RDFNode ;
 import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.engine.binding.BindingFactory ;
 import org.apache.jena.sparql.engine.binding.BindingMap ;
@@ -32,9 +29,6 @@ import org.apache.jena.sparql.syntax.Element ;
 import org.apache.jena.sparql.syntax.ElementData ;
 import org.apache.jena.sparql.syntax.ElementGroup ;
 import org.apache.jena.sparql.syntax.syntaxtransform.QueryTransformOps ;
-import org.apache.jena.sparql.syntax.syntaxtransform.UpdateTransformOps ;
-import org.apache.jena.update.Update ;
-import org.apache.jena.update.UpdateRequest ;
 
 /**
  * <code>ParameterizedQuery</code> - inject <code>VALUES</code> clause.
@@ -73,42 +67,42 @@ public class ParameterizedQuery2 {
         return q2 ; 
     }
     
-    /** Create a new UpdateRequest with occurences of specific variables replaced by some node value. 
-     * @param request UpdateRequest
-     * @param map Mapping from {@link Var} to {@link Node}
-     * @return Query, with replacements 
-     */
-    public static UpdateRequest parameterize(UpdateRequest request, Map<Var, Node> map) {
-        return UpdateTransformOps.transform(request, map) ;
-    }
-
-    /** Create a new Update with occurences of specific variables replaced by some node value. 
-     * @param request Update
-     * @param map Mapping from {@link Var} to {@link Node}
-     * @return Query, with replacements 
-     */
-    public static Update parameterize(Update request, Map<Var, Node> map) {
-        return UpdateTransformOps.transform(request, map) ;
-    }
-    /** Create a new query with occurences of variables replaced by constants. 
-     * @param query
-     * @param map Mapping from variable name to {@link RDFNode}
-     * @return Query, with replacements 
-     */
-    public static Query setVariables(Query query, Map<String, RDFNode> map) {
-        Map<Var, Node> map2 = new HashMap<>() ;
-        map.forEach((k,v) -> map2.put( Var.alloc(k), v.asNode()) ) ;
-        return parameterize(query,map2) ;
-    }
-    
-    /** Create a new query with occurences of variables replaced by constants
-     * based on the given {@link QuerySolutionMap}.
-     * @param query
-     * @param querySolutionMap Mapping from variable name to {@link RDFNode}
-     * @return Query, with replacements 
-     */
-    public static Query setVariables(Query query, QuerySolutionMap querySolutionMap) {
-        return  setVariables(query, querySolutionMap.asMap() ) ;
-    }
+//    /** Create a new UpdateRequest with occurences of specific variables replaced by some node value. 
+//     * @param request UpdateRequest
+//     * @param map Mapping from {@link Var} to {@link Node}
+//     * @return Query, with replacements 
+//     */
+//    public static UpdateRequest parameterize(UpdateRequest request, Map<Var, Node> map) {
+//        return UpdateTransformOps.transform(request, map) ;
+//    }
+//
+//    /** Create a new Update with occurences of specific variables replaced by some node value. 
+//     * @param request Update
+//     * @param map Mapping from {@link Var} to {@link Node}
+//     * @return Query, with replacements 
+//     */
+//    public static Update parameterize(Update request, Map<Var, Node> map) {
+//        return UpdateTransformOps.transform(request, map) ;
+//    }
+//    /** Create a new query with occurences of variables replaced by constants. 
+//     * @param query
+//     * @param map Mapping from variable name to {@link RDFNode}
+//     * @return Query, with replacements 
+//     */
+//    public static Query setVariables(Query query, Map<String, RDFNode> map) {
+//        Map<Var, Node> map2 = new HashMap<>() ;
+//        map.forEach((k,v) -> map2.put( Var.alloc(k), v.asNode()) ) ;
+//        return parameterize(query,map2) ;
+//    }
+//    
+//    /** Create a new query with occurences of variables replaced by constants
+//     * based on the given {@link QuerySolutionMap}.
+//     * @param query
+//     * @param querySolutionMap Mapping from variable name to {@link RDFNode}
+//     * @return Query, with replacements 
+//     */
+//    public static Query setVariables(Query query, QuerySolutionMap querySolutionMap) {
+//        return  setVariables(query, querySolutionMap.asMap() ) ;
+//    }
 }
 

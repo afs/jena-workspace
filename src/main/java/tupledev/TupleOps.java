@@ -33,22 +33,10 @@ public class TupleOps {
             case 4: return TupleFactory.tuple(func.apply(tuple.get(0)), func.apply(tuple.get(1)), func.apply(tuple.get(2)), func.apply(tuple.get(3))) ;  
         }
         @SuppressWarnings("unchecked")
+        // Works because we pass it to asTuple.
         Y[] elts = (Y[])new Object[tuple.len()] ;
         for ( int i = 0 ; i < tuple.len() ; i++ )
             elts[i] = func.apply(tuple.get(i)) ;
         return TupleFactory.asTuple(elts) ; 
     }
-    
-    public static <X> Tuple<X> make1(X x1) {
-        @SuppressWarnings("unchecked")
-        X[] elts = (X[])new Object[1] ;
-        return TupleFactory.asTuple(elts) ; 
-    }
-    
-    public static <X> Tuple<X> make2(X x1) {
-        @SuppressWarnings("unchecked")
-        X[] elts = (X[])new Object[1] ;
-        return TupleFactory.asTuple(elts) ; 
-    }
-
 }

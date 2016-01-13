@@ -18,12 +18,39 @@
 
 package dev;
 
+import org.apache.jena.atlas.lib.Timer ;
 import org.apache.jena.atlas.logging.LogCtl ;
+import org.apache.jena.query.ReadWrite ;
+import org.apache.jena.riot.RDFDataMgr ;
+import org.apache.jena.sparql.core.DatasetGraph ;
+import org.apache.jena.sparql.core.DatasetGraphFactory ;
+import org.apache.jena.sparql.core.Transactional ;
 
 public class DevWorkspace
 {
     static { LogCtl.setCmdLogging() ; }
     
     public static void main(String ... a) {
+        arq.sparql.main("--desc=/home/afs/tmp/assem.ttl", "ASK{}");
+    }        
+        
+    public static void main0(String ... a) {
+        Timer timer = new Timer() ;
+        timer.startTimer();
+
+        System.out.println("Start") ;
+        for ( int i = 0 ; i < 5 ; i ++ ) {
+            long x1 = timer.readTimer() ;
+            DatasetGraph dsg = DatasetGraphFactory.createTxnMem() ;
+            Transactional txn = (Transactional)dsg ;
+            txn.begin(ReadWrite.WRITE) ;
+            RDFDataMgr.read(dsg, "/home/afs/Datasets/BSBM/bsbm-1m.nt.gz") ;
+            txn.commit() ;
+            txn.end() ;
+            long x2 = timer.readTimer() ;
+            System.out.printf("%d: %.2f\n", i, (x2-x1)/1000.0) ;
+        }
+        System.out.println("Finish") ;
+        System.exit(0) ;
     }
 }

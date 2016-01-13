@@ -55,8 +55,7 @@ public class ParameterizedQuery {
      * @return Query, with replacements 
      */
     public static Query parameterize(Query query, Map<Var, Node> map) {
-        Query q2 = QueryTransformOps.transform(query, map) ;
-        return q2 ; 
+        return QueryTransformOps.transform(query, map) ;
     }
     
     /** Create a new UpdateRequest with occurences of specific variables replaced by some node value. 
@@ -76,6 +75,9 @@ public class ParameterizedQuery {
     public static Update parameterize(Update request, Map<Var, Node> map) {
         return UpdateTransformOps.transform(request, map) ;
     }
+    
+    // Avoid name clash : Map<> after erasure. 
+    
     /** Create a new query with occurences of variables replaced by constants. 
      * @param query
      * @param map Mapping from variable name to {@link RDFNode}
