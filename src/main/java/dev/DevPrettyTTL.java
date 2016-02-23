@@ -30,9 +30,9 @@ static { LogCtl.setCmdLogging() ; }
     public static void main(String ... a) {
         
 //        ARQ.getContext().set(RIOT.multilineLiterals, true);
-//        riotcmd.riot.main("--formatted=TTL", "/home/afs/tmp/D.ttl") ;
+//        riotcmd.riot.main("--formatted=TTL", "/home/afs/ws/D.ttl") ;
         
-        Graph g = RDFDataMgr.loadGraph("/home/afs/tmp/D.ttl") ;
+        Graph g = RDFDataMgr.loadGraph("/home/afs/ws/D.ttl") ;
         ReaderRIOT r = RDFDataMgr.createReader(Lang.TURTLE) ;
         WriterGraphRIOT w = RDFDataMgr.createGraphWriter(RDFFormat.TURTLE) ;
         Context cxt = RIOT.getContext().copy() ;
@@ -42,7 +42,7 @@ static { LogCtl.setCmdLogging() ; }
         
         //ARQ.getContext().set(RIOT.multilineLiterals, false);
         System.out.println("##-----------------------------------") ;
-        riotcmd.riot.main("--formatted=TTL", "/home/afs/tmp/D.ttl") ;
+        riotcmd.riot.main("--formatted=TTL", "/home/afs/ws/D.ttl") ;
         
         System.exit(0) ;
     }

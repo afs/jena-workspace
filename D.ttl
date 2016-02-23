@@ -1,10 +1,19 @@
 PREFIX : <http://example/>
+PREFIX ex: <http://example/ex#>
+PREFIX notinuse: <http://example/whatever/>
+PREFIX indirect: <urn:foo:>
+PREFIX indirectx: <urn:x:>
 
 :s1 :p :x1 .
-:s2 :p :x1 .
+:s1 ex:p :x1 .
 
-:x1 :q 1 .
-:x1 :q 2 .
+<urn:foo:bar> :p 1 .
+<urn:x:a:b> :p 2 .
 
-:x2 :q 3 .
-:x2 :q 4 .
+<urn:verybad#.> :p 1 .
+
+## :x1 :q 1 .
+## :x1 :q 2 .
+## 
+## :x2 :q 3 .
+## :x2 :q 4 .

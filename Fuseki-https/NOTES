@@ -1,0 +1,7 @@
+keytool -keystore keystore -alias jetty -genkey -keyalg RSA -password changeme
+
+to first prompt: localhost
+
+fuseki-jetty-https.xml
+
+http://localhost:8443/

@@ -40,7 +40,7 @@ public class DatasetGraphChangeLog extends DatasetGraphWithLock {
     private final DatasetGraph datasetMonitor ;
     
     public DatasetGraphChangeLog(DatasetGraph dsg) {
-        super(dsg) ;
+        super(dsg, true) ;
         delta = new DatasetChangesCapture() ;
         this.dataset = dsg ;
         DatasetGraphMonitor dsgm = new DatasetGraphMonitor(dsg, delta) ;
@@ -79,7 +79,4 @@ public class DatasetGraphChangeLog extends DatasetGraphWithLock {
         super._end() ;
         delta.reset() ;
     }
-    
-    @Override
-    protected boolean abortImplemented() { return true ; }
 }

@@ -18,11 +18,61 @@
 package syntaxtransform;
 
 public class NOTES_Element {
-    /* Finished */
-    // Documentation
+    // Modify SELECT to put in pre- bindings.
+
+    // 2 ways:
+    // 1: Rewrite query AND add in results (PAramterizedQuery.parameterizeIncludeInput)
+    // 2: Add wrapper to put them into results.
     
-    // ApplyTransformVisitor does not transform elements
-    // need "el = transform(el)2, checking for null.
+    // For blank nodes, (2) is easier because it does not rely on results coming
+    // back as <_:blank nodes> though it does not work for outgoing without help.    
+    
+    
+    
+    
+    // Centralize BNode handling.
+    //NodeFunctions.
+    
+    /* Search for "_:
+    FmtUtils.java - jena-arq/src/main/java/org/apache/jena/sparql/util
+    JsonLDReader.java - jena-arq/src/main/java/org/apache/jena/riot/lang
+    LangRDFJSON.java - jena-arq/src/main/java/org/apache/jena/riot/lang
+    NodeFormatterNT.java - jena-arq/src/main/java/org/apache/jena/riot/out
+    NodeFunctions.java - jena-arq/src/main/java/org/apache/jena/sparql/expr/nodevalue
+    NodeToLabel.java - jena-arq/src/main/java/org/apache/jena/riot/out (3 matches)
+    NodeToLabelMap.java - jena-arq/src/main/java/org/apache/jena/sparql/util
+    RDFJSONWriter.java - jena-arq/src/main/java/org/apache/jena/riot/writer (2 matches)
+    RiotLib.java - jena-arq/src/main/java/org/apache/jena/riot/system
+    TokenizerText.java - jena-arq/src/main/java/org/apache/jena/riot/tokens
+    
+    "<_:"
+    NodeToLabel.java - jena-arq/src/main/java/org/apache/jena/riot/out
+    NodeToLabelMap.java - jena-arq/src/main/java/org/apache/jena/sparql/util
+    */
+    
+//  ARQ.constantBNodeLabels ;
+//  ARQ.outputGraphBNodeLabels
+//  ARQ.inputGraphBNodeLabels
+    // ARQ.enableBlankNodeResultLabels(true)
+    
+    // QueryTransformOps
+    //   CONSTRUCT
+    //   DESCRIBE
+    //   All the updates.
+    //   Injecting blanknodes : <_:abc> [*]
+    //   BIND, VALUE
+    // Full testing.
+    
+    // Retaining the input bindings.
+    
+    
+    // Subquery { SELECT ?x }
+    // Test with Q->A->Subst->OpAsQ->Q2
+    
+    // [*] NodeToLabelMapBNode.asString : bnode -> <_:label> form
+    
+    // Modify SELECT to put in pre- bindings.
+
     
 }
 

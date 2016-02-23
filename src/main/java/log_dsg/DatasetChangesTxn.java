@@ -16,14 +16,21 @@
  * limitations under the License.
  */
 
-package dev;
+package log_dsg;
 
-import org.apache.jena.atlas.logging.LogCtl ;
+import org.apache.jena.query.ReadWrite ;
+import org.apache.jena.sparql.core.DatasetChanges ;
 
-public class DevWorkspace
-{
-    static { LogCtl.setCmdLogging() ; }
+interface DatasetChangesTxn extends DatasetChanges {
+    public void begin1(ReadWrite readWrite) ;
+    public void begin2(ReadWrite readWrite) ;
     
-    public static void main(String ... a) {
-    }
+    public void commit1() ;
+    public void commit2() ;
+    
+    public void abort1() ;
+    public void abort2() ;
+
+    public void end1() ;
+    public void end2() ;
 }

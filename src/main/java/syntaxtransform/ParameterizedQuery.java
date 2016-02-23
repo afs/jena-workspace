@@ -18,15 +18,21 @@
 
 package syntaxtransform;
 
+import java.util.ArrayList ;
 import java.util.HashMap ;
+import java.util.List ;
 import java.util.Map ;
 
 import org.apache.jena.graph.Node ;
+import org.apache.jena.graph.NodeFactory ;
 import org.apache.jena.query.ParameterizedSparqlString ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.query.QuerySolutionMap ;
 import org.apache.jena.rdf.model.RDFNode ;
+import org.apache.jena.riot.out.NodeFmtLib ;
 import org.apache.jena.sparql.core.Var ;
+import org.apache.jena.sparql.core.VarExprList ;
+import org.apache.jena.sparql.expr.NodeValue ;
 import org.apache.jena.sparql.syntax.syntaxtransform.QueryTransformOps ;
 import org.apache.jena.sparql.syntax.syntaxtransform.UpdateTransformOps ;
 import org.apache.jena.update.Update ;
@@ -35,7 +41,7 @@ import org.apache.jena.update.UpdateRequest ;
 /**
  * <code>ParameterizedQuery</code> - use a {@link Query} as a template; replace variables by values.   
  *
- * <pre>Query template = Queryfactory.create(" ...  ") ;
+ * <pre>Query template = QueryFactory.create(" ...  ") ;
  * Map<String, RDFNode> params =
  * Query instantiated = ParameterizeQuery.setVariables(template, params) ;
  * <pre>
@@ -56,6 +62,62 @@ public class ParameterizedQuery {
      */
     public static Query parameterize(Query query, Map<Var, Node> map) {
         return QueryTransformOps.transform(query, map) ;
+    }
+    
+    /** Create a new query with occurences of specific variables replaced by some node value. 
+     * @param query Query
+     * @param map Mapping from {@link Var} to {@link Node}
+     * @return Query, with replacements 
+     */
+    public static Query parameterizeIncludeInput(Query query, Map<Var, Node> map) {
+        Query q2 = parameterize(query, map) ;
+        if ( ! q2.isSelectType() )
+            return q2 ;
+
+        // There are 3 cases for a variabe ?x being mapped to a value:  
+        // 1 - The query had "SELECT ?x" - this has already become (Xval AS ?x)
+        // 2 - The query has "SELECT *" - and ?x will have disappeared. 
+        //     We write to SELECT ... vars ... (Xval AS ?x)
+        //     Adding a trailing BIND is also possible.
+        // 3 - The query has "SELECT vars" that did not include ?x.
+        //     We add (Xval AS ?x)
+        
+
+        // (1) is done so that leaves two cases: 
+        if ( q2.isQueryResultStar() ) {
+            // SELECT *
+            // Calculate correct
+            // This should not include substtuted variables. 
+            
+            List<Var> vars = new ArrayList<>(q2.getProjectVars()) ;
+            q2.setQueryResultStar(false) ;
+            q2.getProject().clear() ;
+            VarExprList exprvars = q2.getProject() ;
+            
+            vars.forEach((var)-> {
+                if ( ! q2.getProject().contains(var) )
+                    q2.addResultVar(var);
+            }) ;
+            map.forEach((var, node)-> {
+                // Safety check.
+                if ( ! q2.getProject().contains(var) )
+                    q2.addResultVar(var, nodeEnc(node)) ;
+            }) ;
+        } else {
+            // Unmentioned substituted variable.
+            VarExprList exprvars = q2.getProject() ;
+            map.forEach((var, node)-> {
+                if ( ! q2.getProject().contains(var) )
+                    q2.addResultVar(var, nodeEnc(node)) ;
+            }) ;
+        }
+        return q2 ;
+    }
+
+    static NodeValue nodeEnc(Node node) {
+        if ( node.isBlank() )
+            node = NodeFactory.createURI("_:"+NodeFmtLib.encodeBNodeLabel(node.getBlankNodeLabel()));
+        return NodeValue.makeNode(node) ;
     }
     
     /** Create a new UpdateRequest with occurences of specific variables replaced by some node value. 

@@ -23,49 +23,124 @@ import java.util.Map ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.sparql.core.Var ;
-import org.apache.jena.sparql.engine.binding.BindingFactory ;
-import org.apache.jena.sparql.engine.binding.BindingMap ;
-import org.apache.jena.sparql.syntax.Element ;
-import org.apache.jena.sparql.syntax.ElementData ;
-import org.apache.jena.sparql.syntax.ElementGroup ;
-import org.apache.jena.sparql.syntax.syntaxtransform.QueryTransformOps ;
+import org.apache.jena.sparql.core.VarExprList ;
+import org.apache.jena.sparql.expr.NodeValue ;
 
-/**
- * <code>ParameterizedQuery</code> - inject <code>VALUES</code> clause.
- *
- * <pre>Query template = Queryfactory.create(" ...  ") ;
- * Map<String, RDFNode> params =
- * Query instantiated = ParameterizeQuery2.setVariables(template, params) ;
- * <pre>
- */
+
 
 public class ParameterizedQuery2 {
-    
-    /** Create a new query with occurences of specific variables replaced by some node value. 
-     * @param query Query
-     * @param map Mapping from {@link Var} to {@link Node}
-     * @return Query, with replacements 
-     */
-    public static Query parameterize(Query query, Map<Var, Node> map) {
-        //Query q2 = QueryTransformOps.transform(query, map) ;
-        Query q2 = QueryTransformOps.shallowCopy(query) ;
+    public static Query parameterizeSELECT(Query query, Map<Var, Node> map) {
+        // Beign developed in MainJena1111
         
-        ElementData elData = new ElementData() ;
-        BindingMap binding = BindingFactory.create() ;
-        map.forEach((v,n)->{elData.add(v); binding.add(v, n);}) ;
-        elData.add(binding); 
-
-        Element el = q2.getQueryPattern() ;
-        ElementGroup elg = new ElementGroup() ;
-        elg.addElement(elData); 
-        // Either copy the original ElementGroup contents or create ElementGroup
-        if ( ! ( el instanceof ElementGroup ) )
-            elg.addElement(el);
-        else
-            elg.getElements().addAll(((ElementGroup)el).getElements()) ;
-        q2.setQueryPattern(elg); 
-        return q2 ; 
+        // ?x => (Xval AS ?x) -- done by ParameterizedQuery.parameterize
+        // (?x+1) AS ?y => Add (Xval AS ?x)
+        // (expr) AS ?x => ??????
+        
+        
+        Query q2 = ParameterizedQuery.parameterize(query, map) ;
+        // If and only if: SELECT* 
+        if ( q2.isQueryResultStar() ) {
+        }
+        // Expressions.
+        return q2 ;
     }
+    
+    private static void  addIfAbsent(VarExprList varsExpr, Var var, Node node) {
+        if ( varsExpr.contains(var) )
+            ; // Error.
+        varsExpr.add(var, NodeValue.makeNode(node)) ;
+    }
+    
+//    /** Parameterize and add a WHERE VALUES block */
+//    public static Query parameterizeAddValuesWhere(Query query, Map<Var, Node> map) {
+//        Query q2 = ParameterizedQuery.parameterize(query, map) ;
+//        BindingMap dataMap = bindingForInput(map) ;
+//        // On query level.
+//        List<Var> vars = Iter.toList(dataMap.vars()) ;
+//        
+//        ElementData elData = new ElementData() ;
+//        elData.add(dataMap); 
+//        vars.forEach((v) -> elData.add(v));
+//        
+//        // In WHERE clause.
+//        Element el = q2.getQueryPattern() ;
+//        ElementGroup elg = new ElementGroup() ;
+//        elg.addElement(elData); 
+//        // Either copy the original ElementGroup contents or create ElementGroup
+//        if ( ! ( el instanceof ElementGroup ) )
+//            elg.addElement(el);
+//        else
+//            elg.getElements().addAll(((ElementGroup)el).getElements()) ;
+//        q2.setQueryPattern(elg); 
+//        return q2 ; 
+//    }
+//
+//    /** Parameterize and add a SELECT-level VALUES block */
+//    public static Query parameterizeAddValuesEnd(Query query, Map<Var, Node> map) {
+//        Query q2 = ParameterizedQuery.parameterize(query, map) ;
+//        BindingMap dataMap = bindingForInput(map) ;
+//        // On query level.
+//        List<Var> vars = Iter.toList(dataMap.vars()) ;
+//        List<Binding> data = new ArrayList<>() ;
+//        
+//        if ( q2.hasValues() ) {
+//            List<Binding> x = q2.getValuesData() ;
+//            List<Var> vars2 = q2.getValuesVariables() ;
+//            vars.forEach(v->addIfAbsent(vars2, v));
+//            x.forEach((b)-> {
+//                BindingMap b2 = BindingFactory.create(dataMap) ;
+//                b2.addAll(b);
+//                data.add(b2);
+//            }) ;
+//            q2.setValuesDataBlock(vars2, x);
+//        } else {
+//            data.add(dataMap) ;
+//            q2.setValuesDataBlock(vars, data) ;
+//        }
+//        return q2 ; 
+//    }
+//
+////        return elData ;
+//
+//    private static BindingMap bindingForInput(Map<Var, Node> map) {
+//        BindingMap binding = BindingFactory.create() ;
+//        bindingForInput(binding, map);
+//        return binding ;
+//        
+//    }
+//
+//    private static void bindingForInput(BindingMap binding, Map<Var, Node> map) {
+//        map.forEach((v,n)->binding.add(v, n)) ;
+//    }
+// 
+//    // Or don't return the input.
+//    public static Query parameterizeReplaceAndBIND(Query query, Map<Var, Node> map) {
+//        Query q2 = QueryTransformOps.transform(query, map) ;
+//        Element el = q2.getQueryPattern() ;
+//        ElementGroup elg ;
+//        if ( el instanceof ElementGroup )
+//            elg = (ElementGroup) el ;
+//        else {
+//            elg = new ElementGroup() ;
+//            elg.addElement(el);
+//            q2.setQueryPattern(elg); 
+//        }
+//        // Check on scope.
+//        SyntaxVarScope.check(query) ;
+//        Set<Var> acc = new HashSet<>() ;
+//        PatternVars.vars(acc, elg) ;
+//        
+//        map.forEach((v,n)->{
+//            if ( acc.contains(v) )
+//                System.err.println("Variable "+v+" still present") ;
+//            else {
+//                ElementBind elb = new ElementBind(v, NodeValue.makeNode(n)) ;
+//                elg.addElement(elb);
+//            }
+//        }) ;
+//        return q2 ; 
+//    }
+
     
 //    /** Create a new UpdateRequest with occurences of specific variables replaced by some node value. 
 //     * @param request UpdateRequest

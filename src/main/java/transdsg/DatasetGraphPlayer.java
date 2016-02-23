@@ -27,7 +27,7 @@ import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.Quad ;
 import org.apache.jena.sparql.core.QuadAction ;
 
-/** Play a chnag elog */
+/** Play a change log */
 public class DatasetGraphPlayer
 {
     enum Direction { FORWARDS, BACKWARDS }

@@ -16,14 +16,32 @@
  * limitations under the License.
  */
 
-package dev;
+package log_dsg;
 
-import org.apache.jena.atlas.logging.LogCtl ;
+import org.apache.jena.query.Dataset ;
+import org.apache.jena.query.DatasetFactory ;
+import org.apache.jena.sparql.core.Quad ;
+import org.apache.jena.sparql.sse.SSE ;
+import org.apache.jena.tdb.TDBFactory ;
 
-public class DevWorkspace
-{
-    static { LogCtl.setCmdLogging() ; }
-    
-    public static void main(String ... a) {
+public class DevTrack {
+
+    public static void main(String[] args) {
+        Dataset ds1 = TDBFactory.createDataset() ;
+        Dataset ds2 = TDBFactory.createDataset() ;
+        
+        DatasetChangesTxn monitor = new DatasetChangesTxnLogger() ;
+        
+        Dataset dsMaster = DatasetFactory.wrap
+           (new DatasetGraphMonitorTxn(ds1.asDatasetGraph(),
+            monitor)) ;
+        
+        Quad q1 = SSE.parseQuad("(:g1 :s1 :p1 :o1)") ;
+        
+        Txn.executeWrite(dsMaster, ()->dsMaster.asDatasetGraph().add(q1)) ;
+        
+        
     }
 }
+
+

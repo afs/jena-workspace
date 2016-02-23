@@ -16,14 +16,25 @@
  * limitations under the License.
  */
 
-package dev;
+package log_dsg;
 
-import org.apache.jena.atlas.logging.LogCtl ;
+import org.apache.jena.graph.Node ;
+import org.apache.jena.sparql.core.Quad ;
+import org.apache.jena.sparql.sse.SSE ;
+import org.apache.jena.sparql.util.FmtUtils ;
 
-public class DevWorkspace
-{
-    static { LogCtl.setCmdLogging() ; }
-    
-    public static void main(String ... a) {
+public class L {
+
+    static void print(String fmt, Object... args) {
+        System.out.printf(fmt, args);
+        System.out.println();
+    }
+
+    static String str(Node n) {
+        return FmtUtils.stringForNode(n, SSE.defaultPrefixMapRead);
+    }
+
+    static String str(Quad q) {
+        return FmtUtils.stringForQuad(q, SSE.defaultPrefixMapRead);
     }
 }
