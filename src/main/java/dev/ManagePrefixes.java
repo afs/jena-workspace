@@ -30,7 +30,7 @@ import org.apache.jena.riot.Lang ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.apache.jena.shared.PrefixMapping ;
 
-public class EVN752 {
+public class ManagePrefixes {
     public static void main(String ...a) {
         Model m = RDFDataMgr.loadModel("D.ttl") ;
         RDFDataMgr.write(System.out, m, Lang.TTL) ;

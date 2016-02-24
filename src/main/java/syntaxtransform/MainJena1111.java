@@ -35,24 +35,28 @@ import org.apache.jena.sparql.lang.SyntaxVarScope ;
 
 public class MainJena1111
 {
-
+    // 1 - replace
+    // 2 - replace, include values
+    // 3 - replace, eval to add values.
+    // Finish setVariables.
+    
+    // Skolemization
+    // Join on values.
+    
     static String sel0 = StrUtils.strjoinNL
         ( CONST.PRE
         , "SELECT ?Z ?x { ?Z :p ?x . FILTER ( bound(?x) ) }"
+        ) ;
+    static String sel1 = StrUtils.strjoinNL
+        ( CONST.PRE
+        , "SELECT * { ?Z :p ?x . FILTER ( bound(?x) ) }"
         ) ;
     static String sel2 = StrUtils.strjoinNL
         ( CONST.PRE
         , "SELECT ((?x+1) AS ?Y) ?Z { ?Z :p ?x . FILTER ( bound(?x) ) }"
         ) ;
     
-    static String sel1 = StrUtils.strjoinNL
-        ( CONST.PRE
-        , "SELECT * { ?Z :p ?x . FILTER ( bound(?x) ) }"
-        ) ;
-    
     public static void main(String... args) {
-
-        
         // Next : test cases.
         // BNodes in returned values.
         // BNodes -> <_:label> first?

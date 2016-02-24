@@ -36,7 +36,8 @@ import org.apache.jena.sparql.core.Var ;
 import org.junit.Test ;
 
 /** Tests for syntax substitution.
- *  These build on top of TestSyntaxTransform. */
+ *  These build on top of TestSyntaxTransform.
+ */
 public class TestSyntaxParameterized {
     
     static String prefixes = StrUtils.strjoinNL
@@ -53,7 +54,7 @@ public class TestSyntaxParameterized {
     }
     
     static Node bn = NodeFactory.createBlankNode() ;
-    // cedtralize."_:"+NodeFmtLib.encodeBNodeLabel(node.getBlankNodeLabel()) ;
+    // centralize."_:"+NodeFmtLib.encodeBNodeLabel(node.getBlankNodeLabel()) ;
     static String bnUri = "<_:"+NodeFmtLib.encodeBNodeLabel(bn.getBlankNodeLabel())+">" ;
     static Map<Var, Node> map2 = new LinkedHashMap<Var, Node>() ;
     static {

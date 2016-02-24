@@ -55,7 +55,7 @@ import org.apache.jena.update.UpdateRequest ;
 
 public class ParameterizedQuery {
     
-    /** Create a new query with occurences of specific variables replaced by some node value. 
+    /** Create a new query with occurences of specific variables replaced by the given node value from the Map. 
      * @param query Query
      * @param map Mapping from {@link Var} to {@link Node}
      * @return Query, with replacements 
@@ -64,7 +64,8 @@ public class ParameterizedQuery {
         return QueryTransformOps.transform(query, map) ;
     }
     
-    /** Create a new query with occurences of specific variables replaced by some node value. 
+    /** Create a new query with occurences of specific variables replaced by the given node value from the Map.
+     *  Additional, the query query returns the input mapping as bindings in the results.   
      * @param query Query
      * @param map Mapping from {@link Var} to {@link Node}
      * @return Query, with replacements 
@@ -120,7 +121,7 @@ public class ParameterizedQuery {
         return NodeValue.makeNode(node) ;
     }
     
-    /** Create a new UpdateRequest with occurences of specific variables replaced by some node value. 
+    /** Create a new  {@link UpdateRequest} with occurences of specific variables replaced by the associated node value. 
      * @param request UpdateRequest
      * @param map Mapping from {@link Var} to {@link Node}
      * @return Query, with replacements 
@@ -129,7 +130,7 @@ public class ParameterizedQuery {
         return UpdateTransformOps.transform(request, map) ;
     }
 
-    /** Create a new Update with occurences of specific variables replaced by some node value. 
+    /** Create a new {@link Update} with occurences of specific variables replaced by the associated node value. 
      * @param request Update
      * @param map Mapping from {@link Var} to {@link Node}
      * @return Query, with replacements 
@@ -143,7 +144,7 @@ public class ParameterizedQuery {
     /** Create a new query with occurences of variables replaced by constants. 
      * @param query
      * @param map Mapping from variable name to {@link RDFNode}
-     * @return Query, with replacements 
+     * @return Query, with replacements.
      */
     public static Query setVariables(Query query, Map<String, RDFNode> map) {
         Map<Var, Node> map2 = new HashMap<>() ;
