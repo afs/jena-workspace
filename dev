@@ -1,0 +1,5 @@
+#!/bin/bash
+
+C="$(jena)"
+
+java $JVM_ARGS -cp "target/classes:$C" "$@"
