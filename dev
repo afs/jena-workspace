@@ -2,4 +2,10 @@
 
 C="$(jena)"
 
+if [[ $# == 0 ]]
+then
+    echo "No main class" 1>&2
+    exit 2
+fi
+
 java $JVM_ARGS -cp "target/classes:$C" "$@"
