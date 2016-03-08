@@ -23,9 +23,14 @@ import org.apache.jena.shared.JenaException ;
 import org.apache.jena.shared.Lock ;
 import org.apache.jena.sparql.core.Transactional ;
 
-/** A Lock that is backed by a Transactional */
+/** A Lock that is backed by a Transactional.
+ * This is only useful if the data being locked is transactional. 
+ */
 public class LockTransactional implements Lock {
 
+    // Transactional.txnMode -> 
+    //  would be useful
+    
     private final Transactional transactional;
     private ThreadLocal<ReadWrite> mode = ThreadLocal.withInitial(()->null) ;
 
@@ -40,13 +45,11 @@ public class LockTransactional implements Lock {
         if ( readLockRequested ) {
             mode.set(lockMode) ;
         }
-        
     }
 
     @Override
     public void leaveCriticalSection() {
         ReadWrite lockMode = mode.get() ;
-        
         if ( lockMode == null )
             throw new JenaException("No lock associated with this thread") ;
         
@@ -59,5 +62,4 @@ public class LockTransactional implements Lock {
         }
         mode.remove();
     }
-
 }
