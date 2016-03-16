@@ -1,0 +1,17 @@
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX :        <http://example/>
+PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+PREFIX math:    <http://www.w3.org/2005/xpath-functions/math#>
+PREFIX fn:      <http://www.w3.org/2005/xpath-functions#>
+PREFIX afn:     <http://jena.apache.org/ARQ/function#>
+
+SELECT (math:log(?x) AS ?X) {
+    { ?x rdfs:member ?y . ?x <http://ex/PF1> ?y }
+    UNION {
+       ?x :normal ?y .
+       FILTER ( 1 + math:sqrt(?x) )
+       FILTER EXISTS { ?x  <http://ex/PF2> ?z . FILTER (fn:not(?z) ) }
+       }
+}
+#GROUP BY math:exp(?x)
