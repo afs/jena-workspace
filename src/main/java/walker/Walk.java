@@ -30,6 +30,8 @@ import org.apache.jena.sparql.sse.SSE ;
 
 public class Walk {
 
+    // Migrate ExprWalker2 first.
+    
     public static void main(String[] args) {
         String x = StrUtils.strjoinNL
             (

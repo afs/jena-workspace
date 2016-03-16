@@ -11,7 +11,7 @@ SELECT (math:log(?x) AS ?X) {
     UNION {
        ?x :normal ?y .
        FILTER ( 1 + math:sqrt(?x) )
-       FILTER EXISTS { ?x  <http://ex/PF2> ?z . FILTER (fn:not(?z) ) }
+       FILTER EXISTS { ?x  :p ?z . FILTER EXISTS {  ?x  <http://ex/PF2> ?z } }
        }
 }
 #GROUP BY math:exp(?x)

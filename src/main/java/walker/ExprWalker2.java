@@ -21,7 +21,7 @@ package walker;
 import org.apache.jena.sparql.algebra.OpVisitor ;
 import org.apache.jena.sparql.expr.* ;
 
-/** Walk the expression tree, bottom up */
+/** Walk the expression tree */
 public class ExprWalker2 
 {
     private final Walker visitor ;
@@ -35,25 +35,22 @@ public class ExprWalker2
         expr.visit(visitor) ;
     }
 
-    static public void walk(ExprVisitor visitor, Expr expr) {
+    public static void walk(ExprVisitor visitor, Expr expr) {
         if ( expr == null )
             return ;
         createWalker(visitor, null).walk(expr);
     }
     
-    static public void walk(ExprVisitor visitor, OpVisitor visitorOp, Expr expr) {
+    public static void walk(ExprVisitor visitor, OpVisitor visitorOp, Expr expr) {
         if ( expr == null )
             return ;
         createWalker(visitor, visitorOp).walk(expr);
     }
 
-    static public ExprWalker2 createWalker(ExprVisitor visitorExpr, OpVisitor visitorOp) {
+    public static ExprWalker2 createWalker(ExprVisitor visitorExpr, OpVisitor visitorOp) {
         return new ExprWalker2(visitorExpr, visitorOp)  ;
     }
     
-//    static public void walk(ExprVisitor visitor, Expr expr)
-//    { expr.visit(new WalkerTopDown(visitor)) ; }
-
     static class Walker extends ExprVisitorFunction
     {
         private final ExprVisitor visitorExpr ; 
@@ -61,8 +58,7 @@ public class ExprWalker2
 
         boolean topDown = true ;
         
-        private Walker(ExprVisitor visitorExpr , OpVisitor visitorOp, boolean topDown)
-        { 
+        Walker(ExprVisitor visitorExpr, OpVisitor visitorOp, boolean topDown) {
             this.visitorExpr = visitorExpr ;
             this.visitorOp = visitorOp ;
         }
@@ -87,6 +83,7 @@ public class ExprWalker2
         @Override
         public void visit(ExprFunctionOp funcOp)
         {
+            // Walk the op
             OpWalker2.walk(funcOp.getGraphPattern(), visitorOp, visitorExpr); 
             funcOp.visit(visitorExpr) ;
         }
