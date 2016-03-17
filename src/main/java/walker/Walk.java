@@ -19,13 +19,11 @@
 package walker;
 
 import org.apache.jena.atlas.lib.StrUtils ;
-import org.apache.jena.sparql.algebra.Op ;
-import org.apache.jena.sparql.algebra.OpVisitor ;
-import org.apache.jena.sparql.algebra.OpVisitorBase ;
+import org.apache.jena.sparql.algebra.* ;
 import org.apache.jena.sparql.algebra.op.OpBGP ;
-import org.apache.jena.sparql.expr.ExprVar ;
-import org.apache.jena.sparql.expr.ExprVisitor ;
-import org.apache.jena.sparql.expr.ExprVisitorBase ;
+import org.apache.jena.sparql.core.BasicPattern ;
+import org.apache.jena.sparql.core.Var ;
+import org.apache.jena.sparql.expr.* ;
 import org.apache.jena.sparql.sse.SSE ;
 
 public class Walk {
@@ -33,7 +31,31 @@ public class Walk {
     // Migrate ExprWalker2 first.
     
     public static void main(String[] args) {
-        String x = StrUtils.strjoinNL
+        ExprVisitor ev = new ExprVisitorBase() {
+            @Override public void visit(ExprVar nv) {
+                System.out.println("Var: "+nv) ;
+            }
+         } ;
+         OpVisitor xv = new OpVisitorBase() {
+             @Override public void visit(OpBGP op) {
+                 System.out.println("BGP: "+op.getPattern()) ;
+             }
+         } ;
+
+         ExprTransform evt = new ExprTransformCopy() {
+             @Override public Expr transform(ExprVar nv) {
+                 return new ExprVar(Var.alloc("#"+nv.getVarName())) ;
+             }
+          } ;
+          Transform xvt = new TransformCopy() {
+              @Override public Op transform(OpBGP op) {
+                  BasicPattern p = new BasicPattern(op.getPattern()) ;
+                  p.add(SSE.parseTriple("(:S :P :O)"));
+                  return new OpBGP(p) ;
+              }
+          } ;
+
+          String x = StrUtils.strjoinNL
             (
              "(sequence "
             , "  (filter (= ?x1 3) (bgp (:s ?p1 ?o1)) )"
@@ -41,19 +63,26 @@ public class Walk {
             ,")"
             ) ;
         Op op = SSE.parseOp(x) ;
-        ExprVisitor ev = new ExprVisitorBase() {
-           @Override public void visit(ExprVar nv) {
-               System.out.println("Var: "+nv) ;
-           }
-        } ;
-        OpVisitor xv = new OpVisitorBase() {
-            @Override public void visit(OpBGP op) {
-                System.out.println("BGP: "+op.getPattern()) ;
-            }
-        } ;
+//        OpWalker2.walk(op, xv, ev); 
         
-        OpWalker2.walk(op, xv, ev); 
+        String z = StrUtils.strjoinNL
+            (
+             //"(notexists (filter (= ?s :s) (bgp (triple ?s ?p ?o))))"
+             "(+ 1 ?s)"
+             ) ;
+        Expr e = SSE.parseExpr(z) ;
+//        ExprWalker2.walk(ev, xv, e);
         
+        System.out.println() ;
+        System.out.println(op) ;
+        Op op1 = Transformer2.transform(xvt, evt, op) ;
+        System.out.println(op1) ;
+
+//        System.out.println() ;
+//        System.out.println(WriterExpr.asString(e)) ; 
+//        
+//        Expr e2 = ExprTransformer2.transform(evt, xvt, e) ;
+//        System.out.println(WriterExpr.asString(e2)) ;
     }
 
 }

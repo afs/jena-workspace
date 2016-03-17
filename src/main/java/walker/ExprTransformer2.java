@@ -22,7 +22,7 @@ import java.util.* ;
 
 import org.apache.jena.atlas.logging.Log ;
 import org.apache.jena.sparql.algebra.Op ;
-import org.apache.jena.sparql.algebra.Transformer ;
+import org.apache.jena.sparql.algebra.Transform ;
 import org.apache.jena.sparql.expr.* ;
 
 public class ExprTransformer2
@@ -33,41 +33,42 @@ public class ExprTransformer2
     public static ExprTransformer2 get() { return singleton; }
     
     /** Transform an expression */
-    public static Expr transform(ExprTransform transform, Expr expr)
-    { return get().transformation(transform, expr) ; }
+    public static Expr transform(ExprTransform transform, Transform opTransform, Expr expr)
+    { return get().transformation(transform, opTransform, expr) ; }
 
-    /** Transform an expression list */
-    public static ExprList transform(ExprTransform transform, ExprList exprList)
-    { return get().transformation(transform, exprList) ; }
+//    /** Transform an expression list */
+//    public static ExprList transform(ExprTransform transform, ExprList exprList)
+//    { return get().transformation(transform, exprList) ; }
     
-    private Expr transformation(ExprTransform transform, Expr expr)
-    {
-        ApplyExprTransformVisitor v = new ApplyExprTransformVisitor(transform) ;
+    /** Transform an expression list */
+    public static ExprList transform(ExprTransform exprTransform, Transform opTransform, ExprList exprList)
+    { return get().transformation(exprTransform, opTransform, exprList) ; }
+
+    private Expr transformation(ExprTransform exprTransform, Transform opTransform, Expr expr) {
+        ApplyExprTransformVisitor v = new ApplyExprTransformVisitor(exprTransform, opTransform) ;
         return transformation(v, expr) ;
     }
 
-    private ExprList transformation(ExprTransform transform, ExprList exprList)
-    {
-        ApplyExprTransformVisitor v = new ApplyExprTransformVisitor(transform) ;
+    private ExprList transformation(ExprTransform exprTransform, Transform opTransform, ExprList exprList) {
+        ApplyExprTransformVisitor v = new ApplyExprTransformVisitor(exprTransform, opTransform) ;
         ExprList exprList2 = new ExprList() ;
-        for ( Expr expr : exprList )
-        {
+        for ( Expr expr : exprList ) {
             Expr expr2 = transformation(v, expr) ;
             exprList2.add(expr2) ;
         }
         return exprList2 ;
     }
-    
-    private Expr transformation(ApplyExprTransformVisitor applyVisitor, Expr expr)
-    {
+
+    private Expr transformation(ApplyExprTransformVisitor applyVisitor, Expr expr) {
         ExprWalker.walk(applyVisitor, expr) ;
         return applyVisitor.result() ;
     }
     
-    public static
+    static
     class ApplyExprTransformVisitor implements ExprVisitor
     {
-        private ExprTransform transform ;
+        private ExprTransform exprTransform ;
+        private Transform opTransform ;
         private final Deque<Expr> stack = new ArrayDeque<>() ;
         
         final Expr result()
@@ -80,13 +81,15 @@ public class ExprTransformer2
             return stack.pop() ; 
         }
 
-        ApplyExprTransformVisitor(ExprTransform transform)
-        { this.transform = transform ; }
+        ApplyExprTransformVisitor(ExprTransform exprTransform, Transform opTransform) {
+            this.exprTransform = exprTransform ;
+            this.opTransform = opTransform ;
+        }
 
         @Override
         public void visit(ExprFunction0 func)
         {
-            Expr e = func.apply(transform) ;
+            Expr e = func.apply(exprTransform) ;
             push(stack, e) ;
         }
         
@@ -94,7 +97,7 @@ public class ExprTransformer2
         public void visit(ExprFunction1 func)
         {
             Expr e1 = pop(stack) ;
-            Expr e = func.apply(transform, e1) ;
+            Expr e = func.apply(exprTransform, e1) ;
             push(stack, e) ;
         }
 
@@ -103,7 +106,7 @@ public class ExprTransformer2
         {
             Expr e2 = pop(stack) ;
             Expr e1 = pop(stack) ;
-            Expr e = func.apply(transform, e1, e2) ;
+            Expr e = func.apply(exprTransform, e1, e2) ;
             push(stack, e) ;
         }
 
@@ -113,7 +116,7 @@ public class ExprTransformer2
             Expr e3 = pop(stack) ;
             Expr e2 = pop(stack) ;
             Expr e1 = pop(stack) ;
-            Expr e = func.apply(transform, e1, e2, e3) ;
+            Expr e = func.apply(exprTransform, e1, e2, e3) ;
             push(stack, e) ;
         }
 
@@ -121,7 +124,7 @@ public class ExprTransformer2
         public void visit(ExprFunctionN func)
         {
             ExprList x = process(func.getArgs()) ;
-            Expr e = func.apply(transform, x) ;
+            Expr e = func.apply(exprTransform, x) ;
             push(stack, e) ;
         }
         
@@ -145,15 +148,9 @@ public class ExprTransformer2
             if ( funcOp.getArgs() != null )
                 x = process(funcOp.getArgs()) ;
             Op op = funcOp.getGraphPattern() ;
-            // Caution: the expression can have a pattern inside it.
-            // See also: ExprTransformApplyTransform which does much the same in a different way.
-            if ( transform instanceof ExprTransformOp )
-            {
-                ExprTransformOp t = (ExprTransformOp)transform ;
-                op = Transformer.transform(t.getTransform(), op) ; 
-            }
-            
-            Expr e = funcOp.apply(transform, x, op) ;
+            if ( opTransform != null )
+                op = Transformer2.transform(opTransform, exprTransform, op) ;
+            Expr e = funcOp.apply(exprTransform, x, op) ;
             push(stack, e) ;
 
         }
@@ -161,21 +158,21 @@ public class ExprTransformer2
         @Override
         public void visit(NodeValue nv)
         {
-            Expr e = nv.apply(transform) ;
+            Expr e = nv.apply(exprTransform) ;
             push(stack, e) ;
         }
 
         @Override
         public void visit(ExprVar var)
         {
-            Expr e = var.apply(transform) ;
+            Expr e = var.apply(exprTransform) ;
             push(stack, e) ;
         }
         
         @Override
         public void visit(ExprAggregator eAgg)
         {
-            Expr e = eAgg.apply(transform) ;
+            Expr e = eAgg.apply(exprTransform) ;
             push(stack, e) ;
         }
         
