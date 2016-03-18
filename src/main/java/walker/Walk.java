@@ -28,7 +28,10 @@ import org.apache.jena.sparql.sse.SSE ;
 
 public class Walk {
 
-    // Migrate ExprWalker2 first.
+    // Migrate by rename then copy over. 
+    
+    // Aggregates - whether to visit the "aggregate assign to" variable.
+    
     
     public static void main(String[] args) {
         ExprVisitor ev = new ExprVisitorBase() {
