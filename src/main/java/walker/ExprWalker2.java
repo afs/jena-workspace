@@ -47,6 +47,18 @@ public class ExprWalker2
         createWalker(visitor, visitorOp).walk(expr);
     }
 
+    public static void walk(ExprVisitor visitor, ExprList exprList) {
+        if ( exprList == null )
+            return ;
+        exprList.forEach(e->walk(visitor, e));
+    }
+    
+    public static void walk(ExprVisitor visitor, OpVisitor visitorOp, ExprList exprList) {
+        if ( exprList == null )
+            return ;
+        exprList.forEach(e->walk(visitor, e));
+    }
+
     public static ExprWalker2 createWalker(ExprVisitor visitorExpr, OpVisitor visitorOp) {
         return new ExprWalker2(visitorExpr, visitorOp)  ;
     }
@@ -55,12 +67,12 @@ public class ExprWalker2
     {
         private final ExprVisitor visitorExpr ; 
         private final OpVisitor visitorOp ;
-
-        boolean topDown = true ;
+        private final boolean topDown ;
         
         Walker(ExprVisitor visitorExpr, OpVisitor visitorOp, boolean topDown) {
             this.visitorExpr = visitorExpr ;
             this.visitorOp = visitorOp ;
+            this.topDown = topDown ;
         }
         
         @Override
@@ -94,10 +106,13 @@ public class ExprWalker2
         public void visit(ExprVar v)            { v.visit(visitorExpr) ; }
         @Override
         public void visit(ExprAggregator eAgg)    {
-            eAgg.getAggVar().visit(visitorExpr);
-            // XXX
-            //eAgg.getAggregator().getExprList() ;
+            // Unclear
+            //eAgg.getAggVar().visit(visitorExpr);
+            if ( topDown )
+                ExprWalker2.walk(visitorExpr, visitorOp, eAgg.getAggregator().getExprList());
             eAgg.visit(visitorExpr) ; 
+            if ( ! topDown )
+                ExprWalker2.walk(visitorExpr, visitorOp, eAgg.getAggregator().getExprList());
         }
     }
     
