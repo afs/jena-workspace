@@ -20,22 +20,23 @@ package walker;
 
 import java.util.Objects ;
 
-import org.apache.jena.sparql.algebra.Op ;
-import org.apache.jena.sparql.algebra.OpVisitor ;
-import org.apache.jena.sparql.algebra.Transform ;
+import org.apache.jena.sparql.algebra.* ;
 import org.apache.jena.sparql.core.VarExprList ;
-import org.apache.jena.sparql.expr.Expr ;
-import org.apache.jena.sparql.expr.ExprList ;
-import org.apache.jena.sparql.expr.ExprTransform ;
-import org.apache.jena.sparql.expr.ExprVisitor ;
-import walker1.Transformer2 ;
+import org.apache.jena.sparql.expr.* ;
 
-/** Walk the algebra */
+/** Walk algebra, {@link Op}s and {@link Expr}s. */
 public class Walker {
+
+    /** Walk visiting every {@link Op} with an {@link OpVisitor},
+     * including inside expressions.
+     */
     public static void walk(Op op, OpVisitor opVisitor) {
         walk(op, opVisitor, null);
     }
     
+    /** Walk visiting every {@link Op} and every {@link Expr},
+     *  starting from an {@link Op}.
+     */
     public static void walk(Op op, OpVisitor opVisitor, ExprVisitor exprVisitor) {
         if ( op == null )
             return ;
@@ -43,10 +44,16 @@ public class Walker {
         createWalker(opVisitor, exprVisitor).walk(op);
     }
     
+    /** Walk visiting every {@link Expr} with an {@link ExprVisitor},
+     * including inside any {@link Op} in expressions.
+     */
     public static void walk(Expr expr, ExprVisitor exprVisitor) {
         walk(expr, null, exprVisitor);
     }
     
+    /** Walk visiting every {@link Op} and every {@link Expr},
+     *  starting from an {@link Expr}.
+     */
     public static void walk(Expr expr, OpVisitor opVisitor, ExprVisitor exprVisitor) {
         if ( expr == null )
             return ;
@@ -55,11 +62,16 @@ public class Walker {
         createWalker(opVisitor, exprVisitor).walk(expr);
     }
     
+    /** Walk visiting every {@link Expr} with an {@link ExprVisitor},
+     * including inside any {@link Op} in expressions.
+     */
     public static void walk(ExprList exprList, ExprVisitor exprVisitor) {
        walk(exprList, null, exprVisitor);
     }
     
-    public static void walk(ExprList exprList, OpVisitor opVisitor, ExprVisitor exprVisitor) {
+    /** Walk visiting every {@link Op} and every {@link Expr},
+     *  starting from an {@link ExprList}.
+     */   public static void walk(ExprList exprList, OpVisitor opVisitor, ExprVisitor exprVisitor) {
         if ( exprList == null )
             return ;
         Objects.requireNonNull(exprVisitor) ;
@@ -77,20 +89,25 @@ public class Walker {
          varExprList.forEach((v,e)->walk(e,opVisitor, exprVisitor)) ;
      }
  
-    public static WalkerVisitor createWalker(OpVisitor visitorOp, ExprVisitor visitorExpr) {
-        return new WalkerVisitor(visitorOp, visitorExpr)  ;
+    private static OpVisitor   nullOpVisitor   = new OpVisitorBase() ;
+    private static ExprVisitor nullExprVisitor = new ExprVisitorBase() ;
+     
+    public static WalkerVisitor createWalker(OpVisitor opVisitor, ExprVisitor exprVisitor) {
+        if ( opVisitor == null )
+            opVisitor = nullOpVisitor ;
+        if ( exprVisitor == null )
+            exprVisitor = new ExprVisitorBase() ;
+        return new WalkerVisitor(opVisitor, exprVisitor)  ;
     }
     
-    // --------  Transformer
-    
-
-    /** Transform op */
+     /** Transform an {@link Op}. */
     public static Op transform(Op op, Transform opTransform, ExprTransform exprTransform) {
         ApplyTransformVisitor v = createTransformer(opTransform, exprTransform) ;
         walk(op, v) ;
         return v.opResult() ;
     }
     
+    /** Transform an {@link Expr}. */
     public static Expr transform(Expr expr, Transform opTransform, ExprTransform exprTransform) {
         ApplyTransformVisitor v = createTransformer(opTransform, exprTransform) ;
         walk(expr, v) ;
@@ -106,31 +123,16 @@ public class Walker {
     public static Expr transform(Expr expr, ExprTransform exprTransform) {
         return transform(expr, null, exprTransform) ;
     }
-    
+        
+    private static Transform     nullOpTransform   = new TransformBase() ;
+    private static ExprTransform nullExprTransform = new ExprTransformBase() ;
+ 
     private static ApplyTransformVisitor createTransformer(Transform opTransform, ExprTransform exprTransform) {
+        if ( opTransform == null )
+            opTransform = nullOpTransform ;
+        if ( exprTransform == null )
+            exprTransform = nullExprTransform ;
         return new ApplyTransformVisitor(opTransform, exprTransform) ;
     }
-//    
-//    
-//    
-//    /** Transform an algebra expression and the expressions */
-//    public static Op transform(Transform transform, ExprTransform exprTransform, Op op)
-//    { return get().transformation(transform, exprTransform, op, null, null) ; }
-//
-//    /**
-//     * Transformation with specific Transform and default ExprTransform (apply transform
-//     * inside pattern expressions like NOT EXISTS)
-//     */
-//    public static Op transform(Transform transform, Op op, OpVisitor beforeVisitor, OpVisitor afterVisitor) {
-//        return get().transformation(transform, op, beforeVisitor, afterVisitor) ;
-//    }
-//
-//    /** Transformation with specific Transform and ExprTransform applied */
-//    public static Op transform(Transform transform, ExprTransform exprTransform, Op op, OpVisitor beforeVisitor,
-//                               OpVisitor afterVisitor) {
-//        return get().transformation(transform, exprTransform, op, beforeVisitor, afterVisitor) ;
-//    }
-//
 }
-
 

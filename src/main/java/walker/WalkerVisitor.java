@@ -22,35 +22,14 @@ import java.util.Iterator ;
 
 import org.apache.jena.sparql.algebra.Op ;
 import org.apache.jena.sparql.algebra.OpVisitor ;
+import org.apache.jena.sparql.algebra.OpVisitorBase ;
 import org.apache.jena.sparql.algebra.op.* ;
 import org.apache.jena.sparql.core.VarExprList ;
 import org.apache.jena.sparql.expr.* ;
 
 /** Walk algebra and expressions */
 public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunction {
-    // Mega walker - including before/after support or
-    // at least built-in graph tracking. No other before/after use.
-    /* One extends OpVisitor, ExprVisitor
-     * Or an intimate combination 
-     * Need switches for "skip service"
-     * A whole package for walk/transforms 
-     * Two internal walk deeper methods walk(expr), walk(op) +exprList+varExprlist for
-     * convenience */
-    
-    // Delete ExprVisitorFunction or convert to a mixin
-    // OpVisitorByTypeAndExpr as mixin
-    // Drop before/after
-    // Drop tests for "if ( opVisitor != null )" except at entry walks.
-    
-    // Deprecated : before/after support.
-    // Remains left only in case it tunrs out we need it after all.
-    // Only quadization needs it and that is better done by subclass to intercept OpGraph
-    // or explict support
-    // or call out just for OpGraph
-    
-    // Flag for skip service.
-    
-    
+   
     private final OpVisitor   beforeVisitor ;
     private final OpVisitor   afterVisitor ;
     protected final ExprVisitor exprVisitor ;
@@ -60,8 +39,14 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
     // Used at all?
     boolean topDown = false ;
 
-    public WalkerVisitor(OpVisitor visitor, ExprVisitor exprVisitor) {
-        this.opVisitor = visitor ;
+    /** A walker. If a visitor is null, then don't walk in.
+     * For "no action but keep walking inwards", use 
+     * {@link OpVisitorBase} and {@link ExprVisitorBase}.
+     * @see OpVisitorBase
+     * @see ExprVisitorBase
+     */
+    public WalkerVisitor(OpVisitor opVisitor, ExprVisitor exprVisitor) {
+        this.opVisitor = opVisitor ;
         this.exprVisitor = exprVisitor ;
         this.beforeVisitor = null ; // beforeVisitor ;
         this.afterVisitor = null; // afterVisitor ;

@@ -20,7 +20,6 @@ package walker;
 
 import java.util.* ;
 
-import org.apache.jena.atlas.lib.NotImplemented ;
 import org.apache.jena.atlas.logging.Log ;
 import org.apache.jena.query.SortCondition ;
 import org.apache.jena.sparql.algebra.Op ;
@@ -30,12 +29,10 @@ import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.core.VarExprList ;
 import org.apache.jena.sparql.expr.* ;
 import org.apache.jena.sparql.expr.aggregate.Aggregator ;
-import walker1.ExprTransformer2 ;
-import walker1.OpWalker2 ;
 import walker1.Transformer2 ;
 
 public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisitor {
-    protected final Transform   opTransform ;
+    private final Transform     opTransform ;
     private final ExprTransform exprTransform ;
 
     private final Deque<Op>     opStack   = new ArrayDeque<>() ;
@@ -47,20 +44,24 @@ public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisito
     }
 
     final Op opResult() {
-        if ( opStack.size() != 1 ) {
-            Log.warn(this, "Stack is not aligned (size = " + opStack.size() + ")") ;
-            if ( opStack.isEmpty() )
-                return null ;
-        }
+        // XXX  create new when recursing.
+//        if ( opStack.size() != 1 ) {
+//            Log.warn(this, "Op stack is not aligned (size = " + opStack.size() + ")") ;
+//            if ( opStack.isEmpty() )
+//                return null ;
+//        }
         return opStack.pop() ;
     }
 
     final Expr exprResult() {
-        if ( exprStack.size() != 1 ) {
-            Log.warn(this, "Stack is not aligned (size = " + exprStack.size() + ")") ;
-            if ( exprStack.isEmpty() )
-                return null ;
-        }
+        // XXX  create new when recursing.
+//        // ???? Not valid test if we reuse this ApplyTransformVisitor object
+//        if ( exprStack.size() != 1 ) {
+//            Log.warn(this, "Expr stack is not aligned (size = " + exprStack.size() + ")") ;
+//            System.err.println(exprStack);
+//            if ( exprStack.isEmpty() )
+//                return null ;
+//        }
         return exprStack.pop() ;
     }
 
@@ -216,8 +217,6 @@ public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisito
         visit1(opGroup2) ;
     }
 
-    // ----
-
     @Override
     public void visit0(Op0 op) {
         push(opStack, op.apply(opTransform)) ;
@@ -317,7 +316,6 @@ public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisito
         }
     }
     
-    // ---- Expr
     @Override
     public void visit(ExprFunction0 func) {
         Expr e = func.apply(exprTransform) ;
@@ -397,21 +395,27 @@ public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisito
         push(exprStack, e) ;
     }
 
-    private static <T> void push(Deque<T> stack, T value) {
+    private <T> void push(Deque<T> stack, T value) {
         stack.push(value) ;
     }
 
-    private static <T> T pop(Deque<T> stack) {
+    private <T> T pop(Deque<T> stack) {
         try {
             T v = stack.pop() ;
             if ( v ==  null )
-                Log.warn(ApplyTransformVisitor.class, "Pop null from stack") ;
+                Log.warn(ApplyTransformVisitor.class, "Pop null from "+stackLabel(stack)+" stack") ;
             return v ;
         }
         catch (EmptyStackException ex) {
-            Log.warn(ApplyTransformVisitor.class, "Empty stack") ;
+            Log.warn(ApplyTransformVisitor.class, "Empty "+stackLabel(stack)+" stack") ;
             return null ;
         }
+    }
+    
+    private String stackLabel(Deque<?> stack) {
+        if ( stack == opStack ) return "Op" ;
+        if ( stack == exprStack ) return "Expr" ;
+        return "<other>" ;
     }
 }
 

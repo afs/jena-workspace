@@ -25,22 +25,32 @@ import org.apache.jena.sparql.core.BasicPattern ;
 import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.expr.* ;
 import org.apache.jena.sparql.sse.SSE ;
-import walker1.Transformer2 ;
 
 public class Walk {
-
-    // Migrate by rename then copy over.
-
-    // Aggregates - whether to visit the "aggregate assign to" variable.
-
-    // Remove API of OpWalker, Transformer, ExprWalker, ExprTransformer
-    // OpAsQuery
-    // varsMentioned and aggregates -> scope rules.
-
-    // Before/after
-    // Need to continue the grah tracker walker through op->expr->op
-    // quads31a
-    // branch 'visitor'
+    
+    // Mega walker - including before/after support or
+    // at least built-in graph tracking. No other before/after use.
+    
+    // Check for ToDo/XXX
+    
+    /* walker 
+     * Switches for "skip service"
+     */
+    
+    // No visitor -> no-op visitor, for both opsna d exprs
+    
+    // Drop before/after
+    // Drop tests for "if ( opVisitor != null )" except at entry walks.
+    
+    // Deprecated : before/after support.
+    // Remains left only in case it tunrs out we need it after all.
+    // Only quadization needs it and that is better done by subclass to intercept OpGraph
+    // or explict support
+    // or call out just for OpGraph
+    
+    // Flag for skip service.
+    
+    // Transformer - create new AppTransformVisitor per level to keep stack checking.
 
     public static void main(String[] args) {
         ExprVisitor ev = new ExprVisitorBase() {
@@ -72,19 +82,20 @@ public class Walk {
         } ;
 
         String x = StrUtils.strjoinNL // ("(filter (= ?x1 3) (table unit) )") ;
-        ("(sequence ", "  (filter (= ?x1 3) (bgp (:s ?p1 ?o1)) )",
+        ("(sequence ",
+         //"  (filter (= ?x1 3) (bgp (:s ?p1 ?o1)) )",
          "  (filter   (notexists  (filter (= ?s :s) (bgp (triple ?s ?p ?o)) ) ) (table unit) )", ")") ;
         Op op = SSE.parseOp(x) ;
 
-        // Walker.walk(op,xv,ev);
-        // System.exit(0) ;
+        Walker.walk(op,xv,null);
+        //System.exit(0) ;
 
         String z = StrUtils.strjoinNL(
                                       // "(notexists (filter (= ?s :s) (bgp (triple ?s ?p
                                       // ?o))))"
                                       "(+ 1 ?s)") ;
         Expr e = SSE.parseExpr(z) ;
-        Expr e2 = Walker.transform(e, xvt, evt) ;
+        Expr e2 = Walker.transform(e, xvt, null) ;
 
         System.out.println(e2) ;
         // System.exit(0) ;
