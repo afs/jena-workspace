@@ -18,198 +18,119 @@
 
 package walker;
 
-import java.util.Iterator ;
+import java.util.Objects ;
 
 import org.apache.jena.sparql.algebra.Op ;
 import org.apache.jena.sparql.algebra.OpVisitor ;
-import org.apache.jena.sparql.algebra.op.* ;
+import org.apache.jena.sparql.algebra.Transform ;
 import org.apache.jena.sparql.core.VarExprList ;
-import org.apache.jena.sparql.expr.* ;
+import org.apache.jena.sparql.expr.Expr ;
+import org.apache.jena.sparql.expr.ExprList ;
+import org.apache.jena.sparql.expr.ExprTransform ;
+import org.apache.jena.sparql.expr.ExprVisitor ;
+import walker1.Transformer2 ;
 
 /** Walk the algebra */
-public class Walker implements OpVisitorByTypeAndExpr, ExprVisitorFunction {
- // Mega walker - including before/after support or
-    // at least built-in graph tracking. No other before/after use.
-    /* One extends OpVisitor, ExprVisitor
-     * Or an intimate combination 
-     * Need switches for "skip service"
-     * A whole package for walk/transforms 
-     * Two internal walk deeper methods walk(expr), walk(op) +exprList+varExprlist for
-     * convenience */
-    
-    // Delete ExprVisitorFunction or convert to a mixin
-    // OpVisitorByTypeAndExpr as mixin
-    // Drop before/after
-    // Drop tests for "if ( opVisitor != null )" except at entry walks.
-    
-    private final OpVisitor   beforeVisitor ;
-    private final OpVisitor   afterVisitor ;
-    protected final ExprVisitor exprVisitor ;
-    protected final OpVisitor opVisitor ;
-
-    // ---- Expr
-    // Used at all?
-    boolean topDown = false ;
-
-    public Walker(OpVisitor visitor, ExprVisitor exprVisitor) {
-        this.opVisitor = visitor ;
-        this.exprVisitor = exprVisitor ;
-        this.beforeVisitor = null ; // beforeVisitor ;
-        this.afterVisitor = null; // afterVisitor ;
+public class Walker {
+    public static void walk(Op op, OpVisitor opVisitor) {
+        walk(op, opVisitor, null);
     }
     
-    public void walk(Op op) {
-        op.visit(this);
+    public static void walk(Op op, OpVisitor opVisitor, ExprVisitor exprVisitor) {
+        if ( op == null )
+            return ;
+        Objects.requireNonNull(opVisitor) ;
+        createWalker(opVisitor, exprVisitor).walk(op);
     }
     
-    public void walk(Expr expr) {
-        expr.visit(this);
+    public static void walk(Expr expr, ExprVisitor exprVisitor) {
+        walk(expr, null, exprVisitor);
     }
     
-    public void walk(ExprList exprList) {
-        exprList.forEach(e->walk(e));
-    }
-
-    public void walk(VarExprList varExprList) {
-        varExprList.forEach((v,e) -> walk(e));
-    }
-
-    public static Walker createWalker(OpVisitor visitorOp, ExprVisitor visitorExpr) {
-        return new Walker(visitorOp, visitorExpr)  ;
-    }
-
-    protected final void before(Op op) {
-        if ( beforeVisitor != null )
-            op.visit(beforeVisitor) ;
-    }
-
-    protected final void after(Op op) {
-        if ( afterVisitor != null )
-            op.visit(afterVisitor) ;
-    }
-
-    // ---- Mode swapping between op and expr. visit=>?walk
-    @Override
-    public void visitExpr(ExprList exprList) {
-        if ( exprVisitor != null )
-            exprList.forEach(e->e.visit(this));
-    }
-
-    @Override
-    public void visitExpr(VarExprList varExprList) {
-        if ( exprVisitor != null )
-            varExprList.forEach((v,e) -> e.visit(this));
+    public static void walk(Expr expr, OpVisitor opVisitor, ExprVisitor exprVisitor) {
+        if ( expr == null )
+            return ;
+        Objects.requireNonNull(expr) ;
+        Objects.requireNonNull(exprVisitor) ;
+        createWalker(opVisitor, exprVisitor).walk(expr);
     }
     
-    public void visitOp(Op op) {
-        if ( opVisitor != null )
-            op.visit(this);
-    }
-    // ----
-
-    @Override
-    public void visit0(Op0 op) {
-        before(op) ;
-        if ( opVisitor != null )
-            op.visit(opVisitor) ;
-        after(op) ;
-    }
-
-    @Override
-    public void visit1(Op1 op) {
-        before(op) ;
-        if ( op.getSubOp() != null )
-            op.getSubOp().visit(this) ;
-        if ( opVisitor != null )
-            op.visit(opVisitor) ;
-        after(op) ;
-    }
-
-    @Override
-    public void visit2(Op2 op) {
-        before(op) ;
-        if ( op.getLeft() != null )
-            op.getLeft().visit(this) ;
-        if ( op.getRight() != null )
-            op.getRight().visit(this) ;
-        if ( opVisitor != null )
-            op.visit(opVisitor) ;
-        after(op) ;
-    }
-
-    @Override
-    public void visitN(OpN op) {
-        before(op) ;
-        for (Iterator<Op> iter = op.iterator(); iter.hasNext();) {
-            Op sub = iter.next() ;
-            sub.visit(this) ;
-        }
-        if ( opVisitor != null )
-            op.visit(opVisitor) ;
-        after(op) ;
-    }
-
-    @Override
-    public void visitExt(OpExt op) {
-        before(op) ;
-        if ( opVisitor != null )
-            op.visit(opVisitor) ;
-        after(op) ;
+    public static void walk(ExprList exprList, ExprVisitor exprVisitor) {
+       walk(exprList, null, exprVisitor);
     }
     
-    @Override
-    public void visit(ExprFunction0 func) { visitExprFunction(func) ; }
-    @Override
-    public void visit(ExprFunction1 func) { visitExprFunction(func) ; }
-    @Override
-    public void visit(ExprFunction2 func) { visitExprFunction(func) ; }
-    @Override
-    public void visit(ExprFunction3 func) { visitExprFunction(func) ; }
-    @Override
-    public void visit(ExprFunctionN func) { visitExprFunction(func) ; }
-    
-    public void visitExprFunction(ExprFunction func) {
-        if ( topDown )
-            func.visit(exprVisitor) ;    
-        for ( int i = 1 ; i <= func.numArgs() ; i++ )
-        {
-            Expr expr = func.getArg(i) ;
-            if ( expr == null )
-                // Put a dummy in, e.g. to keep the transform stack aligned.
-                NodeValue.nvNothing.visit(this) ;
-            else
-                expr.visit(this) ;
-        }
-        if ( !topDown )
-            func.visit(exprVisitor) ;
+    public static void walk(ExprList exprList, OpVisitor opVisitor, ExprVisitor exprVisitor) {
+        if ( exprList == null )
+            return ;
+        Objects.requireNonNull(exprVisitor) ;
+        exprList.forEach(e->walk(e,opVisitor, exprVisitor)) ;
     }
-    
-    @Override
-    public void visit(ExprFunctionOp funcOp) {
-        // Walk the op
-        funcOp.getGraphPattern().visit(this); 
-        funcOp.visit(exprVisitor) ;
-    }
-    
-    @Override
-    public void visit(NodeValue nv)         { nv.visit(exprVisitor) ; }
-    @Override
-    public void visit(ExprVar v)            { v.visit(exprVisitor) ; }
-    @Override
-    public void visit(ExprAggregator eAgg)  {
-        // This is the assignment variable of the aggregation
-        // not a normal variable of an expression.
-        // (It might be better if ExprAggregator did not use the 
-        //eAgg.getAggVar().visit(visitorExpr);
-        
-        // XXX Hack for varsMentioned
 
-//        if ( topDown )
-//            ExprWalker2.walk(visitorExpr, visitorOp, eAgg.getAggregator().getExprList());
-        eAgg.visit(exprVisitor) ; 
-//        if ( ! topDown )
-//            ExprWalker2.walk(visitorExpr, visitorOp, eAgg.getAggregator().getExprList());
+    public static void walk(VarExprList varExprList, ExprVisitor exprVisitor) {
+        walk(varExprList, null, exprVisitor);
+     }
+     
+     public static void walk(VarExprList varExprList, OpVisitor opVisitor, ExprVisitor exprVisitor) {
+         if ( varExprList == null )
+             return ;
+         Objects.requireNonNull(exprVisitor) ;
+         varExprList.forEach((v,e)->walk(e,opVisitor, exprVisitor)) ;
+     }
+ 
+    public static WalkerVisitor createWalker(OpVisitor visitorOp, ExprVisitor visitorExpr) {
+        return new WalkerVisitor(visitorOp, visitorExpr)  ;
     }
+    
+    // --------  Transformer
+    
+
+    /** Transform op */
+    public static Op transform(Op op, Transform opTransform, ExprTransform exprTransform) {
+        ApplyTransformVisitor v = createTransformer(opTransform, exprTransform) ;
+        walk(op, v) ;
+        return v.opResult() ;
+    }
+    
+    public static Expr transform(Expr expr, Transform opTransform, ExprTransform exprTransform) {
+        ApplyTransformVisitor v = createTransformer(opTransform, exprTransform) ;
+        walk(expr, v) ;
+        return v.exprResult() ;
+    }
+    
+    /** Transform an algebra expression */
+    public static Op transform(Op op, Transform transform) {
+       return transform(op, transform, null) ;
+    }
+    
+    /** Transform an expression */
+    public static Expr transform(Expr expr, ExprTransform exprTransform) {
+        return transform(expr, null, exprTransform) ;
+    }
+    
+    private static ApplyTransformVisitor createTransformer(Transform opTransform, ExprTransform exprTransform) {
+        return new ApplyTransformVisitor(opTransform, exprTransform) ;
+    }
+//    
+//    
+//    
+//    /** Transform an algebra expression and the expressions */
+//    public static Op transform(Transform transform, ExprTransform exprTransform, Op op)
+//    { return get().transformation(transform, exprTransform, op, null, null) ; }
+//
+//    /**
+//     * Transformation with specific Transform and default ExprTransform (apply transform
+//     * inside pattern expressions like NOT EXISTS)
+//     */
+//    public static Op transform(Transform transform, Op op, OpVisitor beforeVisitor, OpVisitor afterVisitor) {
+//        return get().transformation(transform, op, beforeVisitor, afterVisitor) ;
+//    }
+//
+//    /** Transformation with specific Transform and ExprTransform applied */
+//    public static Op transform(Transform transform, ExprTransform exprTransform, Op op, OpVisitor beforeVisitor,
+//                               OpVisitor afterVisitor) {
+//        return get().transformation(transform, exprTransform, op, beforeVisitor, afterVisitor) ;
+//    }
+//
 }
 
 

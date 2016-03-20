@@ -42,67 +42,56 @@ public class Walk {
     // quads31a
     // branch 'visitor'
 
-    
     public static void main(String[] args) {
         ExprVisitor ev = new ExprVisitorBase() {
             @Override
             public void visit(ExprVar nv) {
-                System.out
-                    .println("Var: " + nv) ;
+                System.out.println("Var: " + nv) ;
             }
         } ;
         OpVisitor xv = new OpVisitorBase() {
             @Override
             public void visit(OpBGP op) {
-                System.out
-                    .println("BGP: " + op
-                        .getPattern()) ;
+                System.out.println("BGP: " + op.getPattern()) ;
             }
         } ;
 
         ExprTransform evt = new ExprTransformCopy() {
             @Override
             public Expr transform(ExprVar nv) {
-                return new ExprVar(Var
-                    .alloc("#" + nv
-                        .getVarName())) ;
+                return new ExprVar(Var.alloc("#" + nv.getVarName())) ;
             }
         } ;
         Transform xvt = new TransformCopy() {
             @Override
             public Op transform(OpBGP op) {
-                BasicPattern p = new BasicPattern(op
-                    .getPattern()) ;
-                p
-                    .add(SSE
-                        .parseTriple("(:S :P :O)")) ;
+                BasicPattern p = new BasicPattern(op.getPattern()) ;
+                p.add(SSE.parseTriple("(:S :P :O)")) ;
                 return new OpBGP(p) ;
             }
         } ;
 
-        String x = StrUtils
-            .strjoinNL("(sequence "
-                       ,"  (filter (= ?x1 3) (bgp (:s ?p1 ?o1)) )"
-                       ,"  (filter   (notexists  (filter (= ?s :s) (bgp (triple ?s ?p ?o)) ) ) (table unit) )"
-                       , ")") ;
+        String x = StrUtils.strjoinNL // ("(filter (= ?x1 3) (table unit) )") ;
+        ("(sequence ", "  (filter (= ?x1 3) (bgp (:s ?p1 ?o1)) )",
+         "  (filter   (notexists  (filter (= ?s :s) (bgp (triple ?s ?p ?o)) ) ) (table unit) )", ")") ;
         Op op = SSE.parseOp(x) ;
-        
-        
-        new Walker(xv,ev).walk(op);
-        System.exit(0) ;
-        
-// OpWalker2.walk(op, xv, ev);
 
-        String z = StrUtils
-            .strjoinNL(
-                       // "(notexists (filter (= ?s :s) (bgp (triple ?s ?p ?o))))"
-                       "(+ 1 ?s)") ;
+        // Walker.walk(op,xv,ev);
+        // System.exit(0) ;
+
+        String z = StrUtils.strjoinNL(
+                                      // "(notexists (filter (= ?s :s) (bgp (triple ?s ?p
+                                      // ?o))))"
+                                      "(+ 1 ?s)") ;
         Expr e = SSE.parseExpr(z) ;
-// ExprWalker2.walk(ev, xv, e);
+        Expr e2 = Walker.transform(e, xvt, evt) ;
 
-        System.out.println() ;
+        System.out.println(e2) ;
+        // System.exit(0) ;
+
         System.out.println(op) ;
-        Op op1 = Transformer2.transform(xvt, evt, op) ;
+
+        Op op1 = Walker.transform(op, xvt, evt) ;
         System.out.println(op1) ;
 
 // System.out.println() ;

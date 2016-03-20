@@ -65,7 +65,7 @@ public class ExprTransformer2
 
     private Expr transformation(ApplyExprTransformVisitor applyVisitor, Expr expr) {
         ExprWalker2.walk(applyVisitor, expr) ;
-        return applyVisitor.result() ;
+        return applyVisitor.exprResult() ;
     }
     
     static
@@ -73,16 +73,16 @@ public class ExprTransformer2
     {
         private ExprTransform exprTransform ;
         private Transform opTransform ;
-        private final Deque<Expr> stack = new ArrayDeque<>() ;
+        private final Deque<Expr> exprStack = new ArrayDeque<>() ;
         
-        final Expr result()
+        final Expr exprResult()
         { 
-            if ( stack.size() != 1 ) {
-                Log.warn(this, "Stack is not aligned (size = "+stack.size()+")") ;
-                if ( stack.isEmpty() )
+            if ( exprStack.size() != 1 ) {
+                Log.warn(this, "Stack is not aligned (size = "+exprStack.size()+")") ;
+                if ( exprStack.isEmpty() )
                     return null ;
             }
-            return stack.pop() ; 
+            return exprStack.pop() ; 
         }
 
         ApplyExprTransformVisitor(ExprTransform exprTransform, Transform opTransform) {
@@ -94,34 +94,34 @@ public class ExprTransformer2
         public void visit(ExprFunction0 func)
         {
             Expr e = func.apply(exprTransform) ;
-            push(stack, e) ;
+            push(exprStack, e) ;
         }
         
         @Override
         public void visit(ExprFunction1 func)
         {
-            Expr e1 = pop(stack) ;
+            Expr e1 = pop(exprStack) ;
             Expr e = func.apply(exprTransform, e1) ;
-            push(stack, e) ;
+            push(exprStack, e) ;
         }
 
         @Override
         public void visit(ExprFunction2 func)
         {
-            Expr e2 = pop(stack) ;
-            Expr e1 = pop(stack) ;
+            Expr e2 = pop(exprStack) ;
+            Expr e1 = pop(exprStack) ;
             Expr e = func.apply(exprTransform, e1, e2) ;
-            push(stack, e) ;
+            push(exprStack, e) ;
         }
 
         @Override
         public void visit(ExprFunction3 func)
         {
-            Expr e3 = pop(stack) ;
-            Expr e2 = pop(stack) ;
-            Expr e1 = pop(stack) ;
+            Expr e3 = pop(exprStack) ;
+            Expr e2 = pop(exprStack) ;
+            Expr e1 = pop(exprStack) ;
             Expr e = func.apply(exprTransform, e1, e2, e3) ;
-            push(stack, e) ;
+            push(exprStack, e) ;
         }
 
         @Override
@@ -129,7 +129,7 @@ public class ExprTransformer2
         {
             ExprList x = process(func.getArgs()) ;
             Expr e = func.apply(exprTransform, x) ;
-            push(stack, e) ;
+            push(exprStack, e) ;
         }
         
         private ExprList process(List<Expr> exprList)
@@ -138,7 +138,7 @@ public class ExprTransformer2
             List<Expr> x = new ArrayList<>(N) ;
             for ( Expr anExprList : exprList )
             {
-                Expr e2 = pop( stack );
+                Expr e2 = pop( exprStack );
                 // Add in reverse.
                 x.add( 0, e2 );
             }
@@ -155,7 +155,7 @@ public class ExprTransformer2
             if ( opTransform != null )
                 op = Transformer2.transform(opTransform, exprTransform, op) ;
             Expr e = funcOp.apply(exprTransform, x, op) ;
-            push(stack, e) ;
+            push(exprStack, e) ;
 
         }
 
@@ -163,21 +163,21 @@ public class ExprTransformer2
         public void visit(NodeValue nv)
         {
             Expr e = nv.apply(exprTransform) ;
-            push(stack, e) ;
+            push(exprStack, e) ;
         }
 
         @Override
         public void visit(ExprVar var)
         {
             Expr e = var.apply(exprTransform) ;
-            push(stack, e) ;
+            push(exprStack, e) ;
         }
         
         @Override
         public void visit(ExprAggregator eAgg)
         {
             Expr e = eAgg.apply(exprTransform) ;
-            push(stack, e) ;
+            push(exprStack, e) ;
         }
         
         private static void push(Deque<Expr> stack, Expr value)
