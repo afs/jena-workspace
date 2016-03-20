@@ -1,0 +1,13 @@
+#!/bin/bash
+
+SRC=src/main/java/walker
+
+AD=/home/afs/Jena/jena-arq/src/main/java/org/apache/jena/sparql/algebra/
+
+cp $SRC/Transformer2.java $AD/Transformer.java
+cp $SRC/OpVisitorByTypeAndExpr.java $AD
+cp $SRC/OpWalker2.java $AD/OpWalker.java
+
+ED=/home/afs/Jena/jena-arq/src/main/java/org/apache/jena/sparql/expr/
+cp $SRC/ExprTransformer2.java $ED/ExprTransformer.java
+cp $SRC/ExprWalker2.java $ED/ExprWalker.java

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package walker;
+package walker1;
 
 import org.apache.jena.sparql.algebra.OpVisitor ;
 import org.apache.jena.sparql.algebra.op.* ;
@@ -24,158 +24,158 @@ import org.apache.jena.sparql.core.VarExprList ;
 import org.apache.jena.sparql.expr.ExprList ;
 
 /** A visitor helper that maps all visits to a few general ones */ 
-public interface OpVisitorByTypeAndExpr extends OpVisitor
+public abstract class OpVisitorByTypeAndExpr implements OpVisitor
 {
-    public void visitN(OpN op) ;
+    protected abstract void visitN(OpN op) ;
 
-    public void visit2(Op2 op) ;
+    protected abstract void visit2(Op2 op) ;
     
-    public void visit1(Op1 op) ;
+    protected abstract void visit1(Op1 op) ;
     
-    public void visit0(Op0 op) ;    
+    protected abstract void visit0(Op0 op) ;    
     
-    public default void visitExt(OpExt op) {
+    protected void visitExt(OpExt op) {
         op.effectiveOp().visit(this);
     }
 
-    public void visitExpr(ExprList exprs) ;
-    public void visitExpr(VarExprList exprs) ;
+    protected abstract void visitExpr(ExprList exprs) ;
+    protected abstract void visitExpr(VarExprList exprs) ;
     
-    public default void visitModifer(OpModifier opMod) {
+    protected void visitModifer(OpModifier opMod) {
         visit1(opMod);
     }
 
     @Override
-    public default void visit(OpBGP opBGP) {
+    public void visit(OpBGP opBGP) {
         visit0(opBGP);
     }
 
     @Override
-    public default void visit(OpQuadPattern quadPattern) {
+    public void visit(OpQuadPattern quadPattern) {
         visit0(quadPattern);
     }
 
     @Override
-    public default void visit(OpQuadBlock quadBlock) {
+    public void visit(OpQuadBlock quadBlock) {
         visit0(quadBlock);
     }
 
     @Override
-    public default void visit(OpTriple opTriple) {
+    public void visit(OpTriple opTriple) {
         visit0(opTriple);
     }
 
     @Override
-    public default void visit(OpQuad opQuad) {
+    public void visit(OpQuad opQuad) {
         visit0(opQuad);
     }
 
     @Override
-    public default void visit(OpPath opPath) {
+    public void visit(OpPath opPath) {
         visit0(opPath);
     }
 
     @Override
-    public default void visit(OpProcedure opProcedure) {
+    public void visit(OpProcedure opProcedure) {
         visit1(opProcedure);
     }
 
     @Override
-    public default void visit(OpPropFunc opPropFunc) {
+    public void visit(OpPropFunc opPropFunc) {
         visit1(opPropFunc);
     }
 
     @Override
-    public default void visit(OpJoin opJoin) {
+    public void visit(OpJoin opJoin) {
         visit2(opJoin);
     }
 
     @Override
-    public default void visit(OpSequence opSequence) {
+    public void visit(OpSequence opSequence) {
         visitN(opSequence);
     }
 
     @Override
-    public default void visit(OpDisjunction opDisjunction) {
+    public void visit(OpDisjunction opDisjunction) {
         visitN(opDisjunction);
     }
 
     @Override
-    public default void visit(OpLeftJoin opLeftJoin) {
+    public void visit(OpLeftJoin opLeftJoin) {
         visitExpr(opLeftJoin.getExprs());
         visit2(opLeftJoin);
     }
 
     @Override
-    public default void visit(OpDiff opDiff) {
+    public void visit(OpDiff opDiff) {
         visit2(opDiff);
     }
 
     @Override
-    public default void visit(OpMinus opMinus) {
+    public void visit(OpMinus opMinus) {
         visit2(opMinus);
     }
 
     @Override
-    public default void visit(OpUnion opUnion) {
+    public void visit(OpUnion opUnion) {
         visit2(opUnion);
     }
 
     @Override
-    public default void visit(OpConditional opCond) {
+    public void visit(OpConditional opCond) {
         visit2(opCond);
     }
 
     @Override
-    public default void visit(OpFilter opFilter) {
+    public void visit(OpFilter opFilter) {
         visitExpr(opFilter.getExprs());
         visit1(opFilter);
     }
 
     @Override
-    public default void visit(OpGraph opGraph) {
+    public void visit(OpGraph opGraph) {
         visit1(opGraph);
     }
 
     @Override
-    public default void visit(OpService opService) {
+    public void visit(OpService opService) {
         visit1(opService);
     }
 
     @Override
-    public default void visit(OpDatasetNames dsNames) {
+    public void visit(OpDatasetNames dsNames) {
         visit0(dsNames);
     }
 
     @Override
-    public default void visit(OpTable opUnit) {
+    public void visit(OpTable opUnit) {
         visit0(opUnit);
     }
 
     @Override
-    public default void visit(OpExt opExt) {
+    public void visit(OpExt opExt) {
         visitExt(opExt);
     }
 
     @Override
-    public default void visit(OpNull opNull) {
+    public void visit(OpNull opNull) {
         visit0(opNull);
     }
 
     @Override
-    public default void visit(OpLabel opLabel) {
+    public void visit(OpLabel opLabel) {
         visit1(opLabel);
     }
 
     @Override
-    public default void visit(OpOrder opOrder) {
+    public void visit(OpOrder opOrder) {
         // XXX
         //opOrder.getConditions() ;
         visitModifer(opOrder);
     }
 
     @Override
-    public default void visit(OpGroup opGroup) {
+    public void visit(OpGroup opGroup) {
         visitExpr(opGroup.getGroupVars()) ;
         // XXX
         //opGroup.getAggregators() ;
@@ -183,46 +183,46 @@ public interface OpVisitorByTypeAndExpr extends OpVisitor
     }
 
     @Override
-    public default void visit(OpTopN opTop) {
+    public void visit(OpTopN opTop) {
         // XXX
         // opTop.getConditions() ;
         visit1(opTop);
     }
     
     @Override
-    public default void visit(OpAssign opAssign) {
+    public void visit(OpAssign opAssign) {
         visitExpr(opAssign.getVarExprList()) ;
         visit1(opAssign);
     }
 
     @Override
-    public default void visit(OpExtend opExtend) {
+    public void visit(OpExtend opExtend) {
         visitExpr(opExtend.getVarExprList()) ;
         visit1(opExtend);
     }
 
     @Override
-    public default void visit(OpList opList) {
+    public void visit(OpList opList) {
         visitModifer(opList);
     }
 
     @Override
-    public default void visit(OpProject opProject) {
+    public void visit(OpProject opProject) {
         visitModifer(opProject);
     }
 
     @Override
-    public default void visit(OpReduced opReduced) {
+    public void visit(OpReduced opReduced) {
         visitModifer(opReduced);
     }
 
     @Override
-    public default void visit(OpDistinct opDistinct) {
+    public void visit(OpDistinct opDistinct) {
         visitModifer(opDistinct);
     }
 
     @Override
-    public default void visit(OpSlice opSlice) {
+    public void visit(OpSlice opSlice) {
         visitModifer(opSlice);
     }
 }

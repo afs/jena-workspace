@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package walker;
+package walker1;
 
 import java.util.* ;
 
@@ -33,17 +33,21 @@ public class ExprTransformer2
     public static ExprTransformer2 get() { return singleton; }
     
     /** Transform an expression */
+    public static Expr transform(ExprTransform transform, Expr expr)
+    { return transform(transform, null, expr) ; }
+    
+    /** Transform an expression */
+    public static ExprList transform(ExprTransform transform, ExprList exprList)
+    { return transform(transform, null, exprList) ; }
+    
+    /** Transform an expression */
     public static Expr transform(ExprTransform transform, Transform opTransform, Expr expr)
     { return get().transformation(transform, opTransform, expr) ; }
 
-//    /** Transform an expression list */
-//    public static ExprList transform(ExprTransform transform, ExprList exprList)
-//    { return get().transformation(transform, exprList) ; }
-    
     /** Transform an expression list */
     public static ExprList transform(ExprTransform exprTransform, Transform opTransform, ExprList exprList)
     { return get().transformation(exprTransform, opTransform, exprList) ; }
-
+    
     private Expr transformation(ExprTransform exprTransform, Transform opTransform, Expr expr) {
         ApplyExprTransformVisitor v = new ApplyExprTransformVisitor(exprTransform, opTransform) ;
         return transformation(v, expr) ;
@@ -60,7 +64,7 @@ public class ExprTransformer2
     }
 
     private Expr transformation(ApplyExprTransformVisitor applyVisitor, Expr expr) {
-        ExprWalker.walk(applyVisitor, expr) ;
+        ExprWalker2.walk(applyVisitor, expr) ;
         return applyVisitor.result() ;
     }
     

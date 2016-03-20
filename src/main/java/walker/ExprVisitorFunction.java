@@ -18,7 +18,21 @@
 
 package walker;
 
-public class TestWalker {
+import org.apache.jena.sparql.expr.* ;
 
+/** Convert all visit calls on the expressions in a call to a generic visit operation for expression functions */
+public interface ExprVisitorFunction extends ExprVisitor 
+{
+    @Override
+    public default void visit(ExprFunction0 func) { visitExprFunction(func) ; }
+    @Override
+    public default void visit(ExprFunction1 func) { visitExprFunction(func) ; }
+    @Override
+    public default void visit(ExprFunction2 func) { visitExprFunction(func) ; }
+    @Override
+    public default void visit(ExprFunction3 func) { visitExprFunction(func) ; }
+    @Override
+    public default void visit(ExprFunctionN func) { visitExprFunction(func) ; }
+
+    public void visitExprFunction(ExprFunction func) ;
 }
-

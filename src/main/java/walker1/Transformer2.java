@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package walker;
+package walker1;
 
 import java.util.* ;
 
@@ -137,7 +137,7 @@ public class Transformer2
     /** The primitive operation to apply a transformation to an Op */
     protected Op applyTransformation(ApplyTransformVisitor transformApply, Op op, OpVisitor beforeVisitor,
                                      OpVisitor afterVisitor) {
-        OpWalker.walk(op, transformApply, beforeVisitor, afterVisitor) ;
+        OpWalker2.walk(op, transformApply, null, beforeVisitor, afterVisitor) ;
         Op r = transformApply.result() ;
         return r ;
     }

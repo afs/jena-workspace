@@ -32,7 +32,7 @@ import org.apache.jena.sparql.expr.E_Function ;
 import org.apache.jena.sparql.expr.ExprFunctionN ;
 import org.apache.jena.sparql.expr.ExprVisitorBase ;
 import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry ;
-import walker.OpWalker2 ;
+import walker1.OpWalker2 ;
 
 public class AnalyseAlgebra {
     

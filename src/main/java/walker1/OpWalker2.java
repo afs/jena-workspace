@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package walker;
+package walker1;
 
 import java.util.Iterator ;
 
@@ -96,14 +96,14 @@ public class OpWalker2
 
         @Override
         protected void visitExpr(ExprList exprs) {
-            // XXX Needs to carry the OpVisitor
-            exprs.forEach(e-> ExprWalker2.walk(exprVisitor, visitor, e));
+            if ( exprVisitor != null )
+                ExprWalker2.walk(exprVisitor, visitor, exprs);
         }
 
         @Override
         protected void visitExpr(VarExprList varExprs) {
-            // XXX Needs to carry the OpVisitor
-            varExprs.forEach((v,e) -> ExprWalker2.walk(exprVisitor, e)) ; 
+            if ( exprVisitor != null )
+                ExprWalker2.walk(exprVisitor, visitor, varExprs);
         }
 
         @Override

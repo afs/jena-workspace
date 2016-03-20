@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-package walker;
+package walker1;
 
 import org.apache.jena.sparql.algebra.OpVisitor ;
+import org.apache.jena.sparql.core.VarExprList ;
 import org.apache.jena.sparql.expr.* ;
 
 /** Walk the expression tree */
@@ -57,6 +58,12 @@ public class ExprWalker2
         if ( exprList == null )
             return ;
         exprList.forEach(e->walk(visitor, e));
+    }
+    
+    public static void walk(ExprVisitor visitor, OpVisitor visitorOp, VarExprList varExprList) {
+        if ( varExprList == null )
+            return ;
+        varExprList.forEach((v,e) -> walk(visitor, visitorOp, e));
     }
 
     public static ExprWalker2 createWalker(ExprVisitor visitorExpr, OpVisitor visitorOp) {
@@ -105,14 +112,19 @@ public class ExprWalker2
         @Override
         public void visit(ExprVar v)            { v.visit(visitorExpr) ; }
         @Override
-        public void visit(ExprAggregator eAgg)    {
-            // Unclear
+        public void visit(ExprAggregator eAgg)  {
+            // This is the assignment variable of the aggregation
+            // not a normal variable of an expression.
+            // (It might be better if ExprAggregator did not use the 
             //eAgg.getAggVar().visit(visitorExpr);
-            if ( topDown )
-                ExprWalker2.walk(visitorExpr, visitorOp, eAgg.getAggregator().getExprList());
+            
+            // XXX Hack for varsMentioned
+
+//            if ( topDown )
+//                ExprWalker2.walk(visitorExpr, visitorOp, eAgg.getAggregator().getExprList());
             eAgg.visit(visitorExpr) ; 
-            if ( ! topDown )
-                ExprWalker2.walk(visitorExpr, visitorOp, eAgg.getAggregator().getExprList());
+//            if ( ! topDown )
+//                ExprWalker2.walk(visitorExpr, visitorOp, eAgg.getAggregator().getExprList());
         }
     }
     
