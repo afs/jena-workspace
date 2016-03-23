@@ -36,8 +36,6 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
     protected final OpVisitor opVisitor ;
 
     // ---- Expr
-    // Used at all?
-    boolean topDown = false ;
 
     /** A walker. If a visitor is null, then don't walk in.
      * For "no action but keep walking inwards", use 
@@ -68,16 +66,6 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
         varExprList.forEach((v,e) -> walk(e));
     }
 
-    protected final void before(Op op) {
-        if ( beforeVisitor != null )
-            op.visit(beforeVisitor) ;
-    }
-
-    protected final void after(Op op) {
-        if ( afterVisitor != null )
-            op.visit(afterVisitor) ;
-    }
-
     // ---- Mode swapping between op and expr. visit=>?walk
     @Override
     public void visitExpr(ExprList exprList) {
@@ -99,54 +87,45 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
 
     @Override
     public void visit0(Op0 op) {
-        before(op) ;
         if ( opVisitor != null )
             op.visit(opVisitor) ;
-        after(op) ;
     }
 
     @Override
     public void visit1(Op1 op) {
-        before(op) ;
         if ( op.getSubOp() != null )
             op.getSubOp().visit(this) ;
         if ( opVisitor != null )
             op.visit(opVisitor) ;
-        after(op) ;
     }
 
     @Override
     public void visit2(Op2 op) {
-        before(op) ;
         if ( op.getLeft() != null )
             op.getLeft().visit(this) ;
         if ( op.getRight() != null )
             op.getRight().visit(this) ;
         if ( opVisitor != null )
             op.visit(opVisitor) ;
-        after(op) ;
     }
 
     @Override
     public void visitN(OpN op) {
-        before(op) ;
         for (Iterator<Op> iter = op.iterator(); iter.hasNext();) {
             Op sub = iter.next() ;
             sub.visit(this) ;
         }
         if ( opVisitor != null )
             op.visit(opVisitor) ;
-        after(op) ;
     }
 
     @Override
     public void visitExt(OpExt op) {
-        before(op) ;
         if ( opVisitor != null )
             op.visit(opVisitor) ;
-        after(op) ;
     }
     
+    // Shared with ElementWalker - mixin
     @Override
     public void visit(ExprFunction0 func) { visitExprFunction(func) ; }
     @Override
@@ -160,10 +139,7 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
     
     @Override
     public void visitExprFunction(ExprFunction func) {
-        if ( topDown )
-            func.visit(exprVisitor) ;    
-        for ( int i = 1 ; i <= func.numArgs() ; i++ )
-        {
+        for ( int i = 1 ; i <= func.numArgs() ; i++ ) {
             Expr expr = func.getArg(i) ;
             if ( expr == null )
                 // Put a dummy in, e.g. to keep the transform stack aligned.
@@ -171,8 +147,7 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
             else
                 expr.visit(this) ;
         }
-        if ( !topDown )
-            func.visit(exprVisitor) ;
+        func.visit(exprVisitor) ;
     }
     
     @Override
@@ -190,16 +165,12 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
     public void visit(ExprAggregator eAgg)  {
         // This is the assignment variable of the aggregation
         // not a normal variable of an expression.
-        // (It might be better if ExprAggregator did not use the 
-        //eAgg.getAggVar().visit(visitorExpr);
+
+        //visitAssignVar(eAgg.getAggVar().asVar()) ;
         
         // XXX Hack for varsMentioned
 
-//        if ( topDown )
-//            ExprWalker2.walk(visitorExpr, visitorOp, eAgg.getAggregator().getExprList());
         eAgg.visit(exprVisitor) ; 
-//        if ( ! topDown )
-//            ExprWalker2.walk(visitorExpr, visitorOp, eAgg.getAggregator().getExprList());
     }
 }
 

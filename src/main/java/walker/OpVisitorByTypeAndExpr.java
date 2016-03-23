@@ -20,6 +20,7 @@ package walker;
 
 import org.apache.jena.sparql.algebra.OpVisitor ;
 import org.apache.jena.sparql.algebra.op.* ;
+import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.core.VarExprList ;
 import org.apache.jena.sparql.expr.ExprList ;
 
@@ -40,6 +41,7 @@ public interface OpVisitorByTypeAndExpr extends OpVisitor
 
     public void visitExpr(ExprList exprs) ;
     public void visitExpr(VarExprList exprs) ;
+    //public void visitAssignVar(Var var) ;
     
     public default void visitModifer(OpModifier opMod) {
         visit1(opMod);

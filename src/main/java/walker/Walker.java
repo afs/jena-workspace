@@ -31,6 +31,7 @@ public class Walker {
      * including inside expressions.
      */
     public static void walk(Op op, OpVisitor opVisitor) {
+        Objects.requireNonNull(opVisitor) ;
         walk(op, opVisitor, null);
     }
     
@@ -40,7 +41,6 @@ public class Walker {
     public static void walk(Op op, OpVisitor opVisitor, ExprVisitor exprVisitor) {
         if ( op == null )
             return ;
-        Objects.requireNonNull(opVisitor) ;
         createWalker(opVisitor, exprVisitor).walk(op);
     }
     
@@ -48,6 +48,7 @@ public class Walker {
      * including inside any {@link Op} in expressions.
      */
     public static void walk(Expr expr, ExprVisitor exprVisitor) {
+        Objects.requireNonNull(exprVisitor) ;
         walk(expr, null, exprVisitor);
     }
     
@@ -58,7 +59,6 @@ public class Walker {
         if ( expr == null )
             return ;
         Objects.requireNonNull(expr) ;
-        Objects.requireNonNull(exprVisitor) ;
         createWalker(opVisitor, exprVisitor).walk(expr);
     }
     
@@ -71,7 +71,8 @@ public class Walker {
     
     /** Walk visiting every {@link Op} and every {@link Expr},
      *  starting from an {@link ExprList}.
-     */   public static void walk(ExprList exprList, OpVisitor opVisitor, ExprVisitor exprVisitor) {
+     */
+    public static void walk(ExprList exprList, OpVisitor opVisitor, ExprVisitor exprVisitor) {
         if ( exprList == null )
             return ;
         Objects.requireNonNull(exprVisitor) ;
@@ -79,13 +80,13 @@ public class Walker {
     }
 
     public static void walk(VarExprList varExprList, ExprVisitor exprVisitor) {
+        Objects.requireNonNull(exprVisitor) ;
         walk(varExprList, null, exprVisitor);
      }
      
      public static void walk(VarExprList varExprList, OpVisitor opVisitor, ExprVisitor exprVisitor) {
          if ( varExprList == null )
              return ;
-         Objects.requireNonNull(exprVisitor) ;
          varExprList.forEach((v,e)->walk(e,opVisitor, exprVisitor)) ;
      }
  

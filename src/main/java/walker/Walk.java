@@ -33,24 +33,21 @@ public class Walk {
     
     // Check for ToDo/XXX
     
+    //OpVisitorByTypeAndExpr.visitAssignVar
+    // OpAssign, OpExtend, ExprAgg
     /* walker 
      * Switches for "skip service"
      */
-    
-    // No visitor -> no-op visitor, for both opsna d exprs
-    
-    // Drop before/after
-    // Drop tests for "if ( opVisitor != null )" except at entry walks.
-    
-    // Deprecated : before/after support.
-    // Remains left only in case it tunrs out we need it after all.
     // Only quadization needs it and that is better done by subclass to intercept OpGraph
-    // or explict support
+    // or explicit support
     // or call out just for OpGraph
     
     // Flag for skip service.
+    // TQ debugger.
     
-    // Transformer - create new AppTransformVisitor per level to keep stack checking.
+    // Transformer - create new ApplyTransformVisitor per level to keep stack checking.
+    
+    // ElementWalker - mixin for ExprVisitorFunction -> deep
 
     public static void main(String[] args) {
         ExprVisitor ev = new ExprVisitorBase() {
@@ -87,7 +84,8 @@ public class Walk {
          "  (filter   (notexists  (filter (= ?s :s) (bgp (triple ?s ?p ?o)) ) ) (table unit) )", ")") ;
         Op op = SSE.parseOp(x) ;
 
-        Walker.walk(op,xv,null);
+        Walker.walk(op, null, ev);
+        System.out.println() ;
         //System.exit(0) ;
 
         String z = StrUtils.strjoinNL(
@@ -98,6 +96,7 @@ public class Walk {
         Expr e2 = Walker.transform(e, xvt, null) ;
 
         System.out.println(e2) ;
+        System.out.println() ;
         // System.exit(0) ;
 
         System.out.println(op) ;
