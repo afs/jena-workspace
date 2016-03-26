@@ -18,8 +18,11 @@
 
 package walker;
 
+import java.util.ArrayDeque ;
+import java.util.Deque ;
 import java.util.Iterator ;
 
+import org.apache.jena.graph.Node ;
 import org.apache.jena.sparql.algebra.Op ;
 import org.apache.jena.sparql.algebra.OpVisitor ;
 import org.apache.jena.sparql.algebra.OpVisitorBase ;
@@ -29,11 +32,13 @@ import org.apache.jena.sparql.expr.* ;
 
 /** Walk algebra and expressions */
 public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunction {
-   
-    private final OpVisitor   beforeVisitor ;
-    private final OpVisitor   afterVisitor ;
     protected final ExprVisitor exprVisitor ;
-    protected final OpVisitor opVisitor ;
+    protected final OpVisitor   opVisitor ;
+    protected boolean           visitService = true ;
+    protected int               opDepth      = 0 ;
+    protected int               exprDepth    = 0 ;
+    protected int               opDepthLimit      = Integer.MAX_VALUE ;
+    protected int               exprDepthLimit    = Integer.MAX_VALUE ;
 
     // ---- Expr
 
@@ -46,16 +51,23 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
     public WalkerVisitor(OpVisitor opVisitor, ExprVisitor exprVisitor) {
         this.opVisitor = opVisitor ;
         this.exprVisitor = exprVisitor ;
-        this.beforeVisitor = null ; // beforeVisitor ;
-        this.afterVisitor = null; // afterVisitor ;
     }
     
     public void walk(Op op) {
-        op.visit(this);
+        if ( opDepth == opDepthLimit )
+            // No deeper.
+            return ;
+        opDepth++ ; 
+        try { op.visit(this); }
+        finally { opDepth-- ; }
     }
     
     public void walk(Expr expr) {
-        expr.visit(this);
+        if ( exprDepth == exprDepthLimit )
+            return ;
+        exprDepth++ ;
+        try { expr.visit(this) ; }
+        finally { exprDepth-- ; }
     }
     
     public void walk(ExprList exprList) {
@@ -67,23 +79,25 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
     }
 
     // ---- Mode swapping between op and expr. visit=>?walk
+    // XXX
     @Override
     public void visitExpr(ExprList exprList) {
         if ( exprVisitor != null )
-            exprList.forEach(e->e.visit(this));
+            walk(exprList) ;
     }
 
     @Override
     public void visitExpr(VarExprList varExprList) {
         if ( exprVisitor != null )
-            varExprList.forEach((v,e) -> e.visit(this));
+            walk(varExprList);
     }
+    
+    // ----
     
     public void visitOp(Op op) {
         if ( opVisitor != null )
             op.visit(this);
     }
-    // ----
 
     @Override
     public void visit0(Op0 op) {
@@ -97,6 +111,49 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
             op.getSubOp().visit(this) ;
         if ( opVisitor != null )
             op.visit(opVisitor) ;
+    }
+    
+    @Override
+    public void visit(OpService op) {
+        if ( ! visitService )
+            return ;
+        OpVisitorByTypeAndExpr.super.visit(op) ;
+    }
+    
+    @Override
+    public void visit(OpGraph op) {
+        pushGraph(op.getNode()) ;
+        OpVisitorByTypeAndExpr.super.visit(op) ;
+        popGraph() ;
+    }
+    
+    private Deque<Node> stack = new ArrayDeque<>() ;
+    
+    public Node getCurrentGraph() { return stack.peek() ; }
+    
+    private void pushGraph(Node node) {
+        stack.push(node) ;   
+    }
+
+    /* AlgebraQuad.Pusher:
+        public void visit(OpGraph opGraph)
+        {
+            // Name in SPARQL
+            Node gn = opGraph.getNode() ;
+            // Name in rewrite
+            Node gnQuad = gn ;
+            
+            if ( Var.isVar(gn) )
+            {
+                Collection<Var> vars = OpVars.mentionedVars(opGraph.getSubOp()) ;
+                if ( vars.contains(gn) )
+                    gnQuad = varAlloc.allocVar() ;
+            }
+            stack.push(new QuadSlot(gn, gnQuad)) ;
+        }
+     */
+    private void popGraph() {
+        stack.pop() ;
     }
 
     @Override
@@ -147,30 +204,40 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
             else
                 expr.visit(this) ;
         }
-        func.visit(exprVisitor) ;
+        if ( exprVisitor != null )
+            func.visit(exprVisitor) ;
     }
     
     @Override
     public void visit(ExprFunctionOp funcOp) {
-        // Walk the op
-        funcOp.getGraphPattern().visit(this); 
-        funcOp.visit(exprVisitor) ;
+        walk(funcOp.getGraphPattern());
+        if ( exprVisitor != null )
+            funcOp.visit(exprVisitor) ;
     }
     
     @Override
-    public void visit(NodeValue nv)         { nv.visit(exprVisitor) ; }
+    public void visit(NodeValue nv) {
+        if ( exprVisitor != null )
+            nv.visit(exprVisitor) ;
+    }
+
     @Override
-    public void visit(ExprVar v)            { v.visit(exprVisitor) ; }
+    public void visit(ExprVar v) {
+        if ( exprVisitor != null )
+            v.visit(exprVisitor) ;
+    }
+
     @Override
-    public void visit(ExprAggregator eAgg)  {
+    public void visit(ExprAggregator eAgg) {
         // This is the assignment variable of the aggregation
         // not a normal variable of an expression.
 
-        //visitAssignVar(eAgg.getAggVar().asVar()) ;
-        
+        // visitAssignVar(eAgg.getAggVar().asVar()) ;
+
         // XXX Hack for varsMentioned
 
-        eAgg.visit(exprVisitor) ; 
+        if ( exprVisitor != null )
+            eAgg.visit(exprVisitor) ;
     }
 }
 

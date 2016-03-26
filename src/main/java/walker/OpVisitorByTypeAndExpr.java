@@ -20,7 +20,6 @@ package walker;
 
 import org.apache.jena.sparql.algebra.OpVisitor ;
 import org.apache.jena.sparql.algebra.op.* ;
-import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.core.VarExprList ;
 import org.apache.jena.sparql.expr.ExprList ;
 

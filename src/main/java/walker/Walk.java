@@ -48,6 +48,11 @@ public class Walk {
     // Transformer - create new ApplyTransformVisitor per level to keep stack checking.
     
     // ElementWalker - mixin for ExprVisitorFunction -> deep
+    
+    // .skipService
+    // .oneLevel (of expr or op)
+    
+    // ?? WalkerVisitor -> remove the "if null" (a null visitor is still a cost so leave?)
 
     public static void main(String[] args) {
         ExprVisitor ev = new ExprVisitorBase() {
