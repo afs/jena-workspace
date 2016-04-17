@@ -29,12 +29,13 @@ import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.core.VarExprList ;
 import org.apache.jena.sparql.expr.* ;
 import org.apache.jena.sparql.expr.aggregate.Aggregator ;
-import walker1.Transformer2 ;
 
 public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisitor {
     private final Transform     opTransform ;
     private final ExprTransform exprTransform ;
 
+    protected boolean           visitService = true ;
+    
     private final Deque<Op>     opStack   = new ArrayDeque<>() ;
     private final Deque<Expr>   exprStack = new ArrayDeque<>() ;
 
@@ -43,7 +44,7 @@ public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisito
         this.exprTransform = exprTransform ;
     }
 
-    final Op opResult() {
+    /*package*/ final Op opResult() {
         // XXX  create new when recursing.
 //        if ( opStack.size() != 1 ) {
 //            Log.warn(this, "Op stack is not aligned (size = " + opStack.size() + ")") ;
@@ -53,7 +54,7 @@ public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisito
         return opStack.pop() ;
     }
 
-    final Expr exprResult() {
+    /*package*/ final Expr exprResult() {
         // XXX  create new when recursing.
 //        // ???? Not valid test if we reuse this ApplyTransformVisitor object
 //        if ( exprStack.size() != 1 ) {
@@ -65,27 +66,22 @@ public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisito
         return exprStack.pop() ;
     }
 
-    Expr transform(Expr expr) {
-        // WALK
-        // Recursively visit
-        
-        Expr e2 = Walker.transform(expr, opTransform, exprTransform) ;
-        return e2 ;
+    protected Op transform(Op op) {
+        return Walker.transform(op, this) ;
+    }
+
+    
+    protected Expr transform(Expr expr) {
+        return Walker.transform(expr, this) ;
     }
     
-    ExprList transform(ExprList exprList) {
+    protected ExprList transform(ExprList exprList) {
 //        if ( exprList == null || exprTransform == null )
 //            return exprList ;
         ExprList exprList2 = new ExprList() ;
         exprList.forEach( e->exprList2.add(transform(e)) );
         return exprList2 ;
     }
-
-//    Expr transform(Expr expr, ExprTransform exprTransform) {
-//        if ( expr == null || exprTransform == null )
-//            return expr ;
-//        return ExprTransformer2.transform(exprTransform, opTransform, expr) ;
-//    }
 
     @Override
     public void visit(OpOrder opOrder) {
@@ -294,6 +290,17 @@ public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisito
         Op opX = x.apply(opTransform, left, right) ;
         push(opStack, opX) ;
     }
+    
+    @Override
+    public void visit(OpService op) {
+        if ( ! visitService ) {
+            // No visit - push input.
+            push(opStack, op) ;
+            return ;
+        }
+        // op.getService()
+        OpVisitorByTypeAndExpr.super.visit(op);
+    }
 
     @Override
     public void visitExt(OpExt op) {
@@ -354,6 +361,8 @@ public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisito
     }
 
     private ExprList process(List<Expr> exprList) {
+        if ( exprList == null )
+            return null ;
         int N = exprList.size() ;
         List<Expr> x = new ArrayList<>(N) ;
         for ( Expr anExprList : exprList ) {
@@ -369,12 +378,9 @@ public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisito
         ExprList x = null ;
         if ( funcOp.getArgs() != null )
             x = process(funcOp.getArgs()) ;
-        Op op = funcOp.getGraphPattern() ;
-        if ( opTransform != null )
-            op = Transformer2.transform(opTransform, exprTransform, op) ;
+        Op op = pop(opStack) ;
         Expr e = funcOp.apply(exprTransform, x, op) ;
         push(exprStack, e) ;
-
     }
 
     @Override
@@ -418,5 +424,3 @@ public class ApplyTransformVisitor implements OpVisitorByTypeAndExpr, ExprVisito
         return "<other>" ;
     }
 }
-
-

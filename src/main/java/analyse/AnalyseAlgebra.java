@@ -18,12 +18,10 @@
 
 package analyse;
 
-import java.util.ArrayList ;
 import java.util.List ;
 
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.Query ;
-import org.apache.jena.query.QueryFactory ;
 import org.apache.jena.sparql.algebra.Algebra ;
 import org.apache.jena.sparql.algebra.Op ;
 import org.apache.jena.sparql.algebra.OpVisitorBase ;
@@ -32,34 +30,16 @@ import org.apache.jena.sparql.expr.E_Function ;
 import org.apache.jena.sparql.expr.ExprFunctionN ;
 import org.apache.jena.sparql.expr.ExprVisitorBase ;
 import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry ;
-import walker1.OpWalker2 ;
+import walker.Walker ;
 
 public class AnalyseAlgebra {
-    
-    public static void main(String[] args) {
-        List<String> functionURIs = new ArrayList<>() ;
-        List<Node> propFuncURIs = new ArrayList<>() ;
-        
-        Query query = QueryFactory.read("Q.rq") ;
-        System.out.println(query) ;
-        Op op = Algebra.compile(query) ;
-        //op = Algebra.optimize(op) ;
-        //System.out.println(op) ;
-        
-        
-        System.out.println("==== Property functions");
-        propFuncURIs.forEach(System.out::println) ;
-        System.out.println("==== Filter functions");
-        functionURIs.forEach(System.out::println) ;
-    }
-
     
     public static void process(Query query,  List<String> functionURIs, List<Node> propFuncURIs ) {
         Op op = Algebra.compile(query) ;
         //op = Algebra.optimize(op) ;
 //        FindRegistered v = new FindRegistered(propFuncURIs, functionURIs) ;
 //        OpWalker.walk(op, v);
-        OpWalker2.walk(op, new SearcherPF(propFuncURIs), new SearcherF(functionURIs)) ;
+        Walker.walk(op, new SearcherPF(propFuncURIs), new SearcherF(functionURIs)) ;
     }
 
 

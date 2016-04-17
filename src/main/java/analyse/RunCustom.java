@@ -21,6 +21,7 @@ package analyse;
 import java.util.ArrayList ;
 import java.util.List ;
 
+import org.apache.jena.atlas.lib.StrUtils ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.query.QueryFactory ;
@@ -47,7 +48,24 @@ public class RunCustom {
             }} ;
         PropertyFunctionRegistry.get().put("http://ex/PF1", pff) ;
         PropertyFunctionRegistry.get().put("http://ex/PF2", pff) ;
-        Query query = QueryFactory.read("Q.rq") ;
+        
+        String x = StrUtils.strjoinNL
+        ( 
+         "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>"
+         ,"   PREFIX :        <http://example/>"
+         ,"   PREFIX math:    <http://www.w3.org/2005/xpath-functions/math#>"
+         ,""
+         ,"SELECT (math:log(?x) AS ?X) {"
+         , "    { ?x rdfs:member ?y . ?x <http://ex/PF1> ?y }"
+         , "       UNION {"
+         , "          ?x :normal ?y ."
+         , "          FILTER ( 1 + math:sqrt(?x) )"
+         , "          }"
+         , "   }") ;
+        
+        //Query query = QueryFactory.read("Q.rq") ;
+        Query query = QueryFactory.create(x) ;
+        
         System.out.println(query) ;
         analyseSyntax(query) ;
         System.out.println() ;
@@ -75,6 +93,4 @@ public class RunCustom {
         System.out.println("==== Filter functions");
         functionURIs.forEach(System.out::println) ;
     }
-
-
 }

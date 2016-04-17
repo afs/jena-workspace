@@ -6,12 +6,14 @@ PREFIX math:    <http://www.w3.org/2005/xpath-functions/math#>
 PREFIX fn:      <http://www.w3.org/2005/xpath-functions#>
 PREFIX afn:     <http://jena.apache.org/ARQ/function#>
 
-SELECT (math:log(?x) AS ?X) {
+SELECT (math:log(?Y) AS ?X) {
     { ?x rdfs:member ?y . ?x <http://ex/PF1> ?y }
     UNION {
        ?x :normal ?y .
        FILTER ( 1 + math:sqrt(?x) )
-       FILTER EXISTS { ?x  :p ?z . FILTER EXISTS {  ?x  <http://ex/PF2> ?z } }
-       }
+       FILTER EXISTS { ?x  :p ?z .
+                       FILTER EXISTS { ?x  <http://ex/PF2> ?z }
+                       FILTER(math:pi()) }
+     }
 }
-#GROUP BY math:exp(?x)
+GROUP BY (math:exp(?x) AS ?Y)

@@ -34,26 +34,35 @@ import org.apache.jena.sparql.expr.* ;
 public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunction {
     protected final ExprVisitor exprVisitor ;
     protected final OpVisitor   opVisitor ;
-    protected boolean           visitService = true ;
-    protected int               opDepth      = 0 ;
-    protected int               exprDepth    = 0 ;
+    protected boolean           visitService      = true ;
     protected int               opDepthLimit      = Integer.MAX_VALUE ;
     protected int               exprDepthLimit    = Integer.MAX_VALUE ;
 
-    // ---- Expr
+    protected int               opDepth      = 0 ;
+    protected int               exprDepth    = 0 ;
 
-    /** A walker. If a visitor is null, then don't walk in.
-     * For "no action but keep walking inwards", use 
-     * {@link OpVisitorBase} and {@link ExprVisitorBase}.
+    /**
+     * A walker. If a visitor is null, then don't walk in. For
+     * "no action but keep walking inwards", use {@link OpVisitorBase} and
+     * {@link ExprVisitorBase}.
+     * 
      * @see OpVisitorBase
      * @see ExprVisitorBase
      */
     public WalkerVisitor(OpVisitor opVisitor, ExprVisitor exprVisitor) {
         this.opVisitor = opVisitor ;
         this.exprVisitor = exprVisitor ;
+        if ( opDepthLimit < 0 )
+            opDepthLimit = Integer.MAX_VALUE ;
+        if ( exprDepth < 0 )
+            exprDepthLimit = Integer.MAX_VALUE ;
+        opDepth = 0 ;
+        exprDepth = 0 ;
     }
     
     public void walk(Op op) {
+        if ( op == null )
+            return ;
         if ( opDepth == opDepthLimit )
             // No deeper.
             return ;
@@ -63,6 +72,8 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
     }
     
     public void walk(Expr expr) {
+        if ( expr == null )
+            return ;
         if ( exprDepth == exprDepthLimit )
             return ;
         exprDepth++ ;
@@ -71,10 +82,14 @@ public class WalkerVisitor implements OpVisitorByTypeAndExpr, ExprVisitorFunctio
     }
     
     public void walk(ExprList exprList) {
+        if ( exprList == null )
+            return ;
         exprList.forEach(e->walk(e));
     }
 
     public void walk(VarExprList varExprList) {
+        if ( varExprList == null )
+            return ;
         varExprList.forEach((v,e) -> walk(e));
     }
 

@@ -42,7 +42,7 @@ import org.apache.jena.tdb.TDBFactory ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 
-/** toosl to load data into memory and report space taken */
+/** tools to load data into memory and report space taken */
 class RunMemTimeSpace extends CmdGeneral {
     
     static ProgressMonitor.Output output = (fmt, args) -> { System.out.printf(fmt, args) ; System.out.println() ; } ;
@@ -61,19 +61,19 @@ class RunMemTimeSpace extends CmdGeneral {
     static final ArgDecl argNORM = new ArgDecl(ArgDecl.NoValue, "norm") ;
     static final ArgDecl argNum = new ArgDecl(ArgDecl.HasValue, "num", "n") ;
     
-    boolean runCacheMode = true ;
-    boolean runStandard = true ;
-    boolean runParseOnly = true; 
-    int numTim  = 0 ;
-    int numNorm = 1 ;
-    int numTDB = 0 ;
+    boolean              runCacheMode   = true ;
+    boolean              runNoCacheMode = true ;
+    boolean              runParseOnly   = true ;
+    int                  numTim         = 0 ;
+    int                  numNorm        = 1 ;
+    int                  numTDB         = 0 ;
     
     public static void main(String... args) {
         
         RiotLib.factoryRDF() ;
         
         if ( args.length == 0 ) {
-            String FN1 = "/home/afs/Datasets/BSBM/bsbm-1m.nt.gz" ;
+            String FN1 = "/home/afs/Datasets/BSBM/bsbm-5m.nt.gz" ;
             String FN2 = "/home/afs/Datasets/BSBM/bsbm-250k.nt.gz" ;
             String FN3 = "/home/afs/Datasets/Chebi/chebi.nt" ;
             String FN4 = "/home/afs/Datasets/Chembl/chembl_20.0_assay.ttl.gz" ;
@@ -81,7 +81,7 @@ class RunMemTimeSpace extends CmdGeneral {
             String FN6 = "/home/afs/Datasets/Nature-2015-06/datasets/nq/npg-contributors-dataset.nq" ;
             //args = new String[] {FN1, FN2, FN4, FN4, FN5} ;
             //args = new String[] {"--warm=4", "--tim_n=2", "--norm_n=2","/home/afs/Datasets/BSBM/bsbm-5m.nt.gz"} ;
-            args = new String[] {"--norm",  "--tim", FN1} ;
+            args = new String[] {"--norm",  "--tim", "-n=2", FN1} ;
         }
         new RunMemTimeSpace(args).mainRun(); 
     }
@@ -136,7 +136,7 @@ class RunMemTimeSpace extends CmdGeneral {
         if ( hasArg(argCache) ) {
             boolean b = parseBoolean(argCache) ;
             runCacheMode = b ;
-            runStandard = !b ;
+            runNoCacheMode = !b ;
         }
 
         if ( ! hasPositional() )
@@ -161,11 +161,10 @@ class RunMemTimeSpace extends CmdGeneral {
                 throw new CmdException("Argument: --"+x.getKeyName()+" : Bad boolean") ; 
         }
     }
-    
 
     @Override
     protected String getSummary() {
-        return Lib.classShortName(getClass())+": [--cache=(yes|no)] [--tim] [--norm] [-n=NUM] [--tim_n=NUM] [--norm_n=NUM]" ;
+        return Lib.classShortName(getClass())+": [--cache=(yes|no)] [--parse] [--tim] [--norm] [-n=NUM] [--tim_n=NUM] [--norm_n=NUM] file ..." ;
     }
     
     @Override
@@ -197,13 +196,9 @@ class RunMemTimeSpace extends CmdGeneral {
 
     List<ActionReport> results = new ArrayList<>() ;
     
-    // Put warming into the DSG type code 
-    
-    long count = -1 ;
-
-    long countTriples ;
-
-    long countQuads ;
+    long                  count          = -1 ;
+    long                  countTriples   = 0 ;
+    long                  countQuads     = 0 ;
 
     final static int tick = 1_000_000 ;
     final static int superTick = 10 ;
@@ -212,7 +207,7 @@ class RunMemTimeSpace extends CmdGeneral {
         System.out.println("Data: "+filename);
         count = -1 ;
         if ( runParseOnly ) {
-            if ( runStandard ) {
+            if ( runNoCacheMode ) {
                 System.out.println() ;
                 parseOnly("Parse/Standard", filename, new FactoryRDFStd()) ;
             }
@@ -223,22 +218,33 @@ class RunMemTimeSpace extends CmdGeneral {
             return ;
         }
         
-        execDft(filename) ;
+        // Warming.
+        //execDft(filename) ;
 
         IntStream.range(0, numNorm).sequential().forEach((i)->execNorm(filename)) ;
         
         IntStream.range(0, numTim) .sequential().forEach((i)->execTim(filename)) ;
-        
         
         IntStream.range(0, numTDB) .sequential().forEach((i)->execTDB(filename)) ;
     }
 
     // DRY
     
-    private void execTim(String filename) {
-        if ( runStandard ) {
+    private void execNorm(String filename) {
+        if ( runNoCacheMode ) {
             System.out.println() ;
-            execOne("TIM/Standard", creatorTxnMem, filename, new FactoryRDFStd()) ;
+            execOne("General/NoCache", creatorGeneral, filename, new FactoryRDFStd()) ;
+        }
+        if ( runCacheMode ) {
+            System.out.println();
+            execOne("General/Caching", creatorGeneral, filename, new FactoryRDFCaching()) ;
+        }
+    }
+    
+    private void execTim(String filename) {
+        if ( runNoCacheMode ) {
+            System.out.println() ;
+            execOne("TIM/NoCache", creatorTxnMem, filename, new FactoryRDFStd()) ;
         }
         if ( runCacheMode ) {
             System.out.println();
@@ -247,25 +253,14 @@ class RunMemTimeSpace extends CmdGeneral {
     }
 
     private void execDft(String filename) {
-        if ( runStandard ) {
+        if ( runNoCacheMode ) {
             System.out.println() ;
             execOne("General/Default", creatorGeneral, filename, RiotLib.factoryRDF()) ;
         }
     }
     
-    private void execNorm(String filename) {
-        if ( runStandard ) {
-            System.out.println() ;
-            execOne("General/Standard", creatorGeneral, filename, new FactoryRDFStd()) ;
-        }
-        if ( runCacheMode ) {
-            System.out.println();
-            execOne("General/Caching", creatorGeneral, filename, new FactoryRDFCaching()) ;
-        }
-    }
-    
     private void execTDB(String filename) {
-        if ( runStandard ) {
+        if ( runNoCacheMode ) {
             System.out.println() ;
             execOne("TDB/Standard", creatorTDBMem, filename, new FactoryRDFStd()) ;
         }

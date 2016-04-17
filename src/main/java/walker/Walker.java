@@ -104,17 +104,27 @@ public class Walker {
      /** Transform an {@link Op}. */
     public static Op transform(Op op, Transform opTransform, ExprTransform exprTransform) {
         ApplyTransformVisitor v = createTransformer(opTransform, exprTransform) ;
-        walk(op, v) ;
-        return v.opResult() ;
+        return transform(op, v) ;
     }
     
     /** Transform an {@link Expr}. */
     public static Expr transform(Expr expr, Transform opTransform, ExprTransform exprTransform) {
         ApplyTransformVisitor v = createTransformer(opTransform, exprTransform) ;
-        walk(expr, v) ;
-        return v.exprResult() ;
+        return transform(expr, v) ;
     }
     
+    /** Transform an {@link Op}. */
+   public static Op transform(Op op, ApplyTransformVisitor v) {
+       walk(op, v) ;
+       return v.opResult() ;
+   }
+   
+   /** Transform an {@link Expr}. */
+   public static Expr transform(Expr expr, ApplyTransformVisitor v) {
+       walk(expr, v) ;
+       return v.exprResult() ;
+   }
+   
     /** Transform an algebra expression */
     public static Op transform(Op op, Transform transform) {
        return transform(op, transform, null) ;
@@ -128,7 +138,7 @@ public class Walker {
     private static Transform     nullOpTransform   = new TransformBase() ;
     private static ExprTransform nullExprTransform = new ExprTransformBase() ;
  
-    private static ApplyTransformVisitor createTransformer(Transform opTransform, ExprTransform exprTransform) {
+    public static ApplyTransformVisitor createTransformer(Transform opTransform, ExprTransform exprTransform) {
         if ( opTransform == null )
             opTransform = nullOpTransform ;
         if ( exprTransform == null )
