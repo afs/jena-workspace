@@ -30,7 +30,6 @@ import org.apache.jena.sparql.expr.E_Function ;
 import org.apache.jena.sparql.expr.ExprFunctionN ;
 import org.apache.jena.sparql.expr.ExprVisitorBase ;
 import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry ;
-import walker.Walker ;
 
 public class AnalyseAlgebra {
     
@@ -39,7 +38,8 @@ public class AnalyseAlgebra {
         //op = Algebra.optimize(op) ;
 //        FindRegistered v = new FindRegistered(propFuncURIs, functionURIs) ;
 //        OpWalker.walk(op, v);
-        Walker.walk(op, new SearcherPF(propFuncURIs), new SearcherF(functionURIs)) ;
+        // New walker.
+        //Walker.walk(op, new SearcherPF(propFuncURIs), new SearcherF(functionURIs)) ;
     }
 
 

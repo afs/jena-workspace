@@ -34,33 +34,33 @@ class DatasetGraphMonitorTxn extends DatasetGraphMonitor implements Transactiona
     @Override
     public void begin(ReadWrite readWrite) {
         receiver.begin1(readWrite);
-        get().begin(readWrite);
+        super.begin(readWrite);
         receiver.begin2(readWrite);
     }
 
     @Override
     public void commit() {
         receiver.commit1() ;
-        get().commit();
+        super.commit();
         receiver.commit2() ;
     }
 
     @Override
     public void abort() {
         receiver.abort1() ;
-        get().abort();
+        super.abort();
         receiver.abort2() ;
     }
 
     @Override
     public boolean isInTransaction() {
-        return get().isInTransaction();
+        return super.isInTransaction();
     }
 
     @Override
     public void end() {
         receiver.end1(); 
-        get().end();
+        super.end();
         receiver.end2();
     }
 }

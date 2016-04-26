@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package dev;
+package tools;
 
 import java.io.InputStream ;
 import java.util.ArrayList ;
@@ -54,12 +54,13 @@ class RunMemTimeSpace extends CmdGeneral {
     //static { LogCtl.setCmdLogging(); }
     static Logger LOG = LoggerFactory.getLogger("4D") ;
     
-    static final ArgDecl argCache = new ArgDecl(ArgDecl.HasValue, "cache") ;
-    static final ArgDecl argParse = new ArgDecl(ArgDecl.NoValue, "parse") ;
-    static final ArgDecl argTDB = new ArgDecl(ArgDecl.NoValue, "tdb", "tdbmem") ;   // Very slow.
-    static final ArgDecl argTIM = new ArgDecl(ArgDecl.NoValue, "tim") ;
-    static final ArgDecl argNORM = new ArgDecl(ArgDecl.NoValue, "norm") ;
-    static final ArgDecl argNum = new ArgDecl(ArgDecl.HasValue, "num", "n") ;
+    static final ArgDecl argCache       = new ArgDecl(ArgDecl.HasValue, "cache") ;
+    static final ArgDecl argParse       = new ArgDecl(ArgDecl.NoValue, "parse") ;
+    static final ArgDecl argTDB         = new ArgDecl(ArgDecl.NoValue, "tdb", "tdbmem") ;   // Very
+                                                                                            // slow.
+    static final ArgDecl argTIM         = new ArgDecl(ArgDecl.NoValue, "tim") ;
+    static final ArgDecl argNORM        = new ArgDecl(ArgDecl.NoValue, "norm") ;
+    static final ArgDecl argNum         = new ArgDecl(ArgDecl.HasValue, "num", "n") ;
     
     boolean              runCacheMode   = true ;
     boolean              runNoCacheMode = true ;
@@ -73,6 +74,7 @@ class RunMemTimeSpace extends CmdGeneral {
         RiotLib.factoryRDF() ;
         
         if ( args.length == 0 ) {
+            String FN =  "/home/afs/tmp/bsbm-25.rt.gz" ;
             String FN1 = "/home/afs/Datasets/BSBM/bsbm-5m.nt.gz" ;
             String FN2 = "/home/afs/Datasets/BSBM/bsbm-250k.nt.gz" ;
             String FN3 = "/home/afs/Datasets/Chebi/chebi.nt" ;
@@ -81,7 +83,8 @@ class RunMemTimeSpace extends CmdGeneral {
             String FN6 = "/home/afs/Datasets/Nature-2015-06/datasets/nq/npg-contributors-dataset.nq" ;
             //args = new String[] {FN1, FN2, FN4, FN4, FN5} ;
             //args = new String[] {"--warm=4", "--tim_n=2", "--norm_n=2","/home/afs/Datasets/BSBM/bsbm-5m.nt.gz"} ;
-            args = new String[] {"--norm",  "--tim", "-n=2", FN1} ;
+            //args = new String[] {"--norm",  "--tim", "-n=2", FN1} ;
+            args = new String[] {"--norm",  "--cache=yes", FN } ;
         }
         new RunMemTimeSpace(args).mainRun(); 
     }

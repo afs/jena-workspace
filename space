@@ -1,0 +1,7 @@
+#!/bin/bash
+
+C="$(jena)"
+CLS=tools.RunMemTimeSpace
+JVM_ARGS=${JVM_ARGS:--Xms16G -Xmx20G}
+
+java $JVM_ARGS -cp "target/classes:$C" tools.RunMemTimeSpace "$@"
