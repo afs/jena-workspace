@@ -30,7 +30,7 @@ import org.apache.jena.sparql.expr.NodeValue ;
 
 public class ParameterizedQuery2 {
     public static Query x_parameterizeSELECT(Query query, Map<Var, Node> map) {
-        // Beign developed in MainJena1111
+        // Being developed in MainJena1111
         
         // ?x => (Xval AS ?x) -- done by ParameterizedQuery.parameterize
         // (?x+1) AS ?y => Add (Xval AS ?x)

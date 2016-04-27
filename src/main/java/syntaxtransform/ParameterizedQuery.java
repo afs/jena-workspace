@@ -75,7 +75,7 @@ public class ParameterizedQuery {
         if ( ! q2.isSelectType() )
             return q2 ;
 
-        // There are 3 cases for a variabe ?x being mapped to a value:  
+        // There are 3 cases for a variable ?x being mapped to a value:  
         // 1 - The query had "SELECT ?x" - this has already become (Xval AS ?x)
         // 2 - The query has "SELECT *" - and ?x will have disappeared. 
         //     We write to SELECT ... vars ... (Xval AS ?x)

@@ -27,7 +27,7 @@ import org.apache.jena.sparql.core.Transactional ;
 /** Application utilities for transactions. 
  *  "Autocommit" provided. 
  *  Nested transaction are not supported but calling inside an existing transaction,
- *  which must be compartible, (i.e. a write needs a WRITE transaction). 
+ *  which must be compatible, (i.e. a write needs a WRITE transaction). 
  */
 public class Txn {
     /** Execute the Runnable in a read transaction. */
