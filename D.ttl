@@ -4,6 +4,10 @@ PREFIX notinuse: <http://example/whatever/>
 PREFIX indirect: <urn:foo:>
 PREFIX indirectx: <urn:x:>
 
+PREFIX ns: <http://host/ns>
+PREFIX ns1: <http://host/ns1>
+PREFIX ns2: <http://host/nspace>
+
 :s1 :p :x1 .
 :s1 ex:p :x1 .
 
@@ -12,8 +16,8 @@ PREFIX indirectx: <urn:x:>
 
 <urn:verybad#.> :p 1 .
 
-## :x1 :q 1 .
-## :x1 :q 2 .
-## 
-## :x2 :q 3 .
-## :x2 :q 4 .
+ns:x ns1:p "ns1" .
+#ns:x ns2:p "nspace" .
+
+<http://examp/abberev> indirect:p "foo" .
+
