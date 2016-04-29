@@ -27,8 +27,8 @@ import org.apache.jena.tdb.TDBFactory ;
 public class DevTrack {
 
     public static void main(String[] args) {
+        Dataset ds2 = DatasetFactory.createTxnMem() ;
         Dataset ds1 = TDBFactory.createDataset() ;
-        Dataset ds2 = TDBFactory.createDataset() ;
         
         DatasetChangesTxn monitor = new DatasetChangesTxnLogger() ;
         
