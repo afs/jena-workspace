@@ -84,9 +84,31 @@ public class ManagePrefixes {
      * this process has "false positives".
      * <p>
      * This function does not calculate new prefixes.
+     * 
      * @see #calcInUsePrefixMappingTTL(Graph)
      */
     public static PrefixMapping calcInUsePrefixMapping(Graph graph) {
+        PrefixMapping prefixMapping = graph.getPrefixMapping() ;
+        if ( prefixMapping == null )
+            return null ;
+        return calcInUsePrefixMapping(graph, prefixMapping) ;
+    }
+    
+    /**
+     * Analyse the graph to see which prefixes of the given {@link PrefixMapping} are in
+     * use.
+     * <p>
+     * In the case of overlapping prefixes (where one prefix declaration is has an initial
+     * URI string which imatches another prefix declaration), all are included, though
+     * they may not be used when printing (that depends on the output process). In effect,
+     * this process has "false positives".
+     * <p>
+     * This function does not calculate new prefixes.
+     * 
+     * @see #calcInUsePrefixMappingTTL(Graph, PrefixMapping)
+     */
+    public static PrefixMapping calcInUsePrefixMapping(Graph graph, PrefixMapping prefixMapping) {
+        
         /* Method:
          * 
          * For each URI in the data, look it up in the trie.
@@ -94,10 +116,7 @@ public class ManagePrefixes {
          * 
          * Exit early if every prefix is accounted for. 
          */
-        if ( graph.getPrefixMapping() == null )
-            return null ;
-        
-        PrefixMapping prefixMapping = graph.getPrefixMapping() ;
+       
         // Map prefix to URI.
         Map<String, String> pmap = prefixMapping.getNsPrefixMap() ;
         
@@ -152,6 +171,26 @@ public class ManagePrefixes {
      * @see #calcInUsePrefixMappingTTL(Graph)
      */
     public static PrefixMapping calcInUsePrefixMappingTTL(Graph graph) {
+        PrefixMapping prefixMapping = graph.getPrefixMapping() ;
+        if ( prefixMapping == null )
+            return null ;
+        return calcInUsePrefixMappingTTL(graph, prefixMapping) ;
+    }
+    
+    /**
+     * Analyse the graph to see which prefixes of the given {@link PrefixMapping} are used
+     * by the graph triples.
+     * <p>
+     * This function attempts to process each URI in the graph as if it were to be printed
+     * in Turtle. Only prefixes that lead to valid output strings are returned. This is
+     * more expensive than {@link #calcInUsePrefixMapping(Graph, PrefixMapping)}.
+     * <p>
+     * This function does not calculate new prefixes.
+     * 
+     * @see #calcInUsePrefixMapping(Graph, PrefixMapping)
+     */
+    public static PrefixMapping calcInUsePrefixMappingTTL(Graph graph, PrefixMapping prefixMapping) {        
+            
         /* Method:
          * 
          * For each URI, split in in the usual place, after "/" or "#" for http URIs, and
@@ -159,9 +198,6 @@ public class ManagePrefixes {
          * 
          * Exit early if every prefix is accounted for. 
          */
-        if ( graph.getPrefixMapping() == null )
-            return null ;
-        PrefixMapping prefixMapping = graph.getPrefixMapping() ;
         // Map prefix -> URI.
         Map<String, String> pmap = prefixMapping.getNsPrefixMap() ;    
         
