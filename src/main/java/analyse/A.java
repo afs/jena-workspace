@@ -21,6 +21,7 @@ package analyse;
 import java.util.Collection ;
 import java.util.List ;
 
+import org.apache.jena.sparql.algebra.walker.Walker ;
 import org.apache.jena.sparql.core.VarExprList ;
 import org.apache.jena.sparql.expr.* ;
 import org.apache.jena.sparql.function.FunctionRegistry ;
@@ -29,7 +30,7 @@ import org.apache.jena.sparql.function.FunctionRegistry ;
 public class A {
 
     static void accExpr(List<String> acc, VarExprList varExprList) {
-        varExprList.forEach((v,e)->accExpr(acc, e));
+        varExprList.forEachExpr((v,e)->accExpr(acc, e));
     }
 
     static void accExpr(List<String> acc, ExprList exprList) {
@@ -42,7 +43,7 @@ public class A {
 
     static void accExpr(List<String> acc, Expr expr) {
         ExprVisitor ev = new FindFunction(acc) ;
-        ExprWalker.walk(ev, expr); 
+        Walker.walk(expr, ev); 
     }
     
     static void accExpr1(List<String> acc, Expr expr) {

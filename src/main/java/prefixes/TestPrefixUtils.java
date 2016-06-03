@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package dev;
+package prefixes;
 
 import java.io.StringReader ;
 
@@ -52,7 +52,7 @@ public class TestPrefixUtils {
              ":s1 ex:p :x1 ."
              ) ;
         Graph graph1 = create(data1) ;
-        PrefixMapping pmap = ManagePrefixes.calcInUsePrefixMapping(graph1) ;
+        PrefixMapping pmap = PrefixMappingUtils.calcInUsePrefixMapping(graph1) ;
         PrefixMapping pmapExpected = graph1.getPrefixMapping() ;
         Assert.assertEquals(2, size(pmap)) ;
         Assert.assertEquals(pmapExpected, pmap) ; 
@@ -70,7 +70,7 @@ public class TestPrefixUtils {
              ) ;
         
         Graph graph1 = create(data2) ;
-        PrefixMapping pmap = ManagePrefixes.calcInUsePrefixMapping(graph1) ;
+        PrefixMapping pmap = PrefixMappingUtils.calcInUsePrefixMapping(graph1) ;
         PrefixMapping pmapExpected = new PrefixMappingImpl() ;
         pmapExpected.setNsPrefix("", "http://example/") ;
         pmapExpected.setNsPrefix("ex", "http://example/ex#") ;
@@ -87,7 +87,7 @@ public class TestPrefixUtils {
              "<http://other/s1> :p :x1 ."
              ) ;
         Graph graph1 = create(data) ;
-        PrefixMapping pmap = ManagePrefixes.calcInUsePrefixMapping(graph1) ;
+        PrefixMapping pmap = PrefixMappingUtils.calcInUsePrefixMapping(graph1) ;
         PrefixMapping pmapExpected = new PrefixMappingImpl() ;
         pmapExpected.setNsPrefix("", "http://example/") ;
         Assert.assertTrue(sameMapping(pmapExpected, pmap)) ;
@@ -100,7 +100,7 @@ public class TestPrefixUtils {
              "<http://other/s1> <http://example/p> 123 ."
              ) ;
         Graph graph1 = create(data) ;
-        PrefixMapping pmap = ManagePrefixes.calcInUsePrefixMapping(graph1) ;
+        PrefixMapping pmap = PrefixMappingUtils.calcInUsePrefixMapping(graph1) ;
         Assert.assertEquals(0, size(pmap)) ;
         PrefixMapping pmapExpected = new PrefixMappingImpl() ;
         Assert.assertTrue(sameMapping(pmapExpected, pmap)) ;
@@ -133,7 +133,7 @@ public class TestPrefixUtils {
              ) ;
         
         Graph graph = create(data) ;
-        PrefixMapping pmap = ManagePrefixes.calcInUsePrefixMapping(graph) ;
+        PrefixMapping pmap = PrefixMappingUtils.calcInUsePrefixMapping(graph) ;
         PrefixMapping pmapExpected = new PrefixMappingImpl() ;
      	pmapExpected.setNsPrefix("", "http://example/") ;
 		pmapExpected.setNsPrefix("ex", "http://example/ex#") ;

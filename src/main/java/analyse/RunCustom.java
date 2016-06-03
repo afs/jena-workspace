@@ -22,6 +22,7 @@ import java.util.ArrayList ;
 import java.util.List ;
 
 import org.apache.jena.atlas.lib.StrUtils ;
+import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.query.QueryFactory ;
@@ -34,7 +35,10 @@ import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry ;
 
 public class RunCustom {
 
+    static { LogCtl.setLog4j(); }
+    
     public static void main(String[] args) {
+        
         PropertyFunctionFactory pff = (uri) -> new PropertyFunction() {
 
             @Override

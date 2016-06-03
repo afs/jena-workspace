@@ -22,7 +22,6 @@ import java.util.List ;
 
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.Query ;
-import org.apache.jena.sparql.expr.ExprWalker ;
 import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry ;
 import org.apache.jena.sparql.syntax.* ;
 
@@ -61,10 +60,6 @@ public class AnalyseSyntax {
                 if ( tp.isTriple() )
                     propertyCheck(pf, tp.getPredicate()) ;
             }) ;
-        }
-        @Override
-        public void visit(ElementFilter el)         {
-            ExprWalker.walk(functionFinder, el.getExpr()) ; 
         }
         
         // The syntax walker should do this.

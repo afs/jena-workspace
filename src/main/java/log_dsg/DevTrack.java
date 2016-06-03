@@ -38,7 +38,7 @@ public class DevTrack {
         
         Quad q1 = SSE.parseQuad("(:g1 :s1 :p1 :o1)") ;
         
-        Txn.executeWrite(dsMaster, ()->dsMaster.asDatasetGraph().add(q1)) ;
+        Txn.execWrite(dsMaster, ()->dsMaster.asDatasetGraph().add(q1)) ;
         
         
     }
