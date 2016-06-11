@@ -16,77 +16,74 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.v1;
+
+import static log_dsg.L.print ;
+import static log_dsg.L.str ;
 
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.ReadWrite ;
-import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.QuadAction ;
-import org.apache.jena.sparql.core.Transactional ;
 
-public class DatasetChangesTxnPlay implements DatasetChangesTxn {
-
-    public DatasetChangesTxnPlay(Transactional transactional, DatasetGraph dsg) {
-    }
-    
+public class DatasetChangesTxnLogger implements DatasetChangesTxn {
     @Override
     public void change(QuadAction qaction, Node g, Node s, Node p, Node o) {
-        L.print("%-2s  %s %s %s %s", 
-              qaction.label, L.str(g), L.str(s), L.str(p), L.str(o)) ;
+        print("%-2s  %s %s %s %s", 
+              qaction.label, str(g), str(s), str(p), str(o)) ;
     }
 
     @Override
     public void start() {
-        L.print("start") ;
+        print("start") ;
     }
 
     @Override
     public void finish() {
-        L.print("finish") ;
+        print("finish") ;
     }
 
     @Override
     public void reset() {
-        L.print("reset") ;
+        print("reset") ;
     }
 
     @Override
     public void begin1(ReadWrite readWrite) {
-        L.print("begin1:"+readWrite) ;
+        print("begin1:"+readWrite) ;
     }
 
     @Override
     public void begin2(ReadWrite readWrite) {
-        L.print("begin2:"+readWrite) ;
+        print("begin2:"+readWrite) ;
     }
 
     @Override
     public void commit1() {
-        L.print("commit1") ;
+        print("commit1") ;
     }
 
     @Override
     public void commit2() {
-        L.print("commit2") ;
+        print("commit2") ;
     }
 
     @Override
     public void abort1() {
-        L.print("abort1") ;
+        print("abort1") ;
     }
 
     @Override
     public void abort2() {
-        L.print("abort2") ;
+        print("abort2") ;
     }
 
     @Override
     public void end1() {
-        L.print("end1") ;
+        print("end1") ;
     }
 
     @Override
     public void end2() {
-        L.print("end2") ;
+        print("end2") ;
     }
 }

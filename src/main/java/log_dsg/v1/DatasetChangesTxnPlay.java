@@ -16,74 +16,78 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.v1;
 
-import static log_dsg.L.print ;
-import static log_dsg.L.str ;
-
+import log_dsg.L ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.ReadWrite ;
+import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.QuadAction ;
+import org.apache.jena.sparql.core.Transactional ;
 
-public class DatasetChangesTxnLogger implements DatasetChangesTxn {
+public class DatasetChangesTxnPlay implements DatasetChangesTxn {
+
+    public DatasetChangesTxnPlay(Transactional transactional, DatasetGraph dsg) {
+    }
+    
     @Override
     public void change(QuadAction qaction, Node g, Node s, Node p, Node o) {
-        print("%-2s  %s %s %s %s", 
-              qaction.label, str(g), str(s), str(p), str(o)) ;
+        L.print("%-2s  %s %s %s %s", 
+              qaction.label, L.str(g), L.str(s), L.str(p), L.str(o)) ;
     }
 
     @Override
     public void start() {
-        print("start") ;
+        L.print("start") ;
     }
 
     @Override
     public void finish() {
-        print("finish") ;
+        L.print("finish") ;
     }
 
     @Override
     public void reset() {
-        print("reset") ;
+        L.print("reset") ;
     }
 
     @Override
     public void begin1(ReadWrite readWrite) {
-        print("begin1:"+readWrite) ;
+        L.print("begin1:"+readWrite) ;
     }
 
     @Override
     public void begin2(ReadWrite readWrite) {
-        print("begin2:"+readWrite) ;
+        L.print("begin2:"+readWrite) ;
     }
 
     @Override
     public void commit1() {
-        print("commit1") ;
+        L.print("commit1") ;
     }
 
     @Override
     public void commit2() {
-        print("commit2") ;
+        L.print("commit2") ;
     }
 
     @Override
     public void abort1() {
-        print("abort1") ;
+        L.print("abort1") ;
     }
 
     @Override
     public void abort2() {
-        print("abort2") ;
+        L.print("abort2") ;
     }
 
     @Override
     public void end1() {
-        print("end1") ;
+        L.print("end1") ;
     }
 
     @Override
     public void end2() {
-        print("end2") ;
+        L.print("end2") ;
     }
 }

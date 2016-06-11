@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.v1;
 
 import org.apache.jena.query.ReadWrite ;
 import org.apache.jena.sparql.core.DatasetGraph ;

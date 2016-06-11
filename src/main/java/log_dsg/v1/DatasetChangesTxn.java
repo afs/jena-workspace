@@ -16,25 +16,21 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.v1;
 
-import org.apache.jena.graph.Node ;
-import org.apache.jena.sparql.core.Quad ;
-import org.apache.jena.sparql.sse.SSE ;
-import org.apache.jena.sparql.util.FmtUtils ;
+import org.apache.jena.query.ReadWrite ;
+import org.apache.jena.sparql.core.DatasetChanges ;
 
-public class L {
+interface DatasetChangesTxn extends DatasetChanges {
+    public void begin1(ReadWrite readWrite) ;
+    public void begin2(ReadWrite readWrite) ;
+    
+    public void commit1() ;
+    public void commit2() ;
+    
+    public void abort1() ;
+    public void abort2() ;
 
-    public static void print(String fmt, Object... args) {
-        System.out.printf(fmt, args);
-        System.out.println();
-    }
-
-    public static String str(Node n) {
-        return FmtUtils.stringForNode(n, SSE.defaultPrefixMapRead);
-    }
-
-    public static String str(Quad q) {
-        return FmtUtils.stringForQuad(q, SSE.defaultPrefixMapRead);
-    }
+    public void end1() ;
+    public void end2() ;
 }

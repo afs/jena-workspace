@@ -18,19 +18,41 @@
 
 package log_dsg;
 
+import org.apache.jena.graph.Node ;
 import org.apache.jena.query.ReadWrite ;
-import org.apache.jena.sparql.core.DatasetChanges ;
 
-interface DatasetChangesTxn extends DatasetChanges {
-    public void begin1(ReadWrite readWrite) ;
-    public void begin2(ReadWrite readWrite) ;
-    
-    public void commit1() ;
-    public void commit2() ;
-    
-    public void abort1() ;
-    public void abort2() ;
+public class StreamChangesBase implements StreamChanges {
+    @Override
+    public void start() {}
 
-    public void end1() ;
-    public void end2() ;
+    @Override
+    public void finish() {}
+    
+    @Override
+    public void add(Node g, Node s, Node p, Node o) {}
+
+    @Override
+    public void delete(Node g, Node s, Node p, Node o) { }
+    
+    
+    @Override
+    public void addPrefix(Node graph, String prefix, String uriStr) {} 
+    @Override
+    public void deletePrefix(Node graph, String prefix) {}
+    
+    @Override
+    public void setBase(String uriStr) {} 
+
+    @Override
+    public void txnBegin(ReadWrite mode) {}
+    
+    @Override
+    public void txnPromote() {}
+    
+    @Override
+    public void txnCommit() {}
+    
+    @Override
+    public void txnAbort() {}
+    
 }

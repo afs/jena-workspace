@@ -18,8 +18,13 @@
 
 package log_dsg;
 
+import org.apache.jena.graph.Graph ;
+import org.apache.jena.graph.Node ;
 import org.apache.jena.query.Dataset ;
 import org.apache.jena.query.DatasetFactory ;
+import org.apache.jena.riot.Lang ;
+import org.apache.jena.riot.RDFDataMgr ;
+import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.Quad ;
 import org.apache.jena.sparql.sse.SSE ;
 import org.apache.jena.tdb.TDBFactory ;
@@ -27,20 +32,68 @@ import org.apache.jena.tdb.TDBFactory ;
 public class DevTrack {
 
     public static void main(String[] args) {
-        Dataset ds2 = DatasetFactory.createTxnMem() ;
-        Dataset ds1 = TDBFactory.createDataset() ;
-        
-        DatasetChangesTxn monitor = new DatasetChangesTxnLogger() ;
-        
-        Dataset dsMaster = DatasetFactory.wrap
-           (new DatasetGraphMonitorTxn(ds1.asDatasetGraph(),
-            monitor)) ;
         
         Quad q1 = SSE.parseQuad("(:g1 :s1 :p1 :o1)") ;
+        Quad q2 = SSE.parseQuad("(_ :s1 :p1 :o1)") ;
+        Quad q3 = SSE.parseQuad("(:g2 :s1 :p1 :o1)") ;
+        Node s1 = SSE.parseNode(":s1") ;   
+
+        if ( false ) {
+            Dataset ds2 = DatasetFactory.createTxnMem() ;
+            StreamChanges changes = new StreamChangesLog() ; 
+
+            // Dataset with a monitor. 
+            DatasetGraph dsg = new DSGMonitor(ds2.asDatasetGraph(), changes) ;
+            //Dataset dsMaster = DatasetFactory.wrap(new DSGMonitor(ds2.asDatasetGraph(), changes)) ;
+
+            Txn.execWrite(dsg, ()-> {
+                dsg.add(q1) ;   
+                dsg.add(q2) ;
+                dsg.add(q3) ;
+                dsg.deleteAny(null, s1, null, null);
+            }) ;
+            System.exit(0) ;
+        }  
         
-        Txn.execWrite(dsMaster, ()->dsMaster.asDatasetGraph().add(q1)) ;
-        
-        
+        if ( false ) {
+            // Apply now!
+            Dataset ds1 = DatasetFactory.createTxnMem() ;
+            Dataset ds2 = TDBFactory.createDataset() ;
+            StreamChanges changes = new StreamChangesApply(ds2.asDatasetGraph()) ;
+            DatasetGraph dsg = new DSGMonitor(ds1.asDatasetGraph(), changes) ;
+            Txn.execWrite(dsg, ()-> {
+                dsg.getDefaultGraph().getPrefixMapping().setNsPrefix("", "http://example/") ;
+                dsg.add(q1) ;   
+                dsg.add(q2) ;
+                dsg.add(q3) ;
+                //dsg.deleteAny(null, s1, null, null);
+            }) ;
+            Txn.execRead(ds1, ()-> RDFDataMgr.write(System.out, ds1, Lang.TRIG)) ;
+            System.out.println("-------------") ;
+            Txn.execRead(ds2, ()-> RDFDataMgr.write(System.out, ds2, Lang.TRIG)) ;
+        }
+     
+        // Delayed style.
+        Dataset ds1 = DatasetFactory.createTxnMem() ;
+        Dataset ds2 = TDBFactory.createDataset() ;
+        StreamChangesSink changes = new StreamChangesSink() ;
+        DatasetGraph dsg = new DSGMonitor(ds1.asDatasetGraph(), changes) ;
+        Txn.execWrite(dsg, ()-> {
+//            dsg.getDefaultGraph().getPrefixMapping().setNsPrefix("", "http://example/") ;
+//            changes.addPrefix(null, "", "http://example/") ;
+//            dsg.add(q1) ;   
+//            dsg.add(q2) ;
+//            dsg.add(q3) ;
+            
+            Graph g = dsg.getDefaultGraph() ;
+            g.getPrefixMapping().setNsPrefix("", "http://example/") ;
+            g.add(SSE.parseTriple("(:sg :pg :og)")) ;
+        }) ;
+        StreamChanges changes2 = new StreamChangesApply(ds2.asDatasetGraph()) ;
+        changes.play(changes2);
+        Txn.execRead(ds1, ()-> RDFDataMgr.write(System.out, ds1, Lang.TRIG)) ;
+        System.out.println("-------------") ;
+        Txn.execRead(ds2, ()-> RDFDataMgr.write(System.out, ds2, Lang.TRIG)) ;
     }
 }
 
