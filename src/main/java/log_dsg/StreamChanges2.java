@@ -18,66 +18,82 @@
 
 package log_dsg;
 
-import static log_dsg.L.print ;
-import static log_dsg.L.str ;
-
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.ReadWrite ;
 
-public class StreamChangesLog implements StreamChanges {
+public class StreamChanges2 implements StreamChanges
+{
+    private final StreamChanges changes1 ;
+    private final StreamChanges changes2 ;
+    
+    public StreamChanges2(StreamChanges changes1, StreamChanges changes2) {
+        this.changes1 = changes1 ;
+        this.changes2 = changes2 ;
+    }
+    
     @Override
-    public void start() {}
+    public void start() {
+        changes1.start();
+        changes2.start();
+    }
+
     @Override
-    public void finish() {}
+    public void finish() {
+        changes1.finish();
+        changes2.finish();
+    }
     
     @Override
     public void add(Node g, Node s, Node p, Node o) {
-        print("%-3s  %s %s %s %s", "Add", strOr(g, "_"), str(s), str(p), str(o)) ;
+        changes1.add(g, s, p, o);
+        changes2.add(g, s, p, o);
     }
+
     @Override
-    public void delete(Node g, Node s, Node p, Node o) {
-        print("%-3s  %s %s %s %s", "Del", strOr(g, "_"), str(s), str(p), str(o)) ;
-    }
-    
-    public static String strOr(Node n, String alt) {
-        if ( n == null )
-            return alt ;
-        else
-            return str(n) ;
+    public void delete(Node g, Node s, Node p, Node o) { 
+        changes1.delete(g, s, p, o);
+        changes2.delete(g, s, p, o);
     }
     
     @Override
     public void addPrefix(Node graph, String prefix, String uriStr) {
-        print("Add prefix  %s %s", prefix, uriStr) ;
-    }
+        changes1.addPrefix(graph, prefix, uriStr);
+        changes2.addPrefix(graph, prefix, uriStr);
+    } 
     
     @Override
     public void deletePrefix(Node graph, String prefix) {
-        print("Del prefix  %s %s", prefix) ;
+        changes1.deletePrefix(graph, prefix);
+        changes2.deletePrefix(graph, prefix);
     }
     
     @Override
     public void setBase(String uriStr) {
-        print("Set base %s", uriStr) ;
+        changes1.setBase(uriStr);
+        changes2.setBase(uriStr);
     }
 
     @Override
     public void txnBegin(ReadWrite mode) {
-        print("Begin") ;
+        changes1.txnBegin(mode);
+        changes2.txnBegin(mode);
     }
     
     @Override
     public void txnPromote() {
-        print("Promote") ;
+        changes1.txnPromote();
+        changes2.txnPromote();
     }
     
     @Override
     public void txnCommit() {
-        print("Commit") ;
+        changes1.txnCommit();
+        changes2.txnCommit();
     }
     
     @Override
     public void txnAbort() {
-        print("Abort") ;
+        changes1.txnAbort();
+        changes2.txnAbort();
     }
 }

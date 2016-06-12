@@ -40,6 +40,7 @@ public class StreamChangesReader {
     }
     
     public void apply(StreamChanges sink) {
+        // Abort if no end of transaction
         int lineNumber = 0 ;
         while(input.hasNext()) {
             List<Token> line = input.next() ;
