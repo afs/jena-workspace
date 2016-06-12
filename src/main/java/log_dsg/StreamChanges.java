@@ -36,8 +36,8 @@ public interface StreamChanges {
     public void add(Node g, Node s, Node p, Node o) ;
     public void delete(Node g, Node s, Node p, Node o) ;
     
-    public void addPrefix(Node graph, String prefix, String uriStr) ; 
-    public void deletePrefix(Node graph, String prefix) ;
+    public void addPrefix(Node gn, String prefix, String uriStr) ; 
+    public void deletePrefix(Node gn, String prefix) ;
     
     public void setBase(String uriStr) ; 
 

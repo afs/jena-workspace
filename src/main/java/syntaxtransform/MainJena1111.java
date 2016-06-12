@@ -57,6 +57,27 @@ public class MainJena1111
         ) ;
     
     public static void main(String... args) {
+        {
+            Query qx = QueryFactory.create("SELECT ?s { ?s ?p ?o } GROUP BY ?s HAVING(count(?o)>1)")  ;
+            Map<Var, Node> map = new LinkedHashMap<Var, Node>() ;
+            map.put(Var.alloc("s"), NodeFactory.createURI("http:/example/S")) ; 
+            map.put(Var.alloc("o"), NodeFactory.createLiteral("foo")) ;
+            Query q2 = ParameterizedQuery.parameterizeIncludeInput(qx, map) ;
+
+
+            System.out.println(q2) ;
+            System.exit(0) ;
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         // Next : test cases.
         // BNodes in returned values.
         // BNodes -> <_:label> first?
