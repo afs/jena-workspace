@@ -46,6 +46,10 @@ public class StreamChangesWriter implements StreamChanges {
     @Override
     public void finish() { }
 
+    protected void flush() {
+        tok.flush(); 
+    }
+    
     @Override
     public void add(Node g, Node s, Node p, Node o) {
         output(ADD_QUAD, g, s, p, o) ;

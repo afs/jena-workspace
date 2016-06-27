@@ -17,24 +17,42 @@
 
 package syntaxtransform;
 
+import java.util.ArrayList ;
 import java.util.LinkedHashMap ;
+import java.util.List ;
 import java.util.Map ;
 import java.util.function.BiFunction ;
 
 import org.apache.jena.atlas.io.IndentedWriter ;
 import org.apache.jena.atlas.lib.StrUtils ;
+import org.apache.jena.datatypes.xsd.XSDDatatype ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.NodeFactory ;
+import org.apache.jena.iri.IRIFactory ;
 import org.apache.jena.query.* ;
+import org.apache.jena.riot.system.IRIResolver ;
 import org.apache.jena.sparql.core.ResultBinding ;
 import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.engine.binding.Binding ;
 import org.apache.jena.sparql.engine.binding.BindingFactory ;
 import org.apache.jena.sparql.engine.binding.BindingMap ;
+import org.apache.jena.sparql.expr.Expr ;
+import org.apache.jena.sparql.expr.ExprTransform ;
+import org.apache.jena.sparql.expr.ExprTransformer ;
+import org.apache.jena.sparql.graph.NodeTransform ;
 import org.apache.jena.sparql.lang.SyntaxVarScope ;
+import org.apache.jena.sparql.syntax.syntaxtransform.ElementTransform ;
+import org.apache.jena.sparql.syntax.syntaxtransform.ElementTransformSubst ;
+import org.apache.jena.sparql.syntax.syntaxtransform.ExprTransformNodeElement ;
+import org.apache.jena.sparql.syntax.syntaxtransform.NodeTransformSubst ;
 
 public class MainJena1111
 {
+    static {
+        if ( true ) 
+            throw new RuntimeException("Wierd") ;        
+    }
+    
     // 1 - replace
     // 2 - replace, include values
     // 3 - replace, eval to add values.
@@ -57,27 +75,60 @@ public class MainJena1111
         ) ;
     
     public static void main(String... args) {
-        {
-            Query qx = QueryFactory.create("SELECT ?s { ?s ?p ?o } GROUP BY ?s HAVING(count(?o)>1)")  ;
+        {            
+            
+            IRIFactory.iriImplementation() ;
+            IRIResolver.iriFactory.setIsWarning(0, false); 
+            
+            /*
+            Code 4  : UNWISE_CHARACTER
+            Code 12 : DEFAULT_PORT_SHOULD_BE_OMITTED
+            Code 13 : PORT_SHOULD_NOT_BE_EMPTY
+            Code 14 : DEFAULT_PORT_SHOULD_BE_OMITTED
+            Code 15 : PORT_SHOULD_NOT_BE_WELL_KNOWN
+            Code 16 : PORT_SHOULD_NOT_START_IN_ZERO
+            
+            
+            46 : NOT_NFC : int
+47 : NOT_NFKC : int
+DEPRECATED_UNICODE_CHARACTER : int
+UNDEFINED_UNICODE_CHARACTER : int
+PRIVATE_USE_CHARACTER : int
+UNICODE_CONTROL_CHARACTER : int
+UNASSIGNED_UNICODE_CHARACTER : int
+MAYBE_NOT_NFC : int
+MAYBE_NOT_NFKC : int
+             */
+            
+            
+            // SELECT * fails to substitute ?s 
+            //Query qx = QueryFactory.create("SELECT ?s (count(?o) AS ?C) { ?s ?p ?o } GROUP BY ?s HAVING(count(?o)> $N)", Syntax.syntaxARQ)  ;
+            
+            Query qx = QueryFactory.create("SELECT * { ?s ?p ?o BIND (45 AS ?N)}") ;
             Map<Var, Node> map = new LinkedHashMap<Var, Node>() ;
             map.put(Var.alloc("s"), NodeFactory.createURI("http:/example/S")) ; 
-            map.put(Var.alloc("o"), NodeFactory.createLiteral("foo")) ;
+            //map.put(Var.alloc("o"), NodeFactory.createLiteral("foo")) ;
+            map.put(Var.alloc("N"), NodeFactory.createLiteral("1", XSDDatatype.XSDinteger)) ;
+            
             Query q2 = ParameterizedQuery.parameterizeIncludeInput(qx, map) ;
-
-
+            if ( q2.hasHaving() ) {
+                ElementTransform eltrans = new ElementTransformSubst(map) ;
+                NodeTransform nodeTransform = new NodeTransformSubst(map) ;
+                ExprTransform exprTrans = new ExprTransformNodeElement(nodeTransform, eltrans) ;
+                List <Expr> exprs = q2.getHavingExprs() ;
+                List <Expr> exprs2 = new ArrayList<Expr>(exprs.size()) ;
+                for ( Expr expr : exprs ) {
+                    Expr e2 = ExprTransformer.transform(exprTrans, expr) ;
+                    exprs2.add(e2) ;
+                }
+                exprs.clear() ;
+                exprs.addAll(exprs2) ;
+            }
+            
+            
             System.out.println(q2) ;
             System.exit(0) ;
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         // Next : test cases.
         // BNodes in returned values.
         // BNodes -> <_:label> first?

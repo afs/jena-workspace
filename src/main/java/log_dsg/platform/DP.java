@@ -16,14 +16,11 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.platform;
 
-
-public class DevChange {
-    // Reader and Writer
-    // Counters
-    // Pipelines vs stacks
-    // Replace tio ... or tio without prefixes etc.
-    // Experiment : 3 systems : oen to update , one to manage patches (no DB), one to query 
+public class DP {
+    public static final String PatchContainer   = "http://localhost:1066/patch" ;
     
+    public static final String FetchService     = "http://localhost:1066/fetch" ;
+
 }

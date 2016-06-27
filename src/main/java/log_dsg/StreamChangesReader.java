@@ -26,6 +26,7 @@ import log_dsg.tio.TokenInputStream ;
 import log_dsg.tio.TokenInputStreamBase ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.ReadWrite ;
+import org.apache.jena.riot.system.RiotLib ;
 import org.apache.jena.riot.tokens.Token ;
 import org.apache.jena.riot.tokens.Tokenizer ;
 import org.apache.jena.riot.tokens.TokenizerFactory ;
@@ -39,76 +40,120 @@ public class StreamChangesReader {
         input = new TokenInputStreamBase(null, tokenizer) ;
     }
     
+
+    /** Execute transactions until the input ends or something goes wrong. */
     public void apply(StreamChanges sink) {
+        while(input.hasNext()) { 
+            boolean b = apply1(sink);
+            if ( !b )
+                return ;
+        }
+    }
+    
+    public boolean hasMore() {
+        return input.hasNext() ;
+    }
+    
+    /** Execute one transaction.
+     *  Return true if there is the possiblity of more.
+     */
+    public boolean apply1(StreamChanges sink) {
         // Abort if no end of transaction
+        
+        boolean oneTransaction = true ;  
+        
         int lineNumber = 0 ;
         while(input.hasNext()) {
             List<Token> line = input.next() ;
-            
-            if ( line.isEmpty() ) {}
-            Token token1 = line.get(0) ;
-            if ( ! token1.isWord() )
-                throw new CommsException("["+token1.getLine()+"] Token1 is not a word "+token1) ;
-            String code = token1.getImage() ;
-            if ( code.length() != 2 )
-                throw new CommsException("["+token1.getLine()+"] Code is not 2 characters "+code) ;
-            
-            switch (code) {
-                case "QA": {
-                    if ( line.size() != 4 && line.size() != 5 )
-                        throw new CommsException("["+token1.getLine()+"] Quad add tuple error: length = "+line.size()) ;
-                    Node s = line.get(1).asNode() ;
-                    Node p = line.get(2).asNode() ;
-                    Node o = line.get(3).asNode() ;
-                    Node g = line.size()==4 ? null : line.get(4).asNode() ;  
-                    sink.add(g, s, p, o);
-                    break ;
-                }
-                case "QD": {
-                    if ( line.size() != 4 && line.size() != 5 )
-                        throw new CommsException("["+token1.getLine()+"] Quad delete tuple error: length = "+line.size()) ;
-                    Node s = line.get(1).asNode() ;
-                    Node p = line.get(2).asNode() ;
-                    Node o = line.get(3).asNode() ;
-                    Node g = line.size()==4 ? null : line.get(4).asNode() ;  
-                    sink.delete(g, s, p, o);
-                    break ;
-                }
-                case "PA": {
-                    if ( line.size() != 3 && line.size() != 4 )
-                        throw new CommsException("["+token1.getLine()+"] Prefix add tuple error: length = "+line.size()) ;
-                    String prefix = line.get(1).asString() ;
-                    String uriStr = line.get(2).asString() ;
-                    Node gn = line.size()==3 ? null : line.get(3).asNode() ;  
-                    sink.addPrefix(gn, prefix, uriStr);
-                    break ;
-                }
-                case "PD": {
-                    if ( line.size() != 2 && line.size() != 3 )
-                        throw new CommsException("["+token1.getLine()+"] Prefix delete tuple error: length = "+line.size()) ;
-                    String prefix = line.get(1).asString() ;
-                    Node gn = line.size()==2 ? null : line.get(3).asNode() ;  
-                    sink.deletePrefix(gn, prefix);
-                    break ;
-                }
-                case "TB": {
-                    sink.txnBegin(ReadWrite.WRITE);
-                    break ;
-                }
-                case "TC": {
-                    // Possible return
-                    sink.txnCommit();
-                    break ;
-                }
-                case "TA": {
-                    // Possible return
-                    sink.txnAbort();
-                    break ;
-                }
-                default:  {
-                    throw new CommsException("["+token1.getLine()+"] Code '"+code+"' not recognized") ;
-                }
+            //System.err.println("Line = "+line);
+            if ( line.isEmpty() )
+                throw new CommsException("["+lineNumber+"] empty line") ;
+            lineNumber ++ ;
+            try { 
+                boolean b = doOneLine(line, sink) ;
+                if ( oneTransaction && b )
+                    return true ;
+            } catch (Exception ex) {
+                sink.txnAbort();
+                return false ;
+            }
+        }
+        return false ;
+    }
+        
+    private boolean doOneLine(List<Token> line, StreamChanges sink) {
+        Token token1 = line.get(0) ;
+        if ( ! token1.isWord() )
+            throw new CommsException("["+token1.getLine()+"] Token1 is not a word "+token1) ;
+        String code = token1.getImage() ;
+        if ( code.length() != 2 )
+            throw new CommsException("["+token1.getLine()+"] Code is not 2 characters "+code) ;
+
+        switch (code) {
+            case "QA": {
+                if ( line.size() != 4 && line.size() != 5 )
+                    throw new CommsException("["+token1.getLine()+"] Quad add tuple error: length = "+line.size()) ;
+                Node s = tokenToNode(line.get(1)) ;
+                Node p = tokenToNode(line.get(2)) ;
+                Node o = tokenToNode(line.get(3)) ;
+                Node g = line.size()==4 ? null : tokenToNode(line.get(3)) ;  
+                sink.add(g, s, p, o);
+                return false ;
+            }
+            case "QD": {
+                if ( line.size() != 4 && line.size() != 5 )
+                    throw new CommsException("["+token1.getLine()+"] Quad delete tuple error: length = "+line.size()) ;
+                Node s = tokenToNode(line.get(1)) ;
+                Node p = tokenToNode(line.get(2)) ;
+                Node o = tokenToNode(line.get(3)) ;
+                Node g = line.size()==4 ? null : tokenToNode(line.get(3)) ;  
+                sink.delete(g, s, p, o);
+                return false ;
+            }
+            case "PA": {
+                if ( line.size() != 3 && line.size() != 4 )
+                    throw new CommsException("["+token1.getLine()+"] Prefix add tuple error: length = "+line.size()) ;
+                String prefix = line.get(1).asString() ;
+                String uriStr = line.get(2).asString() ;
+                Node gn = line.size()==3 ? null : line.get(3).asNode() ;  
+                sink.addPrefix(gn, prefix, uriStr);
+                return false ;
+            }
+            case "PD": {
+                if ( line.size() != 2 && line.size() != 3 )
+                    throw new CommsException("["+token1.getLine()+"] Prefix delete tuple error: length = "+line.size()) ;
+                String prefix = line.get(1).asString() ;
+                Node gn = line.size()==2 ? null : line.get(3).asNode() ;  
+                sink.deletePrefix(gn, prefix);
+                return false ;
+            }
+            case "TB": {
+                sink.txnBegin(ReadWrite.WRITE);
+                return false ;
+            }
+            case "TC": {
+                // Possible return
+                sink.txnCommit();
+                return true ;
+            }
+            case "TA": {
+                // Possible return
+                sink.txnAbort();
+                return true ;
+            }
+            default:  {
+                throw new CommsException("["+token1.getLine()+"] Code '"+code+"' not recognized") ;
             }
         }
     }
+
+    private static Node tokenToNode(Token token) {
+        if ( token.isIRI() )
+            return RiotLib.createIRIorBNode(token.getImage()) ;
+        return token.asNode() ;
+    }
+    
+
+
 }
+

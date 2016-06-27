@@ -1,0 +1,7 @@
+#!/bin/bash
+D="$HOME/ASF/jena-workspace"
+
+(
+    cd $D
+    dev log_dsg.platform.ClientSender "$@"
+)

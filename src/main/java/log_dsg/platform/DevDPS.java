@@ -16,14 +16,18 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.platform;
 
-
-public class DevChange {
-    // Reader and Writer
-    // Counters
-    // Pipelines vs stacks
-    // Replace tio ... or tio without prefixes etc.
-    // Experiment : 3 systems : oen to update , one to manage patches (no DB), one to query 
+public class DevDPS {
+    /* URL space:
+     *    /patch -- container of patches
+     *    /patch/number 
+     * 
+     */
+    
+    // Come back to:
+    //   Patch to stream
+    //   Broken patch - client
+    //   Broken patch - server
     
 }

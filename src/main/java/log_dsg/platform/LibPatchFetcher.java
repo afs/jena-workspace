@@ -16,14 +16,29 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.platform;
 
+import java.io.InputStream ;
+import java.util.concurrent.atomic.AtomicInteger ;
 
-public class DevChange {
-    // Reader and Writer
-    // Counters
-    // Pipelines vs stacks
-    // Replace tio ... or tio without prefixes etc.
-    // Experiment : 3 systems : oen to update , one to manage patches (no DB), one to query 
+import log_dsg.StreamChangesReader ;
+import org.apache.jena.atlas.web.HttpException ;
+import org.apache.jena.riot.web.HttpOp ;
+
+public class LibPatchFetcher {
+    static private AtomicInteger epoch = new AtomicInteger(0) ;
+    
+    public static StreamChangesReader fetch1(String url, int idx) {
+        String s = url+"?id="+idx ;
+        try {
+            InputStream in = HttpOp.execHttpGet(s) ;
+            if ( in == null )
+                return null ;
+            return new StreamChangesReader(in) ;
+        } catch (HttpException ex) {
+            System.err.println("HTTP Exception: "+ex.getMessage()) ;
+            return null ;
+        }
+    }
     
 }

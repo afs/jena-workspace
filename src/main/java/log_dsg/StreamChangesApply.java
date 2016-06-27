@@ -28,7 +28,7 @@ public class StreamChangesApply implements StreamChanges {
     
     private DatasetGraph dsg ;
 
-    StreamChangesApply(DatasetGraph dsg) {
+    public StreamChangesApply(DatasetGraph dsg) {
         this.dsg = dsg ;
     }
 
