@@ -21,7 +21,7 @@ package log_dsg.platform;
 import java.io.* ;
 import java.nio.charset.StandardCharsets ;
 
-import log_dsg.StreamChangesWriter ;
+import log_dsg.changes.StreamChangesWriter ;
 import org.apache.http.Header ;
 import org.apache.http.HttpEntity ;
 import org.apache.http.client.ClientProtocolException ;

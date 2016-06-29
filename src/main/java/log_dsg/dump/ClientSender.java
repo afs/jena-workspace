@@ -16,12 +16,14 @@
  * limitations under the License.
  */
 
-package log_dsg.platform;
+package log_dsg.dump;
 
 import java.io.IOException ;
 
-import log_dsg.DSGMonitor ;
 import log_dsg.Txn ;
+import log_dsg.changes.DatasetGraphChanges ;
+import log_dsg.platform.DP ;
+import log_dsg.platform.LibPatchSender ;
 import log_dsg.platform.LibPatchSender.StreamChangesCollect ;
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.Node ;
@@ -51,7 +53,7 @@ public class ClientSender {
         //System.out.println("Blank node: "+b1.getBlankNodeLabel()) ;
 
         StreamChangesCollect changes = LibPatchSender.create1(DP.PatchContainer) ;
-        DatasetGraph dsg = new DSGMonitor(ds.asDatasetGraph(), changes) ;
+        DatasetGraph dsg = new DatasetGraphChanges(ds.asDatasetGraph(), changes) ;
 
         System.out.println("Ready 1");
         System.in.read() ;

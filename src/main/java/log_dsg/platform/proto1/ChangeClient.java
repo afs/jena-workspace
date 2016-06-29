@@ -21,10 +21,10 @@ package log_dsg.platform.proto1;
 import java.io.IOException ;
 import java.net.Socket ;
 
-import log_dsg.DSGMonitor ;
 import log_dsg.StreamChanges ;
-import log_dsg.StreamChangesWriter ;
 import log_dsg.Txn ;
+import log_dsg.changes.DatasetGraphChanges ;
+import log_dsg.changes.StreamChangesWriter ;
 import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.Node ;
@@ -62,7 +62,7 @@ public class ChangeClient {
         
         try ( Socket socket = new Socket("localhost", port) ) {
             StreamChanges changes = new StreamChangesWriter(socket.getOutputStream()) ;
-            DatasetGraph dsg = new DSGMonitor(ds.asDatasetGraph(), changes) ;
+            DatasetGraph dsg = new DatasetGraphChanges(ds.asDatasetGraph(), changes) ;
             
             System.out.println("Ready 1");
             System.in.read() ;

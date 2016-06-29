@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServlet ;
 import javax.servlet.http.HttpServletRequest ;
 import javax.servlet.http.HttpServletResponse ;
 
+import org.apache.jena.fuseki.server.RequestLog ;
+import org.eclipse.jetty.server.NCSARequestLog ;
 import org.slf4j.Logger ;
 
 public class ServletBase extends HttpServlet {
@@ -43,7 +45,10 @@ public class ServletBase extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) {
         try { 
+            // "there is no need to override this method"!!!
             super.service(req, resp);
+            String x = RequestLog.combinedNCSA(req, resp) ;
+            System.out.println(x);
         } catch (Exception ex) {
             
         }

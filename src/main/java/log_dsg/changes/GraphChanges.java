@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.changes;
 
 import java.util.Map ;
 
+import log_dsg.StreamChanges ;
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.Triple ;
@@ -31,7 +32,7 @@ public class GraphChanges extends GraphWrapper {
     private final Graph graph ;
     protected final Node graphName ;
 
-    protected GraphChanges(Graph graph, Node graphName, StreamChanges changes) {
+    public GraphChanges(Graph graph, Node graphName, StreamChanges changes) {
         super(graph) ;
         this.graph = graph ;
         this.graphName = graphName ;

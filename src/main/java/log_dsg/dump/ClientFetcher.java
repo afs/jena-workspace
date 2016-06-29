@@ -16,13 +16,15 @@
  * limitations under the License.
  */
 
-package log_dsg.platform;
+package log_dsg.dump;
 
 import java.io.IOException ;
 
-import log_dsg.StreamChangesApply ;
-import log_dsg.StreamChangesReader ;
 import log_dsg.Txn ;
+import log_dsg.changes.PatchReader ;
+import log_dsg.changes.StreamChangesApply ;
+import log_dsg.platform.DP ;
+import log_dsg.platform.LibPatchFetcher ;
 import org.apache.jena.query.Dataset ;
 import org.apache.jena.riot.Lang ;
 import org.apache.jena.riot.RDFDataMgr ;
@@ -34,7 +36,7 @@ public class ClientFetcher {
         Dataset ds = TDBFactory.createDataset() ;
         
         for ( int i = 1 ;i < 5 ; i++ ) {
-            StreamChangesReader reader = LibPatchFetcher.fetch1(DP.FetchService, i) ;
+            PatchReader reader = LibPatchFetcher.fetch_byID(DP._FetchService, i) ;
             if ( reader == null )
                 break ;
             System.out.println("Apply : "+i);

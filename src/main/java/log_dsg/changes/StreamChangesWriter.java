@@ -16,12 +16,14 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.changes;
 
 import static log_dsg.ChangeCode.* ;
 
 import java.io.OutputStream ;
 
+import log_dsg.ChangeCode ;
+import log_dsg.StreamChanges ;
 import log_dsg.tio.TokenOutputStream ;
 import log_dsg.tio.TokenOutputStreamWriter ;
 import org.apache.jena.atlas.io.IO ;

@@ -21,6 +21,7 @@ package log_dsg;
 import java.io.ByteArrayInputStream ;
 import java.io.ByteArrayOutputStream ;
 
+import log_dsg.changes.* ;
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.Dataset ;
@@ -46,7 +47,7 @@ public class DevTrack {
             StreamChanges changes = new StreamChangesLog() ; 
 
             // Dataset with a monitor. 
-            DatasetGraph dsg = new DSGMonitor(ds2.asDatasetGraph(), changes) ;
+            DatasetGraph dsg = new DatasetGraphChanges(ds2.asDatasetGraph(), changes) ;
             //Dataset dsMaster = DatasetFactory.wrap(new DSGMonitor(ds2.asDatasetGraph(), changes)) ;
 
             Txn.execWrite(dsg, ()-> {
@@ -63,7 +64,7 @@ public class DevTrack {
             Dataset ds1 = DatasetFactory.createTxnMem() ;
             Dataset ds2 = TDBFactory.createDataset() ;
             StreamChanges changes = new StreamChangesApply(ds2.asDatasetGraph()) ;
-            DatasetGraph dsg = new DSGMonitor(ds1.asDatasetGraph(), changes) ;
+            DatasetGraph dsg = new DatasetGraphChanges(ds1.asDatasetGraph(), changes) ;
             Txn.execWrite(dsg, ()-> {
                 dsg.getDefaultGraph().getPrefixMapping().setNsPrefix("", "http://example/") ;
                 dsg.add(q1) ;   
@@ -81,7 +82,7 @@ public class DevTrack {
             Dataset ds1 = DatasetFactory.createTxnMem() ;
             Dataset ds2 = TDBFactory.createDataset() ;
             StreamChangesSink changes = new StreamChangesSink() ;
-            DatasetGraph dsg = new DSGMonitor(ds1.asDatasetGraph(), changes) ;
+            DatasetGraph dsg = new DatasetGraphChanges(ds1.asDatasetGraph(), changes) ;
             Txn.execWrite(dsg, ()-> {
     //            dsg.getDefaultGraph().getPrefixMapping().setNsPrefix("", "http://example/") ;
     //            changes.addPrefix(null, "", "http://example/") ;
@@ -107,7 +108,7 @@ public class DevTrack {
             
             ByteArrayOutputStream out = new ByteArrayOutputStream() ;
             StreamChanges changes = new StreamChangesWriter(out) ;
-            DatasetGraph dsg = new DSGMonitor(ds1.asDatasetGraph(), changes) ;
+            DatasetGraph dsg = new DatasetGraphChanges(ds1.asDatasetGraph(), changes) ;
             Txn.execWrite(dsg, ()-> {
     //            dsg.getDefaultGraph().getPrefixMapping().setNsPrefix("", "http://example/") ;
     //            changes.addPrefix(null, "", "http://example/") ;
@@ -122,7 +123,7 @@ public class DevTrack {
             
             byte[] bytes = out.toByteArray() ;
             ByteArrayInputStream inp = new ByteArrayInputStream(bytes) ;
-            StreamChangesReader r = new StreamChangesReader(inp) ;
+            PatchReader r = new PatchReader(inp) ;
             StreamChanges changes2 = new StreamChangesApply(ds2.asDatasetGraph()) ;
             r.apply(changes2); 
             

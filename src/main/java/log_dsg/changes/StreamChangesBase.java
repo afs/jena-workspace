@@ -16,8 +16,9 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.changes;
 
+import log_dsg.StreamChanges ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.ReadWrite ;
 

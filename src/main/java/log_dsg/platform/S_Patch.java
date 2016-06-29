@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletRequest ;
 import javax.servlet.http.HttpServletResponse ;
 
 import log_dsg.OutputStream2 ;
-import log_dsg.StreamChangesReader ;
-import log_dsg.StreamChangesWriter ;
+import log_dsg.changes.PatchReader ;
+import log_dsg.changes.StreamChangesWriter ;
 import org.apache.jena.web.HttpSC ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
@@ -51,7 +51,7 @@ public class S_Patch extends ServletBase {
         
         InputStream in = req.getInputStream() ;
         for (;;) {
-            StreamChangesReader scr = new StreamChangesReader(in) ;
+            PatchReader scr = new PatchReader(in) ;
             if ( ! scr.hasMore() )
                 break ;
             String dst = DPS.nextPatchFilename() ;

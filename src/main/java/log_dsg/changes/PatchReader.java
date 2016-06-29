@@ -16,11 +16,12 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.changes;
 
 import java.io.InputStream ;
 import java.util.List ;
 
+import log_dsg.StreamChanges ;
 import log_dsg.tio.CommsException ;
 import log_dsg.tio.TokenInputStream ;
 import log_dsg.tio.TokenInputStreamBase ;
@@ -32,10 +33,10 @@ import org.apache.jena.riot.tokens.Tokenizer ;
 import org.apache.jena.riot.tokens.TokenizerFactory ;
 
 // Needs reworking: for efficiency, for less features
-public class StreamChangesReader {
+public class PatchReader {
     private final TokenInputStream input ;
     
-    public StreamChangesReader(InputStream in) {
+    public PatchReader(InputStream in) {
         Tokenizer tokenizer = TokenizerFactory.makeTokenizerUTF8(in) ; 
         input = new TokenInputStreamBase(null, tokenizer) ;
     }

@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
-package log_dsg;
+package log_dsg.changes;
 
 import java.util.Iterator ;
 
+import log_dsg.StreamChanges ;
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.ReadWrite ;
@@ -27,11 +28,11 @@ import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.DatasetGraphWrapper ;
 import org.apache.jena.sparql.core.Quad ;
 
-public class DSGMonitor extends DatasetGraphWrapper {
+public class DatasetGraphChanges extends DatasetGraphWrapper {
     
-    private StreamChanges monitor ;
+    protected StreamChanges monitor ;
 
-    public DSGMonitor(DatasetGraph dsg, StreamChanges monitor) { 
+    public DatasetGraphChanges(DatasetGraph dsg, StreamChanges monitor) { 
         super(dsg) ; 
         this.monitor = monitor ;
     }

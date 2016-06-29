@@ -21,24 +21,37 @@ package log_dsg.platform;
 import java.io.InputStream ;
 import java.util.concurrent.atomic.AtomicInteger ;
 
-import log_dsg.StreamChangesReader ;
+import log_dsg.changes.PatchReader ;
 import org.apache.jena.atlas.web.HttpException ;
 import org.apache.jena.riot.web.HttpOp ;
 
 public class LibPatchFetcher {
     static private AtomicInteger epoch = new AtomicInteger(0) ;
     
-    public static StreamChangesReader fetch1(String url, int idx) {
+    public static PatchReader fetch_byID(String url, int idx) {
         String s = url+"?id="+idx ;
         try {
             InputStream in = HttpOp.execHttpGet(s) ;
             if ( in == null )
                 return null ;
-            return new StreamChangesReader(in) ;
+            return new PatchReader(in) ;
         } catch (HttpException ex) {
             System.err.println("HTTP Exception: "+ex.getMessage()) ;
             return null ;
         }
     }
     
+    public static PatchReader fetchByPath(String url, int idx) {
+        String s = url+"/"+idx ;
+        try {
+            InputStream in = HttpOp.execHttpGet(s) ;
+            if ( in == null )
+                return null ;
+            return new PatchReader(in) ;
+        } catch (HttpException ex) {
+            System.err.println("HTTP Exception: "+ex.getMessage()) ;
+            return null ;
+        }
+    }
+
 }

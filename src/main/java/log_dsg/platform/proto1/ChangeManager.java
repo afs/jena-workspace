@@ -33,14 +33,15 @@ import java.util.Set ;
 import java.util.concurrent.atomic.AtomicInteger ;
 import java.util.function.BiConsumer ;
 
-import log_dsg.StreamChangesReader ;
-import log_dsg.StreamChangesWriter ;
+import log_dsg.changes.PatchReader ;
+import log_dsg.changes.StreamChangesWriter ;
 import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.atlas.lib.Bytes ;
 import org.apache.jena.atlas.logging.LogCtl ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 
+// Keep - main to remember how to multi-port accepts
 public class ChangeManager {
 static { LogCtl.setLog4j(); }
     
@@ -133,7 +134,7 @@ static { LogCtl.setLog4j(); }
         return (InputStream in, OutputStream out) -> {
             try {
                 for (;;) {
-                    StreamChangesReader scr = new StreamChangesReader(in) ;
+                    PatchReader scr = new PatchReader(in) ;
                     if ( ! scr.hasMore() )
                         break ;
                     System.out.println("<<<<-----------------") ;

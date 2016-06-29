@@ -31,8 +31,9 @@ public class DataPatchServer {
     public static void main(String...arg) {
         DataPatchServer server = new DataPatchServer(1066) ;
         //server.addServlet("/foo", new ServletOne());
-        server.addServlet("/fetch", new S_Fetch()) ;
+        server.addServlet("/fetch", new S_FetchCode.S_FetchId()) ;
         server.addServlet("/patch", new S_Patch()) ;
+        server.addServlet("/patch/*", new S_FetchCode.S_FetchREST()) ;
         server.start();
         server.join();
     }
