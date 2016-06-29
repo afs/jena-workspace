@@ -2,7 +2,7 @@ package dev;
 
 import java.util.Map ;
 
-import static log_dsg.Txn.* ;
+import static dev.Txn.* ;
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.shared.PrefixMapping ;
 import org.apache.jena.shared.impl.PrefixMappingImpl ;

@@ -15,7 +15,7 @@
  *  information regarding copyright ownership.
  */
 
-package log_dsg;
+package dev;
 
 import java.util.function.Supplier ;
 
