@@ -46,7 +46,7 @@ public class DevTxnPromote {
         Quad q3 = SSE.parseQuad("(_ :s :p3 3)") ;
 
         // Start reader.
-        ThreadTxn tt = Txn.threadTxnRead(dsg, ()->{
+        ThreadTxn tt = ThreadTxn.threadTxnRead(dsg, ()->{
             long x = Iter.count(dsg.find()) ;
             if ( x != 0 ) 
                 throw new RuntimeException() ;
@@ -73,7 +73,7 @@ public class DevTxnPromote {
         Thread t = new Thread(()->{
             sema.release();
             System.err.println("Enter W2") ;
-            Txn.executeWrite(dsg, ()->{ System.err.println("Elsewhere"); dsg.add(q3); }) ;   
+            Txn.execWrite(dsg, ()->{ System.err.println("Elsewhere"); dsg.add(q3); }) ;   
             sema.release();
         }) ;
         

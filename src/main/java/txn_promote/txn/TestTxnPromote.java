@@ -78,7 +78,7 @@ public class TestTxnPromote {
         Semaphore sema = new Semaphore(0) ;
         Thread t = new Thread(()->{
             sema.release();
-            Txn.executeWrite(dsg, ()->dsg.add(q3)) ;   
+            Txn.execWrite(dsg, ()->dsg.add(q3)) ;   
             sema.release();
         }) ;
         
@@ -101,7 +101,7 @@ public class TestTxnPromote {
     @Test public void promote_05() {
         DatasetGraph dsg = create() ;
         // Start long running reader.
-        ThreadTxn tt = Txn.threadTxnRead(dsg, ()->{
+        ThreadTxn tt = ThreadTxn.threadTxnRead(dsg, ()->{
             long x = Iter.count(dsg.find()) ;
             if ( x != 0 ) 
                 throw new RuntimeException() ;
