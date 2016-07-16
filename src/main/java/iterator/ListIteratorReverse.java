@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package transdsg;
+package iterator;
 
 import java.util.ListIterator ;
 
@@ -29,7 +29,7 @@ public class ListIteratorReverse<T> implements ListIterator<T> {
     private final ListIterator<T> iter ;
 
     ListIteratorReverse(ListIterator<T> iter) {
-         this.iter= iter ; 
+         this.iter = iter ; 
     }
     
     @Override
