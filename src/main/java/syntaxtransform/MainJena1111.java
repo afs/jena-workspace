@@ -48,11 +48,6 @@ import org.apache.jena.sparql.syntax.syntaxtransform.NodeTransformSubst ;
 
 public class MainJena1111
 {
-    static {
-        if ( true ) 
-            throw new RuntimeException("Wierd") ;        
-    }
-    
     // 1 - replace
     // 2 - replace, include values
     // 3 - replace, eval to add values.

@@ -19,7 +19,7 @@ public class PrefixHandlerTDB_Txn extends PrefixMappingImpl {
         this.dsgtxn = dsgtxn ;
         this.graph = graph ;
         this.name = name ;
-        execWrite(dsgtxn, ()->{
+        executeWrite(dsgtxn, ()->{
             // Load the in-memory cache of prefixes.
             PrefixMapping pmap = getRawGraph().getPrefixMapping() ;
             pmap.getNsPrefixMap().forEach((p,u) -> super.set(p,u)) ;
@@ -35,7 +35,7 @@ public class PrefixHandlerTDB_Txn extends PrefixMappingImpl {
     
     @Override
     public PrefixMapping setNsPrefixes( Map<String, String> map ) {
-        execWrite(dsgtxn, ()-> { 
+        executeWrite(dsgtxn, ()-> { 
             map.forEach((p,u)-> {
                 // Add if and only if not defined.
                 if ( super.get(p) == null )
@@ -47,7 +47,7 @@ public class PrefixHandlerTDB_Txn extends PrefixMappingImpl {
 
     @Override
     protected void set(String prefix, String uri) {
-        execWrite(dsgtxn, ()->{
+        executeWrite(dsgtxn, ()->{
             setWorker(prefix, uri) ;
         }) ;
     }
@@ -70,12 +70,12 @@ public class PrefixHandlerTDB_Txn extends PrefixMappingImpl {
         String uri = super.get(prefix) ;
         if ( uri != null )
             return uri ;
-        return execReadRtn(dsgtxn, ()-> getRawGraph().getPrefixMapping().getNsPrefixURI(prefix) ) ;
+        return calculateRead(dsgtxn, ()-> getRawGraph().getPrefixMapping().getNsPrefixURI(prefix) ) ;
     }
 
     @Override
     public PrefixMapping removeNsPrefix(String prefix) {
-        execWrite(dsgtxn, ()->{
+        executeWrite(dsgtxn, ()->{
             getRawGraph().getPrefixMapping().removeNsPrefix(prefix) ;
             super.removeNsPrefix(prefix) ;
         }) ;
