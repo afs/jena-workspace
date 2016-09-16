@@ -18,8 +18,12 @@
 
 package fuseki;
 
+import java.nio.file.Paths ;
+
+import org.apache.jena.atlas.logging.Log ;
 import org.apache.jena.fuseki.jetty.JettyFuseki ;
 import org.apache.jena.fuseki.jetty.JettyServerConfig ;
+import org.apache.jena.fuseki.server.FusekiEnv ;
 import org.apache.jena.fuseki.server.FusekiServerListener ;
 import org.apache.jena.fuseki.server.ServerInitialConfig ;
 import org.apache.jena.sparql.core.DatasetGraph ;
@@ -30,65 +34,44 @@ public class FusekiFullEmbedded
     public static void main(String[] args) throws Exception {
         String fusekiHome = "/home/afs/Jena/jena-fuseki2/jena-fuseki-core" ;
         String fusekiBase = "/home/afs/tmp/run" ;
-        
-        System.setProperty("FUSEKI_HOME", fusekiHome) ;
-        System.setProperty("FUSEKI_BASE", fusekiBase) ;
+//        System.setProperty("FUSEKI_HOME", fusekiHome) ;
+//        System.setProperty("FUSEKI_BASE", fusekiBase) ;
 
-//        // Dev
-//        DatasetGraph dsg = DatasetGraphFactory.createTxnMem() ; 
-//
-//        JettyServerConfig jettyServerConfig = new JettyServerConfig() ;
-//        // Dev
-//        jettyServerConfig.port = 3035 ;
-//        jettyServerConfig.contextPath = "/" ;
-//        jettyServerConfig.jettyConfigFile = null ;
-//        jettyServerConfig.enableCompression = true ;
-//        jettyServerConfig.verboseLogging = false ;
-//        
-//        ServerInitialConfig config = new ServerInitialConfig() ;
-//        config.argTemplateFile  = null ;
-//        // Dev
-//        config.datasetPath = "/rdf" ;
-//        config.allowUpdate = false ;
-//        config.dsg = dsg ;
-//        config.fusekiCmdLineConfigFile = null ;         // Command line --conf.
-//        config.fusekiServerConfigFile = null ;          // Calculated config.ttl from run area (if not --conf)
-//        
-//        FusekiCmd.runFuseki(config, jettyServerConfig);
-        
         /* Two modes 
          * : run the server on a run/ area
          * : run this dataset (and this dataset only) 
-         *  
          */
-        
-        FusekiLoggingUpgrade.setLogging();
-        FusekiLoggingUpgrade.allowLoggingReset(false);
-        
+
         DatasetGraph dsg = DatasetGraphFactory.createTxnMem() ;
         JettyFuseki server = Builder.create()
-            .setPort(3035)
+            .setFusekiHome(fusekiHome)
+            .setFusekiBase(fusekiBase)
+            .setPort(3036)
             .addDataset("/rdf", dsg)
             .build();
-        
         server.start() ;
         server.join() ;
 
     }
     
     public static class Builder {
-        public static Builder create() { return new Builder() ; }
+        public static Builder create() {
+            return new Builder() ;
+        }
         
-        JettyServerConfig jettyServerConfig = new JettyServerConfig() ;
+        private String fusekiHome ;
+        private String fusekiBase ;
+
+        private JettyServerConfig jettyServerConfig = new JettyServerConfig() ;
         {
-            jettyServerConfig.port = 3035 ;
+            jettyServerConfig.port = 3034 ;
             jettyServerConfig.contextPath = "/" ;
             jettyServerConfig.jettyConfigFile = null ;
             jettyServerConfig.enableCompression = true ;
             jettyServerConfig.verboseLogging = false ;
         }
         
-        ServerInitialConfig fusekiConfig = new ServerInitialConfig() ;
+        private ServerInitialConfig fusekiConfig = new ServerInitialConfig() ;
         {
             fusekiConfig.argTemplateFile  = null ;
             // Dev
@@ -100,32 +83,56 @@ public class FusekiFullEmbedded
         }
         
         /** Pages in webapp */
-        public Builder setFusekiHome(String home) { return this ; }
+        public Builder setFusekiHome(String home) {
+            this.fusekiHome= home ;
+            return this ;
+        }
+
         /** Run area */
-        public Builder setFusekiBase(String base) { return this ; }
+        public Builder setFusekiBase(String base) {
+            this.fusekiBase = base ;
+            return this ;
+        }
         
-        public Builder setContextpath(String path) { return this ; }
-        public Builder setPort(int port) { return this ; }
+        public Builder setContextpath(String path) {
+            jettyServerConfig.contextPath = path ;
+            return this ;
+        }
+
+        public Builder setPort(int port) {
+            jettyServerConfig.port = port ;
+            return this ;
+        }
         
-        public Builder addDataset(String name, DatasetGraph dsg) { return this ; }
-        public Builder addDataset(String name, DatasetGraph dsg, boolean withUpdate) { return this ; }
+        public Builder addDataset(String name, DatasetGraph dsg) {
+            return addDataset(name, dsg, true) ;
+        }
+
+        public Builder addDataset(String name, DatasetGraph dsg, boolean withUpdate) {
+            fusekiConfig.datasetPath = name ;
+            fusekiConfig.allowUpdate = withUpdate ;
+            fusekiConfig.dsg = dsg ;
+            return this ;
+        }
         
-        public Builder setConfigFile(String filename) { return this ; }
-        
+        public Builder setConfigFile(String filename) {
+            fusekiConfig.fusekiCmdLineConfigFile = filename ;
+            return this ;
+        }        
         
         public JettyFuseki build() {
-            // check dsg+dataPath OR fusekiCmdLineConfigFile  (or fusekiServerConfigFile) OR none.
-            
-            //FusekiCmd.runFuseki(fusekiConfig, jettyServerConfig);
-            
+            if ( fusekiHome == null )
+                Log.warn(this, "Not set: fusekiHome");
+            if ( fusekiBase == null )
+                Log.warn(this, "Not set: fusekiBase");
+            FusekiEnv.FUSEKI_HOME = Paths.get(fusekiHome) ;
+            FusekiEnv.FUSEKI_BASE = Paths.get(fusekiBase) ;
+            // Triggers init 
+            FusekiLoggingUpgrade.setLogging();
+            FusekiLoggingUpgrade.allowLoggingReset(false);
             FusekiServerListener.initialSetup = fusekiConfig ;
             JettyFuseki.initializeServer(jettyServerConfig) ;
             return JettyFuseki.instance ;
         }
-        
-        
-        
-        
-        
     }
 }

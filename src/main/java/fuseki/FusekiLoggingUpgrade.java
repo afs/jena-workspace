@@ -28,7 +28,7 @@ import org.apache.jena.fuseki.server.FusekiEnv ;
 import org.apache.jena.riot.SysRIOT ;
 import org.apache.log4j.PropertyConfigurator ;
 
-/** Set logging. Configuration for logging is choosed based on following steps until one succedes.
+/** Set logging. Configuration for logging is chosed based on following steps until one succedes.
  *  <ol>
  *  <li> Is logging already initialized (test the system property).
  *  <li> Use file:{config} (for appropriate {config} name).
@@ -180,14 +180,14 @@ public abstract class FusekiLoggingUpgrade
         if ( FusekiEnv.FUSEKI_BASE != null ) 
             fn2 = FusekiEnv.FUSEKI_BASE.toString()+"/"+fn1 ;
         
-        if ( tryFileFor(fn1) ) return ;   // FILE
-        if ( tryFileFor(fn2) ) return ;
-    
-        // Try classpath
-        
-        tryClassPathFor(getLoggingSetupFilename()) ;
-        tryClassPathFor("org/apache/jena/fuseki/"+getLoggingSetupFilename()) ;
-        
+        if ( tryFileFor(fn1) )
+            return ;
+        if ( tryFileFor(fn2) )
+            return ;
+        if ( tryClassPathFor(getLoggingSetupFilename()) )
+            return ;
+        if ( tryClassPathFor("org/apache/jena/fuseki/" + getLoggingSetupFilename()) )
+            return ;
         defaultSetup();
     }
 
