@@ -76,6 +76,10 @@ public abstract class FusekiLoggingUpgrade
         allowLoggingReset = value ;
     }
 
+    private static void chooseLoggingProvider() {
+        
+    }
+    
     /** Set up logging - standalone and war packaging */
     public static synchronized void setLogging() {
         if ( ! allowLoggingReset )
@@ -96,7 +100,7 @@ public abstract class FusekiLoggingUpgrade
         boolean hasLog4j = checkForLog4J() ;
         boolean hasJUL = checkForJUL() ;
         if ( hasLog4j && hasJUL ) {
-            logAlways("Fuseki logging - Found both Log4j and JUL setup for SLF4J") ;
+            logAlways("Fuseki logging - Found both Log4j and JUL setup for SLF4J; using Log4j") ;
             return ;
         }
         if ( ! hasLog4j && ! hasJUL ) {

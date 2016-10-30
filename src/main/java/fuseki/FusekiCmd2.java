@@ -278,7 +278,7 @@ public class FusekiCmd2 {
                     .add(serverConfig.datasetPath, serverConfig.dsg)
                     .setLoopback(serverConfig.loopback) ;
             
-            FusekiEmbeddedServer server = builder.build() ;  
+            FusekiEmbeddedServer server = builder.build() ;
             info(server, serverConfig) ;
             server.start();
             server.join();
@@ -306,7 +306,7 @@ public class FusekiCmd2 {
         private static void info(FusekiEmbeddedServer server, ServerConfig serverConfig) {
             Logger log = Fuseki.serverLog ;
             // Dataset -> Endpoints
-            Map<String, List<String>> z = description(DataAccessPointRegistry.get()) ;
+            Map<String, List<String>> z = description(DataAccessPointRegistry.get(server.getServletContext())) ;
             
             if ( serverConfig.datasetPath != null ) {
                 if ( z.size() != 1 )
