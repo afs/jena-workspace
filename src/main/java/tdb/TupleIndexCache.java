@@ -33,7 +33,7 @@ import org.apache.jena.tdb.store.tupletable.TupleIndex ;
 import org.apache.jena.tdb.store.tupletable.TupleIndexWrapper ;
 
 /** Caching wrapper for a TupleIndex.
- * The caching is by remembering previous {@code find()} by pattern.
+ * The caching is by remembering previous {@link #find} by pattern.
  */
 public class TupleIndexCache extends TupleIndexWrapper {
     // ARQ/TDB can end up making the same calls.
