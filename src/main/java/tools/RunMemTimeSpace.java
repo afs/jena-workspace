@@ -84,7 +84,7 @@ class RunMemTimeSpace extends CmdGeneral {
             //args = new String[] {FN1, FN2, FN4, FN4, FN5} ;
             //args = new String[] {"--warm=4", "--tim_n=2", "--norm_n=2","/home/afs/Datasets/BSBM/bsbm-5m.nt.gz"} ;
             //args = new String[] {"--norm",  "--tim", "-n=2", FN1} ;
-            args = new String[] {"--norm",  "--cache=yes", FN } ;
+            args = new String[] {"--tdb", "--cache=yes", "-n=1", FN1 } ;
         }
         new RunMemTimeSpace(args).mainRun(); 
     }
@@ -224,9 +224,9 @@ class RunMemTimeSpace extends CmdGeneral {
         // Warming.
         //execDft(filename) ;
 
-        IntStream.range(0, numNorm).sequential().forEach((i)->execNorm(filename)) ;
-        
         IntStream.range(0, numTim) .sequential().forEach((i)->execTim(filename)) ;
+
+        IntStream.range(0, numNorm).sequential().forEach((i)->execNorm(filename)) ;
         
         IntStream.range(0, numTDB) .sequential().forEach((i)->execTDB(filename)) ;
     }

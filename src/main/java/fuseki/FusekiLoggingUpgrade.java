@@ -28,18 +28,20 @@ import org.apache.jena.fuseki.server.FusekiEnv ;
 import org.apache.jena.riot.SysRIOT ;
 import org.apache.log4j.PropertyConfigurator ;
 
-/** Set logging. Configuration for logging is chosed based on following steps until one succedes.
+/** Set logging. Configuration for logging is chosen based on following steps until one succedes.
  *  <ol>
  *  <li> Is logging already initialized (test the system property).
- *  <li> Use file:{config} (for appropriate {config} name).
- *  <li> Use file:FUSEKI_BASE/{config} if exists
- *  <li> Look on the classpath: {config} as a java resource
- *  <li> Look on the classpath: org/apache/jena/fuseki/{config} as a java resource
- *  <li> Use a default string
+ *  <li> Use <tt>file:{config}</tt> (for appropriate {config} filename).
+ *  <li> Use <tt>file:$FUSEKI_BASE/{config}</tt> if exists
+ *  <li> Look on the classpath: <tt>{config}</tt> as a java resource
+ *  <li> Look on the classpath: <tt>org/apache/jena/fuseki/{config}</tt> as a java resource
+ *  <li> Use a built-in default string.
  *  </ol>
  */
 public abstract class FusekiLoggingUpgrade
 {
+    // See LoggingSetup
+    
     public static void main(String...a) {
         
 //        org.slf4j.Logger x = org.slf4j.LoggerFactory.getLogger("FOO") ;
@@ -54,7 +56,7 @@ public abstract class FusekiLoggingUpgrade
         LOG.info("Information1");
         
 //        new FusekiLoggingLog4j().loggingSetup();
-        /*JUL*/org.apache.log4j.Logger LOG1 = org.apache.log4j.Logger.getLogger("Fuseki") ;
+        org.apache.log4j.Logger LOG1 = org.apache.log4j.Logger.getLogger("Fuseki") ;
         LOG1.info("Information2");
     }
     // ---------------------------------
@@ -195,7 +197,7 @@ public abstract class FusekiLoggingUpgrade
         defaultSetup();
     }
 
-    /** Opne by classpath or return null */
+    /** Open by classpath or return null */
     protected URL getResource(String resourceName) {
         URL url = this.getClass().getClassLoader().getResource(resourceName) ;
         if ( url == null )

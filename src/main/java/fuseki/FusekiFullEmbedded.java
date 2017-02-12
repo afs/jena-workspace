@@ -29,6 +29,7 @@ import org.apache.jena.fuseki.server.ServerInitialConfig ;
 import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.DatasetGraphFactory ;
 
+/** Build a Fuseki-with-disk */
 public class FusekiFullEmbedded
 {
     public static void main(String[] args) throws Exception {
