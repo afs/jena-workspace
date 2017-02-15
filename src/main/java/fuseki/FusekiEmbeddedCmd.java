@@ -18,6 +18,9 @@
 
 package fuseki;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,6 +62,11 @@ import org.slf4j.Logger;
  */
 
 public class FusekiEmbeddedCmd {
+    // Uses command line code.
+    // May cause jena-text, jena-spatial to be needed.
+    // ==> put in jena-fuseki-server.
+    // Ditto normal command?
+    
     static {
         // Triggers FUSEKI_HOME
         //FusekiEnv.mode = FusekiEnv.INIT.EMBEDDED;
@@ -218,7 +226,12 @@ public class FusekiEmbeddedCmd {
             // Fuseki config file 
             if ( contains(argConfig) ) {
                 String file = getValue(argConfig);
-                serverConfig.datasetDescription = "Configuration: "+file;
+                Path path = Paths.get(file);
+                if ( ! Files.exists(path) )
+                    throw new CmdException("File not found: "+file);
+                if ( Files.isDirectory(path) )
+                    throw new CmdException("Is a directory: "+file);
+                serverConfig.datasetDescription = "Configuration: "+path.toAbsolutePath();
                 serverConfig.serverConfig = getValue(argConfig);
             }
             
