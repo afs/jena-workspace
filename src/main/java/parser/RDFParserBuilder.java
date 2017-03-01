@@ -22,30 +22,51 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
+import org.apache.http.message.BasicHeader;
+import org.apache.jena.atlas.lib.IRILib;
 import org.apache.jena.graph.BlankNodeId;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.ReaderRIOT;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.WebContent;
 import org.apache.jena.riot.lang.LabelToNode;
 import org.apache.jena.riot.system.*;
+import org.apache.jena.riot.web.HttpNames;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.util.Context;
 
 /**
+ * An {@link RDFParser} is a process that will generate triples; 
+ * {@link RDFParserBuilder} provides the means to setup the parser.
+ * <p>
+ * An {@link RDFParser} has a predefined source; the target for output is given when the "parse" method is called. 
+ * It can be used multiple times in which case the same source is reread. The destination can vary.
+ * The application is responsible for concurrency of the destination of the parse operation.
  * 
- * A "parser" is a process that will generate triples.
- * Th eprocss is
+ * The process is
  * <pre>
- *     RDFParser parser = RDFParserBuilder.create()
+ *     StreamRDF output = ...
+ *     RDFParser parser = RDFParser.create()
  *          .source("filename.ttl")
  *          .build();
  *     parser.parse(destination); 
+ * </pre>
+ * or using a short cut: 
+ * <pre>
+ *     StreamRDF output = ...
+ *     RDFParser parser = RDFParser.create()
+ *          .source("filename.ttl")
+ *          .parse(destination); 
  * </pre> 
- * 
+
  */
 public class RDFParserBuilder {
     // Source
@@ -54,12 +75,16 @@ public class RDFParserBuilder {
     private InputStream inputStream;
     // StringReader - charset problems with any other kind.
     private Reader javaReader = null;
-    
+
+    private Map<String, String> headers = new HashMap<>(); 
+    // HttpClientBuilder?
+    private HttpClient httpClient = null;
     // Syntax
     private Lang hintLang = null;
     private Lang forceLang = null;
     
     private String baseUri = null;
+    // This is ununsed but left in case required in the future.
     private boolean strict = false;
     private boolean resolveURIs = true;
     
@@ -72,7 +97,6 @@ public class RDFParserBuilder {
     
     // Parsing process
     private Context context = null;
-
     // ----Source : process to do the opening stuff when parse() is called.
     private InputStream _source() { return null; }  
     
@@ -107,6 +131,8 @@ public class RDFParserBuilder {
     /** 
      *  Set the source to {@link InputStream}. 
      *  This clears any other source setting.
+     *  The {@link InputStream} will be closed when the 
+     *  parser is called and the parser can not be reused.  
      *  @param input
      *  @return this
      */
@@ -119,6 +145,8 @@ public class RDFParserBuilder {
     /** 
      *  Set the source to {@link StringReader}. 
      *  This clears any other source setting.
+     *  The {@link StringReader} will be closed when the 
+     *  parser is called and the parser can not be reused.  
      *  @param reader
      *  @return this
      */
@@ -156,21 +184,33 @@ public class RDFParserBuilder {
     
     /**
      * Set the HTTP "Accept" header.
-     * The default is {@link WebContent#defaultRDFAcceptHeader}.
+     * The default if not set is {@link WebContent#defaultRDFAcceptHeader}.
      * @param acceptHeader
      * @return this
      */
-    // XXX
-    public RDFParserBuilder httpAccept(String acceptHeader) { return this; }
+    public RDFParserBuilder httpAccept(String acceptHeader) { 
+        setHttpHeader(HttpNames.hAccept, acceptHeader);
+        return this; 
+    }
 
     /**
-     * Set an HTTP header (
+     * Set an HTTP header. Any previous setting is
+     * <p> 
+     * Consider setting up an {@link HttpClient} if more complicated setting to an HTTP
+     * request is required.
      */
-    //XXX
-    public RDFParserBuilder setHttpHeader(String header, String value) { return this; }
+    public RDFParserBuilder setHttpHeader(String header, String value) {
+        headers.put(header, value);
+        return this;
+    }
     
-    //XXX
-    public RDFParserBuilder setHttpClient(HttpClient httpClient) { return this; }
+    /** Set the HttpClien to use.
+     *  This will override any HTTP header settings.
+     */
+    public RDFParserBuilder setHttpClient(HttpClient httpClient) {
+        this.httpClient = httpClient;
+        return this;
+    }
 
     public RDFParserBuilder base(String base) { this.baseUri = base ; return this; }
 
@@ -185,8 +225,6 @@ public class RDFParserBuilder {
         this.errorHandler = handler;
         return this;
     }
-    
-    // XXX Consider RiotLib.factoryRDF(LabelToNode) if factory == null and  
     
     /**
      * Set the {@link FactoryRDF} to use. {@link FactoryRDF} control how parser output is
@@ -237,9 +275,17 @@ public class RDFParserBuilder {
     //public RDFParserBuilder setParserProfile(ParserProfile profile) { return this; }
     
     // Divide out the line/column makers in Parser profile.
-        
-    //XXX
-    public RDFParserBuilder strict(boolean strictMode) { return this; }
+
+    // There are no strict/unstrict differences. 
+//    /**
+//     * Set "strict" mode.
+//     * @param strictMode
+//     * @return this
+//     */
+//    public RDFParserBuilder strict(boolean strictMode) {
+//        this.strict = strictMode;
+//        return this;
+//    }
     
     public RDFParserBuilder context(Context context) { this.context = context.copy() ; return this; }
     //public Context context() { return this.context; }
@@ -268,32 +314,54 @@ public class RDFParserBuilder {
         parse(StreamRDFLib.graph(graph));
     }
 
-    /*
+    /**
      * Parse the source, sending the results to a {@link DatasetGraph}.
      * Short form for {@code build().parse(stream)}
      * where {@code stream} sends tripes and prefixes to the {@code DatasetGraph}.
      * 
-     * @param graph
+     * @param dataset
      */
     public void parse(DatasetGraph dataset) {
         parse(StreamRDFLib.dataset(dataset));
     }
-    // ---- Output.
-    // XXX Wrong??  A thing you can call "parse()" on and no more.
-    public ReaderRIOT buildReaderRIOT() { return null; }
 
-    // XXX Wrong.  A thing you can call "parse()" on and no more.
+    /** Build an {@link RDFParser}. The parser takes it's configuration from this builder and can not then be changed.
+     * The source must be set.
+     * When a parser is used, it is takes the source and sends output to an {@link StreamRDF}.
+     * <p>  
+     * Shortcuts:
+     * <ul>
+     * <li>{@link #parse(DatasetGraph)} - parse the source and output to a {@code DatasetGraph}
+     * <li>{@link #parse(Graph)} - parse the source and output to a {@code Graph}
+     * <li>{@link #parse(StreamRDF)} - parse the source and output to a {@code StreamRDF}
+     * </ul>
+     * 
+     * @return RDFParser
+     */
     public RDFParser build() { 
         if ( uri == null && path == null && inputStream == null && javaReader == null )
             throw new RiotException("No source specified");
         // The builder ensures only one source is set. 
-        if ( strict ) {
-            
+        //if ( strict ) {}
+        
+        // Setup the HTTP client.
+        // XXX HttpClientBuilder ?
+        HttpClient client = this.httpClient;
+        if ( headers.size() > 0 ) {
+            List<Header> hdrs = new ArrayList<>();
+            // Better?
+            headers.forEach((k,v)->{
+                Header header = new BasicHeader(k, v);
+                hdrs.add(header);
+            });
+            client = CachingHttpClientBuilder.create().setDefaultHeaders(hdrs).build();
         }
         
         if ( factory == null && labelToNode != null )
             factory = RiotLib.factoryRDF(labelToNode);
-        return new RDFParser(uri, path, inputStream, javaReader, 
+        if ( path != null && baseUri == null )
+            baseUri = IRILib.filenameToIRI(path.toString());
+        return new RDFParser(uri, path, inputStream, javaReader, client,
                              hintLang, forceLang,
                              baseUri, strict, resolveURIs,
                              factory, errorHandler, context);
@@ -306,19 +374,21 @@ public class RDFParserBuilder {
     @Override
     public RDFParserBuilder clone() { 
         RDFParserBuilder builder = new RDFParserBuilder();
-        builder.uri = this.uri;
-        builder.path = this.path;
-        builder.inputStream = this.inputStream;
-        builder.javaReader = this.javaReader;
-        builder.hintLang = this.hintLang;
-        builder.forceLang = this.forceLang;
-        builder.baseUri = this.baseUri;
-        builder.strict = this.strict;
-        builder.resolveURIs = this.resolveURIs;
-        builder.factory = this.factory;
-        builder.labelToNode = this.labelToNode;
-        builder.errorHandler = this.errorHandler;
-        builder.context = this.context;
+        builder.uri =               this.uri;
+        builder.path =              this.path;
+        builder.inputStream =       this.inputStream;
+        builder.javaReader =        this.javaReader;
+        builder.headers =           new HashMap<>(this.headers);
+        builder.httpClient =        this.httpClient;
+        builder.hintLang =          this.hintLang;
+        builder.forceLang =         this.forceLang;
+        builder.baseUri =           this.baseUri;
+        builder.strict =            this.strict;
+        builder.resolveURIs =       this.resolveURIs;
+        builder.factory =           this.factory;
+        builder.labelToNode =       this.labelToNode;
+        builder.errorHandler =      this.errorHandler;
+        builder.context =           this.context;
         return builder;
     }
 }

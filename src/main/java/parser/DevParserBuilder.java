@@ -18,22 +18,40 @@
 
 package parser;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.jena.graph.Graph;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.lang.LabelToNode;
 import org.apache.jena.riot.system.FactoryRDFStd;
+import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.sparql.graph.GraphFactory;
+import org.junit.Test;
 
 public class DevParserBuilder {
 
     public static void main(String[] args) {
-        Graph graph = GraphFactory.createGraphMem();
+        StreamRDF stream = StreamRDFLib.writer(System.out);
         RDFParserBuilder.create()
             .source("/home/afs/tmp/D.ttl")
+            //.source("http://sparql.org/D.ttl")
+            //.httpAccept("application/junk")
+            //.forceLang(Lang.TRIG)
+            
+            //.errorHandler(null)
+            //.factory(null)
+            //.labelToNode(null)
+            //.setHttp*
+            
             .factory(new FactoryRDFStd(LabelToNode.createUseLabelAsGiven()))
-            .parse(graph);
-        RDFDataMgr.write(System.out, graph, Lang.NT);
+            //.labelToNode(LabelToNode.createUseLabelAsGiven())
+            .parse(stream);
     }
 
 }
