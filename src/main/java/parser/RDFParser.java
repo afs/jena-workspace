@@ -18,137 +18,160 @@
 
 package parser;
 
+import static org.apache.jena.riot.RDFLanguages.NQUADS;
+import static org.apache.jena.riot.RDFLanguages.NTRIPLES;
+import static org.apache.jena.riot.RDFLanguages.RDFJSON;
+import static org.apache.jena.riot.RDFLanguages.sameLang;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 
 import org.apache.http.client.HttpClient;
 import org.apache.jena.atlas.io.IO;
 import org.apache.jena.atlas.web.ContentType;
 import org.apache.jena.atlas.web.TypedInputStream;
 import org.apache.jena.riot.*;
-import org.apache.jena.riot.system.ErrorHandler;
-import org.apache.jena.riot.system.FactoryRDF;
-import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.*;
 import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.util.Context;
 
 /**
- * An {@link RDFParser} is a process that will generate triples; 
- * {@link RDFParserBuilder} provides the means to setup the parser.
+ * An {@link RDFParser} is a process that will generate triples; {@link RDFParserBuilder}
+ * provides the means to setup the parser.
  * <p>
- * An {@link RDFParser} has a predefined source; the target for output is given when the "parse" method is called. 
- * It can be used multiple times in which case the same source is reread. The destination can vary.
- * The application is responsible for concurrency of the destination of the parse operation.
+ * An {@link RDFParser} has a predefined source; the target for output is given when the
+ * "parse" method is called. It can be used multiple times in which case the same source
+ * is reread. The destination can vary. The application is responsible for concurrency of
+ * the destination of the parse operation.
  * 
  * The process is
+ * 
  * <pre>
- *     RDFParser parser = RDFParser.create()
- *          .source("filename.ttl")
- *          .build();
- *     parser.parse(destination); 
- * </pre> 
+ * RDFParser parser = RDFParser.create().source("filename.ttl").build();
+ * parser.parse(destination);
+ * </pre>
  */
 
 public class RDFParser {
-    private final String uri;
-    private final Path path;
-    private final InputStream inputStream;
-    private final Reader javaReader;
-    private final HttpClient httpClient;
-    private final Lang hintLang;
-    private final Lang forceLang;
-    private final String baseUri;
-    private final boolean strict;
-    private final boolean resolveURIs;
-    private final FactoryRDF factory;
+    private final String       uri;
+    private final Path         path;
+    private final InputStream  inputStream;
+    private final Reader       javaReader;
+    private final HttpClient   httpClient;
+    private final Lang         hintLang;
+    private final Lang         forceLang;
+    private final String       baseUri;
+    private final boolean      strict;
+    private final boolean      resolveURIs;
+    private final IRIResolver  resolver;
+    private final FactoryRDF   factory;
     private final ErrorHandler errorHandler;
-    private final Context context;
-    
-    private boolean canUse = true;
+    private final Context      context;
 
-    public static RDFParserBuilder create() { return  RDFParserBuilder.create(); }
-    
-    /*package*/ RDFParser(String uri, Path path, InputStream inputStream, Reader javaReader, 
-                          HttpClient httpClient, Lang hintLang, Lang forceLang, 
-                          String baseUri, boolean strict, boolean resolveURIs, 
-                          FactoryRDF factory, ErrorHandler errorHandler, Context context) {
+    private boolean            canUse = true;
+
+    public static RDFParserBuilder create() {
+        return RDFParserBuilder.create();
+    }
+
+    /* package */ RDFParser(String uri, Path path, InputStream inputStream, Reader javaReader, HttpClient httpClient, Lang hintLang,
+                            Lang forceLang, String baseUri, boolean strict, boolean resolveURIs, IRIResolver resolver, FactoryRDF factory,
+                            ErrorHandler errorHandler, Context context) {
         int x = countNonNull(uri, path, inputStream, javaReader);
         if ( x >= 2 )
-            throw new IllegalArgumentException("One one source allowed: At most one of uri, path, inputStream and javaReader can be set");
+            throw new IllegalArgumentException("Only one source allowed: At most one of uri, path, inputStream and javaReader can be set");
+        Objects.requireNonNull(factory);
+        Objects.requireNonNull(errorHandler);
         
         this.uri = uri;
         this.path = path;
         this.inputStream = inputStream;
         this.javaReader = javaReader;
-        this.httpClient = httpClient ;
+        this.httpClient = httpClient;
         this.hintLang = hintLang;
         this.forceLang = forceLang;
         this.baseUri = baseUri;
         this.strict = strict;
         this.resolveURIs = resolveURIs;
+        this.resolver = resolver;
         this.factory = factory;
         this.errorHandler = errorHandler;
         this.context = context;
     }
 
-    private int countNonNull(Object...objs) {
+    private int countNonNull(Object... objs) {
         int x = 0;
         for ( Object obj : objs )
-            if ( obj != null ) x++;
+            if ( obj != null )
+                x++;
         return x;
     }
 
     public void parse(StreamRDF destination) {
-        if ( ! canUse )
+        if ( !canUse )
             throw new RiotException("Parser has been used once and can not be used again");
         // Consuming mode.
         canUse = (inputStream == null && javaReader == null);
-        
+        // XXX FactoryRDF is stateful in the LabelToNode mapping.
+        // NB FactoryRDFCaching does not reset it's cache.
+        // factory.reset() ;
+
         if ( path != null || inputStream != null || javaReader != null ) {
             // Path : baseUri is set.
             parseNotUri(destination);
-            return ;
+            return;
         }
-        
+
+        parseURI(destination);
+    }
+
+    /** Parse when there is a URI to guide the choice of syntax */
+    private void parseURI(StreamRDF destination) {
         // FactoryRDF
-        
         // Source by uri
-        //RDFDataMgr.process
+        // RDFDataMgr.process
         // Rename URI
-        String urlStr = uri ;
+        String urlStr = uri;
         try (TypedInputStream input = openTypedInputStream(urlStr)) {
             ReaderRIOT reader;
             ContentType ct;
-            
+
             if ( forceLang != null ) {
-                ReaderRIOTFactory r = RDFParserRegistry.getFactory(forceLang) ;
+                ReaderRIOTFactory r = RDFParserRegistry.getFactory(forceLang);
                 if ( r == null )
-                    throw new RiotException("No parser registered for language: "+forceLang);
+                    throw new RiotException("No parser registered for language: " + forceLang);
                 ct = forceLang.getContentType();
                 reader = r.create(forceLang);
             } else {
                 // Conneg and hint
-                ct = WebContent.determineCT(input.getContentType(), hintLang, baseUri) ;
+                ct = WebContent.determineCT(input.getContentType(), hintLang, baseUri);
                 if ( ct == null ) {
-                    throw new RiotException("Failed to determine the content type: (URI="+baseUri+" : stream="+input.getContentType()+")") ;
+                    throw new RiotException("Failed to determine the content type: (URI=" + baseUri + " : stream=" + input.getContentType()
+                                            + ")");
                 }
-                reader = getReader(ct) ;
+                // And setup.
+                // Kill ParserProfile!
+                reader = getReader(ct);
                 if ( reader == null )
-                    throw new RiotException("No parser registered for content type: "+ct.getContentType()) ;
+                    throw new RiotException("No parser registered for content type: " + ct.getContentType());
             }
+
+            //
             // Parse step.
             reader.read(input, baseUri, ct, destination, context);
         }
     }
 
     private TypedInputStream openTypedInputStream(String urlStr) {
-        // *************** HttpClient
-        // StreamManager - bypass? check no map then bypass?
-        //StreamManager.get().getLocationMapper().altMapping(urlStr);
-        
+        // XXX To do
+        // HttpClient
+        // Accept header
+        // use StreamManager? - bypass for the control? check no map then bypass?
+
         if ( urlStr.startsWith("http://") || urlStr.startsWith("https://") ) {
             // HttpClient cases, after mapping.
             HttpClient useThisOne = httpClient;
@@ -156,62 +179,94 @@ public class RDFParser {
             // httpClient == null means use HttpOp default.
             if ( useThisOne == null )
                 useThisOne = HttpOp.getDefaultHttpClient();
-            return HttpOp.execHttpGet(urlStr, null, useThisOne, null);
+            TypedInputStream in = HttpOp.execHttpGet(urlStr, null, useThisOne, null);
+            if ( in == null )
+                throw new RiotNotFoundException("Not found: "+urlStr);
+            return in;
         } else {
             return RDFDataMgr.open(urlStr, context);
         }
 
     }
-    
-    /** Parse when there is no URI to guide the choice of syntax */ 
+
+    /** Parse when there is no URI to guide the choice of syntax */
     private void parseNotUri(StreamRDF destination) {
         // parse from bytes or chars, no indication of the syntax from the source.
         Lang lang = hintLang;
         if ( forceLang != null )
             lang = forceLang;
-        ContentType ct = WebContent.determineCT(null, lang, baseUri) ;
+        ContentType ct = WebContent.determineCT(null, lang, baseUri);
         if ( ct == null )
-            throw new RiotException("Failed to determine the RDF syntax") ;
+            throw new RiotException("Failed to determine the RDF syntax");
 
-        ReaderRIOT readerRiot = getReader(ct) ;
+        ReaderRIOT readerRiot = getReader(ct);
         if ( readerRiot == null )
-            throw new RiotException("No parser registered for content type: "+ct.getContentType()) ;
-        
+            throw new RiotException("No parser registered for content type: " + ct.getContentType());
+
         if ( javaReader != null ) {
             // try(javaRead;) in Java9
-            try ( Reader r = javaReader ) {
-                readerRiot.read(r, baseUri, ct, destination, context) ;
-            } catch (IOException ex) { IO.exception(ex); }
-            return ;
+            try (Reader r = javaReader) {
+                readerRiot.read(r, baseUri, ct, destination, context);
+            }
+            catch (IOException ex) {
+                IO.exception(ex);
+            }
+            return;
         }
-        
+
         // InputStream
-        try ( InputStream input = getInputStream(inputStream, path)){
-            readerRiot.read(input, baseUri, ct, destination, context) ;
-        } catch (IOException ex) { IO.exception(ex); }
+        try (InputStream input = getInputStream(inputStream, path)) {
+            // XXX Setup.
+            readerRiot.read(input, baseUri, ct, destination, context);
+        }
+        catch (IOException ex) {
+            IO.exception(ex);
+        }
         return;
     }
 
     private InputStream getInputStream(InputStream inputStream, Path path) throws IOException {
         // only one of thse can be set.
-        return ( path != null ) ? Files.newInputStream(path) :inputStream;
+        return (path != null) ? Files.newInputStream(path) : inputStream;
     }
-        
-    //RDFDataMgr
-    private static ReaderRIOT getReader(ContentType ct) {
-        Lang lang = RDFLanguages.contentTypeToLang(ct) ;
+
+    private ReaderRIOT getReader(ContentType ct) {
+        Lang lang = RDFLanguages.contentTypeToLang(ct);
         if ( lang == null )
-            return null ;
-        ReaderRIOTFactory r = RDFParserRegistry.getFactory(lang) ;
+            return null;
+
+        ReaderRIOTFactory r = RDFParserRegistry.getFactory(lang);
         if ( r == null )
-            return null ;
-        return r.create(lang) ;
+            return null;
+        ReaderRIOT reader = r.create(lang);
+        
+        MakerRDF maker = makeMaker(lang);
+        // XXX
+        //reader.parserSetup(parserFactory);
+        // Back to old world.
+        reader.setParserProfile((MakerRDFStd)maker);
+        return reader ;
     }
-    
 
-    
-    //public void parseFrom(InputStream input);
-    //public void parseTo(StreamRDF stream);
-    //public void parse(InputStream input, StreamRDF stream); 
+    private MakerRDF makeMaker(Lang lang) {
+        boolean resolve = resolveURIs;
+        boolean checking = true;
+        
+        // Per language tweaks.
+        if ( sameLang(NTRIPLES, lang) || sameLang(NQUADS, lang) )
+            checking = SysRIOT.isStrictMode() ;
+        if ( sameLang(RDFJSON, lang) )
+            resolve = false;
 
+        IRIResolver resolver = this.resolver;
+        if ( resolver == null ) {
+            resolver = resolveURIs ? 
+                IRIResolver.create(baseUri) :
+                IRIResolver.createNoResolve() ;
+        }
+        PrefixMap prefixMap = PrefixMapFactory.createForInput();
+
+        MakerRDFStd parserFactory = new MakerRDFStd(factory, errorHandler, resolver, prefixMap, context, checking);
+        return parserFactory;
+    }
 }

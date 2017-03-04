@@ -19,6 +19,7 @@
 package parser;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -26,8 +27,11 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.lang.LabelToNode;
+import org.apache.jena.riot.system.FactoryRDFStd;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.junit.Test;
 
@@ -47,37 +51,74 @@ public class TestRDFParser {
         assertEquals(1, graph.size());
     }
     
-    // Source via URI
-    
-    // Lang via baseURI
-    
-    // Lang via path.
-    
-    // Lang via conneg
-    
-    // Language
-    
+    @Test public void source_uri_01() {
+        Graph graph = GraphFactory.createGraphMem();
+        RDFParserBuilder.create().source("file:data.ttl").parse(graph);
+        assertEquals(3, graph.size());
+    }
+
+    @Test(expected=RiotException.class)
+    public void source_uri_02() {
+        Graph graph = GraphFactory.createGraphMem();
+        RDFParserBuilder.create().source("file:data.unknown").parse(graph);
+    }
+
+    @Test
+    public void source_uri_03() {
+        Graph graph = GraphFactory.createGraphMem();
+        RDFParserBuilder.create().source("file:data.unknown").lang(Lang.TTL).parse(graph);
+        assertEquals(3, graph.size());
+    }
+
+    @Test(expected=RiotException.class)
+    public void source_uri_hint_lang() {
+        Graph graph = GraphFactory.createGraphMem();
+        RDFParserBuilder.create().source("file:data.rdf").lang(Lang.RDFXML).parse(graph);
+        assertEquals(3, graph.size());
+    }
+
+    @Test
+    public void source_uri_force_lang() {
+        Graph graph = GraphFactory.createGraphMem();
+        RDFParserBuilder.create().source("file:data.rdf").forceLang(Lang.TTL).parse(graph);
+        assertEquals(3, graph.size());
+    }
+
     // HTTP options
     // Specific "Accept:"
     
     // Error handler
     
-    // FactoryRDF
+    static class FactoryRDF_X extends FactoryRDFStd {
+        int counter = 0;
+        @Override
+        public Node createURI(String uriStr) {
+            counter++;
+            return super.createURI(uriStr);
+        }
+    }
     
-    // LabelToNode
+    private RDFParserBuilder builder() {
+        InputStream input = new ByteArrayInputStream(testdata.getBytes(StandardCharsets.UTF_8));
+        return RDFParserBuilder.create().lang(Lang.TTL).source(input);
+    }
     
     @Test public void labels_01() {
         Graph graph = GraphFactory.createGraphMem();
-        InputStream input = new ByteArrayInputStream(testdata.getBytes(StandardCharsets.UTF_8));
-        RDFParserBuilder.create().lang(Lang.TTL).source(input)
+        //LabelToNode.createUseLabelEncoded() ;
+        builder()
             .labelToNode(LabelToNode.createUseLabelAsGiven())
             .parse(graph);
-        
         assertEquals(1, graph.size());
     }
-    
-    // Clone
-    
-    
 
+    @Test public void factory_01() {
+        FactoryRDF_X f = new FactoryRDF_X();
+        Graph graph = GraphFactory.createGraphMem();
+        builder()
+            .factory(f)
+            .parse(graph);
+        assertEquals(1, graph.size());
+        assertNotEquals(0, f.counter);
+    }
 }

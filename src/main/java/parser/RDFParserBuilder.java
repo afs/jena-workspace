@@ -40,6 +40,7 @@ import org.apache.jena.riot.WebContent;
 import org.apache.jena.riot.lang.LabelToNode;
 import org.apache.jena.riot.system.*;
 import org.apache.jena.riot.web.HttpNames;
+import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.util.Context;
 
@@ -84,9 +85,12 @@ public class RDFParserBuilder {
     private Lang forceLang = null;
     
     private String baseUri = null;
-    // This is ununsed but left in case required in the future.
+    
+    // ---- Unused but left in case required in the future.
     private boolean strict = false;
     private boolean resolveURIs = true;
+    private IRIResolver resolver = null;
+    // ----
     
     // Construction for the StreamRDF 
     private FactoryRDF factory = null;
@@ -204,7 +208,7 @@ public class RDFParserBuilder {
         return this;
     }
     
-    /** Set the HttpClien to use.
+    /** Set the HttpClient to use.
      *  This will override any HTTP header settings.
      */
     public RDFParserBuilder setHttpClient(HttpClient httpClient) {
@@ -338,37 +342,59 @@ public class RDFParserBuilder {
      * 
      * @return RDFParser
      */
-    public RDFParser build() { 
+    public RDFParser build() {
+        // Build what we can now - something have to be built in the parser.
+        
         if ( uri == null && path == null && inputStream == null && javaReader == null )
             throw new RiotException("No source specified");
-        // The builder ensures only one source is set. 
-        //if ( strict ) {}
         
         // Setup the HTTP client.
         // XXX HttpClientBuilder ?
-        HttpClient client = this.httpClient;
-        if ( headers.size() > 0 ) {
-            List<Header> hdrs = new ArrayList<>();
-            // Better?
-            headers.forEach((k,v)->{
-                Header header = new BasicHeader(k, v);
-                hdrs.add(header);
-            });
-            client = CachingHttpClientBuilder.create().setDefaultHeaders(hdrs).build();
-        }
-        
-        if ( factory == null && labelToNode != null )
-            factory = RiotLib.factoryRDF(labelToNode);
+        HttpClient client = buildHttpClient();
+        FactoryRDF factory$ = buildFactoryRDF();
+        ErrorHandler errorHandler$ = errorHandler;
+        if ( errorHandler$ == null )
+            errorHandler$ = ErrorHandlerFactory.getDefaultErrorHandler();
+
         if ( path != null && baseUri == null )
             baseUri = IRILib.filenameToIRI(path.toString());
+        
+        // Can't build maker here as it is Lang/conneg dependent.
+        
         return new RDFParser(uri, path, inputStream, javaReader, client,
                              hintLang, forceLang,
                              baseUri, strict, resolveURIs,
-                             factory, errorHandler, context);
+                             resolver, factory$, errorHandler$, context);
+    }
+
+    private FactoryRDF buildFactoryRDF() {
+        FactoryRDF factory$ = factory;
+        if ( factory$ == null ) { 
+            if ( labelToNode != null )
+                factory$ = RiotLib.factoryRDF(labelToNode);
+            else
+                factory$ = RiotLib.factoryRDF();
+        }
+        return factory$;
+    }
+
+    private HttpClient buildHttpClient() {
+        if ( httpClient != null )
+            return httpClient;
+        if ( headers.isEmpty() )
+            // System default.
+            return HttpOp.getDefaultHttpClient();
+        List<Header> hdrs = new ArrayList<>();
+        headers.forEach((k,v)->{
+            Header header = new BasicHeader(k, v);
+            hdrs.add(header);
+        });
+        HttpClient hc = CachingHttpClientBuilder.create().setDefaultHeaders(hdrs).build();
+        return hc;
     }
 
     /**
-     * Duplicate this buider with current settings.
+     * Duplicate this builder with current settings.
      * Changes to setting to this builder do not affect the clone. 
      */
     @Override
