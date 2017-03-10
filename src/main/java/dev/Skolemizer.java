@@ -46,38 +46,6 @@ public class Skolemizer extends StreamRDFBase {
         System.out.println("DONE");
     }
     
-//    // = StreamRDFWrapper
-//    public static class FilterStreamRDF implements StreamRDF
-//    {
-//        private final StreamRDF dest ;
-//
-//        public FilterStreamRDF(StreamRDF dest) {
-//            this.dest = dest ;
-//        }
-//
-//        @Override
-//        public void triple(Triple triple) {
-//            dest.triple(triple) ;
-//        }
-//
-//        @Override
-//        public void finish() {
-//            dest.finish() ;
-//        }
-//
-//        @Override
-//        public void start() { dest.start(); }
-//
-//        @Override
-//        public void quad(Quad quad) { dest.quad(quad); }
-//
-//        @Override
-//        public void base(String base) { dest.base(base); }
-//
-//        @Override
-//        public void prefix(String prefix, String iri) { dest.prefix(prefix, iri); }
-//    }
-
     private StreamRDF output ;
     
     public Skolemizer(StreamRDF output) {
@@ -125,7 +93,4 @@ public class Skolemizer extends StreamRDFBase {
         String x = "_:"+NodeFmtLib.encodeBNodeLabel(n.getBlankNodeLabel()) ;
         return NodeFactory.createURI(x) ;
     }
-
-    
-    
 }

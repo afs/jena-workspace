@@ -30,10 +30,7 @@ import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.atlas.lib.* ;
 import org.apache.jena.atlas.lib.cache.CacheInfo ;
 import org.apache.jena.atlas.logging.LogCtl ;
-import org.apache.jena.riot.Lang ;
-import org.apache.jena.riot.RDFDataMgr ;
-import org.apache.jena.riot.RDFLanguages ;
-import org.apache.jena.riot.ReaderRIOT ;
+import org.apache.jena.riot.* ;
 import org.apache.jena.riot.lang.StreamRDFCounting ;
 import org.apache.jena.riot.system.* ;
 import org.apache.jena.sparql.core.DatasetGraph ;
@@ -303,13 +300,19 @@ class RunMemTimeSpace extends CmdGeneral {
     }
     
     private static ActionReport parseOne(String label, String FN, StreamRDF dest, FactoryRDF f) {
-        ReaderRIOT r = setup(FN, f) ;
         InputStream in = IO.openFile(FN) ;
+        Lang lang = RDFLanguages.filenameToLang(FN) ;
+        RDFParser r = RDFParser.create()
+            .source(FN)
+            .factory(f)
+            .errorHandler(ErrorHandlerFactory.errorHandlerStd)
+            .base(IRILib.filenameToIRI(FN))
+            .build();
         
         ProgressMonitor progress = new ProgressMonitor(label, tick, superTick, output) ;
         StreamRDF stream = new ProgressStreamRDF(dest, progress) ; 
 
-        Runnable action = ()-> r.read(in, IRILib.filenameToIRI(FN), null, stream, null) ;
+        Runnable action = ()-> r.parse(stream) ;
         ActionReport report = spaceTime(label, ()-> monitor(progress, action)) ;
         if ( f instanceof FactoryRDFCaching ) {
             FactoryRDFCaching cf = (FactoryRDFCaching)f ;
@@ -318,18 +321,6 @@ class RunMemTimeSpace extends CmdGeneral {
         return report ;
     }
     
-    private static ReaderRIOT setup(String FN, FactoryRDF f) {
-        Lang lang = RDFLanguages.filenameToLang(FN) ;
-        ReaderRIOT r = RDFDataMgr.createReader(lang) ;
-        
-        ParserProfile pp = r.getParserProfile() ;
-        pp = RiotLib.profile(lang, IRILib.filenameToIRI(FN)) ;
-        pp.setFactoryRDF(f); 
-        pp.setHandler(ErrorHandlerFactory.errorHandlerStd);
-        r.setParserProfile(pp);
-        return r ;
-    }
-
     public static void printReport(String label, ActionReport report) {
         if ( label != null ) {
             System.out.print(label) ;
