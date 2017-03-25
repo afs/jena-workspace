@@ -21,6 +21,7 @@ package tools;
 import java.io.InputStream ;
 import java.util.ArrayList ;
 import java.util.List ;
+import java.util.function.Supplier ;
 import java.util.stream.IntStream ;
 
 import jena.cmd.ArgDecl ;
@@ -35,6 +36,7 @@ import org.apache.jena.riot.lang.StreamRDFCounting ;
 import org.apache.jena.riot.system.* ;
 import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.DatasetGraphFactory ;
+import org.apache.jena.system.JenaSystem ;
 import org.apache.jena.tdb.TDBFactory ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
@@ -50,6 +52,7 @@ class RunMemTimeSpace extends CmdGeneral {
     static { LogCtl.setLog4j("log4j.properties"); }
     //static { LogCtl.setCmdLogging(); }
     static Logger LOG = LoggerFactory.getLogger("4D") ;
+    static { JenaSystem.init(); }
     
     static final ArgDecl argCache       = new ArgDecl(ArgDecl.HasValue, "cache") ;
     static final ArgDecl argParse       = new ArgDecl(ArgDecl.NoValue, "parse") ;
@@ -67,9 +70,15 @@ class RunMemTimeSpace extends CmdGeneral {
     int                  numTDB         = 0 ;
     
     public static void main(String... args) {
+        main$("--norm",
+              "--cache=yes",
+              "/home/afs/Datasets/RxNORM/RXNORM.ttl",
+              "/home/afs/Datasets/SnomedCT/snomedct.nt.gz",
+              "/home/afs/Datasets/Chembl/chembl_21.0_unichem.ttl.gz"
+              );
+    }
         
-        RiotLib.factoryRDF() ;
-        
+    public static void main$(String... args) {
         if ( args.length == 0 ) {
             String FN =  "/home/afs/tmp/bsbm-25.rt.gz" ;
             String FN1 = "/home/afs/Datasets/BSBM/bsbm-5m.nt.gz" ;
@@ -177,12 +186,12 @@ class RunMemTimeSpace extends CmdGeneral {
         results.forEach(report-> {
             // If no stats enables, misses is zero.
             if ( report.stats != null && report.stats.misses > 0 )
-                System.out.printf("%-20s  Space=%7.2f MB  Time=%5.2fs  Cache=%.1f%%\n",
-                                  report.label, report.spaceUsed/(1000*1000.0), report.timeUsed/1000.0,
+                System.out.printf("%-20s  Space=%7.2f MB  Time=%5.2fs  Bytes/triple=%,.2f  Cache=%.1f%%\n",
+                                  report.label, report.spaceUsed/(1000*1000.0), 1.0*report.spaceUsed/report.count, report.timeUsed/1000.0,
                                   report.stats.hitRate*100) ;
             else
-                System.out.printf("%-20s  Space=%7.2f MB  Time=%5.2fs\n",
-                                  report.label, report.spaceUsed/(1000*1000.0), report.timeUsed/1000.0) ;    
+                System.out.printf("%-20s  Space=%7.2f MB  Time=%5.2fs  Bytes/triple=%,.2f\n",
+                                  report.label, report.spaceUsed/(1000*1000.0), report.timeUsed/1000.0, 1.0*report.spaceUsed/report.count) ;    
             });
         // For concatenating output files.
         System.out.println() ;
@@ -310,10 +319,11 @@ class RunMemTimeSpace extends CmdGeneral {
             .build();
         
         ProgressMonitor progress = new ProgressMonitor(label, tick, superTick, output) ;
-        StreamRDF stream = new ProgressStreamRDF(dest, progress) ; 
+        StreamRDF stream0 = new ProgressStreamRDF(dest, progress) ;
+        StreamRDFCounting stream = StreamRDFLib.count(stream0); 
 
         Runnable action = ()-> r.parse(stream) ;
-        ActionReport report = spaceTime(label, ()-> monitor(progress, action)) ;
+        ActionReport report = spaceTime(label, ()-> monitor(progress, action), stream); 
         if ( f instanceof FactoryRDFCaching ) {
             FactoryRDFCaching cf = (FactoryRDFCaching)f ;
             report.stats = cf.stats() ;
@@ -329,10 +339,11 @@ class RunMemTimeSpace extends CmdGeneral {
         }
         //System.out.printf("  Space=%7.2f MB  Time=%5.2fs\n", report.spaceUsed/(1000*1000.0), report.timeUsed/1000.0) ;
         System.out.printf("  Space=%.2f MB\n", report.spaceUsed/(1000*1000.0)) ;
+        System.out.printf("  Bytes/triple=%.2f\n",  1.0*report.spaceUsed/report.count);
         System.out.printf("  Time=%.2fs\n",  report.timeUsed/1000.0) ;
     }
     
-    public static ActionReport spaceTime(String label, Runnable action) {
+    public static ActionReport spaceTime(String label, Runnable action, StreamRDFCounting stream) {
         Timer t = new Timer() ;
         gc() ;
         long before = memory();
@@ -342,7 +353,7 @@ class RunMemTimeSpace extends CmdGeneral {
         gc() ;
         long after = memory();
         long mem = after-before ;
-        return new ActionReport(label, mem, time) ;
+        return new ActionReport(label, mem, time, stream.count()) ;
     }
     
     public static void monitor(ProgressMonitor monitor, Runnable action) {
@@ -368,21 +379,21 @@ class RunMemTimeSpace extends CmdGeneral {
     public static class ActionReport {
         public final long spaceUsed ;
         public final long timeUsed ;
+        public final long count; 
         public final String label;
         public CacheInfo stats = null ;
         
-        public ActionReport(String label, long spaceUsed, long timeUsed) {
+        public ActionReport(String label, long spaceUsed, long timeUsed, long count) {
             this.label = label ;
             this.spaceUsed = spaceUsed ;
             this.timeUsed = timeUsed ;
+            this.count = count;
         }
     }
-
-    public static class ParseActionReport extends ActionReport {
-        public final long count ;
-        public ParseActionReport(String label, long spaceUsed, long timeUsed, long count) {
-            super(label, spaceUsed, timeUsed) ;
-            this.count = count ;
-        }
-    }
+//
+//    public static class ParseActionReport extends ActionReport {
+//        public ParseActionReport(int x, String label, long spaceUsed, long timeUsed, long count) {
+//            super(label, spaceUsed, timeUsed, count) ;
+//        }
+//    }
 }
