@@ -21,7 +21,6 @@ package tools;
 import java.io.InputStream ;
 import java.util.ArrayList ;
 import java.util.List ;
-import java.util.function.Supplier ;
 import java.util.stream.IntStream ;
 
 import jena.cmd.ArgDecl ;
@@ -31,7 +30,9 @@ import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.atlas.lib.* ;
 import org.apache.jena.atlas.lib.cache.CacheInfo ;
 import org.apache.jena.atlas.logging.LogCtl ;
-import org.apache.jena.riot.* ;
+import org.apache.jena.riot.Lang ;
+import org.apache.jena.riot.RDFLanguages ;
+import org.apache.jena.riot.RDFParser ;
 import org.apache.jena.riot.lang.StreamRDFCounting ;
 import org.apache.jena.riot.system.* ;
 import org.apache.jena.sparql.core.DatasetGraph ;
@@ -71,7 +72,7 @@ class RunMemTimeSpace extends CmdGeneral {
     
     public static void main(String... args) {
         main$("--norm",
-              "--cache=yes",
+              //"--cache=yes",
               "/home/afs/Datasets/RxNORM/RXNORM.ttl",
               "/home/afs/Datasets/SnomedCT/snomedct.nt.gz",
               "/home/afs/Datasets/Chembl/chembl_21.0_unichem.ttl.gz"

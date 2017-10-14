@@ -14,9 +14,13 @@
   <description>AFS workspace</description>
 
   <properties>
-    <ver.jena>3.3.0-SNAPSHOT</ver.jena>
-    <ver.fuseki>2.6.0-SNAPSHOT</ver.fuseki>
+    <ver.jena>3.5.0-SNAPSHOT</ver.jena>
+    <ver.fuseki>3.5.0-SNAPSHOT</ver.fuseki>
     <ver.jena.text>${ver.jena}</ver.jena.text>
+
+    <ver.lucene>6.4.1</ver.lucene>
+    <ver.solr>${ver.lucene}</ver.solr>
+
   </properties>
 
   <dependencies>
@@ -78,7 +82,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>4.12</version>
     </dependency>
 
      <!-- Require a logging implementation -->
@@ -115,7 +119,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
-	<version>2.5</version>
+	      <version>2.5</version>
         <configuration>
           <encoding>UTF-8</encoding>
         </configuration>

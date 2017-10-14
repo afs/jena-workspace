@@ -16,24 +16,12 @@
  * limitations under the License.
  */
 
-package fuseki.logging;
+package gnode;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import org.apache.jena.shared.JenaException ;
 
-/** Utilities */
-/*package*/ class PkgLib {
-    // --- Utilities (copied from Apache Jena jena-base) - replace with Apache Commons equivalents.
-    /*package*/ static void exception(IOException ex) {
-        throw new RuntimeException(ex);
-    }
-    
-    /*package*/ static byte[] asUTF8bytes(String s)
-    {
-        try { return s.getBytes("UTF-8"); }
-        catch (UnsupportedEncodingException ex)
-        { throw new RuntimeException("UTF-8 not supported!"); } 
-    }
-
-
+/** Excption indicating multiple nods found in an "exactly one" traversal. */ 
+public class MultipleNodeException extends JenaException {
+    MultipleNodeException(String msg) { super(msg); }
+    MultipleNodeException()           { super(); }
 }

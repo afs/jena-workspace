@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,17 +16,23 @@
  * limitations under the License.
  */
 
-package fuseki;
+package javascript_functions;
 
-import fuseki.logging.LoggingSetup ;
 
-public class FusekiLoggingUpgrade2
-{
-    public static void main(String...a) {
-        LoggingSetup.setLogging();
-        // Modifed with:
-        //   FusekiEnv.setEnvironment() ;
-        //   FusekiLoggingUpgrade.setupLogging : resource naming
-        //   getDefaultString : log4j and JUL.
-    }
+
+// https://github.com/rdfjs/representation-task-force/
+// Javascript NodeValue.
+// Not the full NodeValue interface; better naming.
+// Object as well?
+
+
+
+
+public interface RDFJS {
+    public String getTermType();
+    public String getValue();
+    
+//    public interface RDFJS_NamedNode {}
+//    public interface RDFJS_BlankNode {}
+//    public interface RDFJS_Literal {}
 }

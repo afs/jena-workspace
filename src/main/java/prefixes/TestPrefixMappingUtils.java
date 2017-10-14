@@ -30,7 +30,7 @@ import org.apache.jena.sparql.graph.GraphFactory ;
 import org.junit.Assert ;
 import org.junit.Test ;
 
-public class TestPrefixUtils {
+public class TestPrefixMappingUtils {
 
     static Graph create (String data) {
         Graph graph = GraphFactory.createGraphMem() ;

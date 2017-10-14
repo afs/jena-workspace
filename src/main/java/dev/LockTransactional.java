@@ -56,6 +56,7 @@ public class LockTransactional implements Lock {
         switch(lockMode) {
             case READ :
                 transactional.end();
+                break;
             case WRITE :
                 transactional.commit();
                 transactional.end();
