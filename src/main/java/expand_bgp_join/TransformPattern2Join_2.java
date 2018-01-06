@@ -33,7 +33,7 @@ public class TransformPattern2Join_2 extends TransformCopy
 {
     /*
      * Get standard shaped trees?
-     * Alternative is hard flatteniing to (sequence of all the quads, triples) 
+     * Alternative is hard flattening to (sequence of all the quads, triples) 
      */
     
     @Override
@@ -87,10 +87,14 @@ public class TransformPattern2Join_2 extends TransformCopy
     
     private Op expand(OpSequence opSeq, List<Op> elts)
     {
+        // Note on filters: Doing a filter only on one side is OK for a join, not for a left join.  
         Op x = null ;
         // shape choices.
-        for ( Op op : elts )
+        for ( Op op : elts ) {
+//            if ( op instanceof OpFilter ) {
+//            }
             x = join(x, op) ;
+        }
         return x ;
     }
 

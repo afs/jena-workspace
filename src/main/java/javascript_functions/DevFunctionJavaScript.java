@@ -40,7 +40,8 @@ public class DevFunctionJavaScript {
              ,"function cc(word,index)   { return (index == 0) ? lcFirst(word) : ucFirst(word); }"
              );
         
-        ARQ.getContext().set(FunctionJavaScript.symJS, StrUtils.strjoinNL
+        
+        ARQ.getContext().set(EnvJavaScript.symJavaScriptLib, StrUtils.strjoinNL
                                     ("var barx = '||';"
                                     ,"function bar(x,y)     { return barx+combine(x,y)+barx } "
                                     ,"function node(n)      { n.value ; return true }"
@@ -52,6 +53,8 @@ public class DevFunctionJavaScript {
         //exec("toCamelCase", "''");
         exec("node", "'foo'^^ex:bar");
         exec("bar", "'foo'^^ex:bar", "'bar'");
+        exec("combine", "123.5e0", "456.5");
+        exec("combine", "123.5e0", "'&&&&'");
     }
 
     public static Object exec(String fn, String... args) throws ScriptException {
@@ -67,13 +70,15 @@ public class DevFunctionJavaScript {
         for ( NodeValue nv : args )
             sj.add(NodeFmtLib.str(nv.asNode()));
         System.out.printf("%s( %s )",fn,sj);
-        FunctionJavaScript x = new FunctionJavaScript(fn);
+        EnvJavaScript env = EnvJavaScript.create(ARQ.getContext());
+        FunctionJavaScript x = new FunctionJavaScript(fn, env);
         NodeValue nvr = x.exec(Arrays.asList(args));
         System.out.print(" --> ");
         if ( nvr == null  ) 
             System.out.print("null");
         else
             System.out.print(NodeFmtLib.str(nvr.asNode()));
+        System.out.println();
         System.out.println();
         return nvr;
     }

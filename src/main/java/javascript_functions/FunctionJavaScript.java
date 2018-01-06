@@ -19,69 +19,50 @@
 package javascript_functions;
 import java.util.List;
 
-import javax.script.*;
+import javax.script.ScriptException;
 
-import org.apache.jena.query.ARQ;
-import org.apache.jena.sparql.SystemARQ;
 import org.apache.jena.sparql.expr.ExprEvalException;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.function.FunctionBase;
-import org.apache.jena.sparql.sse.builders.ExprBuildException;
-import org.apache.jena.sparql.util.Symbol;
 
 /**
- * Javascript implemented SPARQL custom functions for ARQ. The javascript function is
- * called with arguent which are mapped so that strings, numbers and booleans become the
- * equivalent native javascript object, and anything else becomes a {@link NV}, a
- * javascript object providing access to the RDF features such as datatype.
- * {@link NV#toString} return a string so integration working with URIs can treat URIs as
- * string which is natural in jaavscript and aligned to <a
- * href="https://github.com/rdfjs/representation-task-force/"
+ * Javascript implemented SPARQL custom functions for ARQ. The JavaScript function is
+ * called with arguments which are mapped so that XSD strings, numbers and booleans become the
+ * equivalent native JavaScript object, and anything else becomes a {@link NV}, a
+ * JavaScript object providing access to the RDF features such as datatype.
+ * {@link NV#toString} returns a string so a function working with URIs can treat URIs as
+ * strings which is natural in JavaScript and aligned to
+ * <a href="https://github.com/rdfjs/representation-task-force/"
  * >rdfjs/representation-task-force</a>.
  * <p>
- * Function are loaded from the file named in context setting
- * {@link FunctionJavaScript#symJS}.
+ * Functions are executed in {@link EnvJavaScript}. There is a global
+ * {@link EnvJavaScript} and it can also be set specifically for a query execution.
+ * See {@link EnvJavaScript} for details of configuration.
  * <p>
- * See the source for {@link LibNV#fromNodeValue} and {@link LibNV#toNodeValue(Object)} for details
- * of the conversion into and out of JavaScript objects. Note: there is an attempt to
- * reconstruct the datatype of the result of the function into {@code xsd:integer} and
- * {@code xsd:double}.
+ * Note: there is an
+ * attempt to reconstruct the datatype of the result of the function into
+ * {@code xsd:integer} and {@code xsd:double}.
+ * <p>
+ * Functions that return null or undefined will resutl in a {@link ExprEvalException}.
+ * 
+ * @see EnvJavaScript
+ * @see NV 
  */
 public class FunctionJavaScript extends FunctionBase {
 
-    public static Symbol symJS = SystemARQ.allocSymbol("javacript-lib");
-    
-    private final String scriptLib;
-    
-    // Not thread safe in general.
-    private final ScriptEngine scriptEngine;
-    private CompiledScript compiledScript;
-    
-    private final Invocable invoc;
+    private final EnvJavaScript envJS;
     private final String functionName;
 
     private boolean initialized = false;
     
-    public FunctionJavaScript(String functionName) throws ScriptException {
+    public FunctionJavaScript(String functionName, EnvJavaScript env) {
         this.functionName = functionName;
-        this.scriptLib = ARQ.getContext().getAsString(symJS);
-        ScriptEngineManager manager = new ScriptEngineManager();
-        scriptEngine = manager.getEngineByName("nashorn");
-        // Add function to script engine.
-        invoc = (Invocable)scriptEngine;
+        this.envJS = env;
     }
-    
+
     @Override
-    public void checkBuild(String uri, ExprList args) {
-        try {
-            initialized = true;
-            Object x = scriptEngine.eval(scriptLib);
-        }
-        catch (ScriptException e) {
-            throw new ExprBuildException("Failed to load Javascript", e);
-        }
-    }
+    public void checkBuild(String uri, ExprList args) {}
 
     @Override
     public NodeValue exec(List<NodeValue> args) {
@@ -93,12 +74,18 @@ public class FunctionJavaScript extends FunctionBase {
             // Pass strings as string, and numbers as Number.
             Object[] a = new Object[args.size()];
             for ( int i = 0 ; i < args.size(); i++ )
-                a[i] = LibNV.fromNodeValue(args.get(i));
-            Object r = invoc.invokeFunction(functionName, a);
-            NodeValue nv = LibNV.toNodeValue(r);
+                a[i] = NV.fromNodeValue(args.get(i));
+            Object r = envJS.invoc().invokeFunction(functionName, a);
+            if ( r == null )
+                // Or string "undefined". 
+                throw new ExprEvalException(functionName);
+            NodeValue nv = NV.toNodeValue(r);
             return nv;
         }
-        catch (NoSuchMethodException | ScriptException e) {
+        catch (NoSuchMethodException ex) {
+            throw new ExprEvalException("No such JavaScript function '"+functionName+"'", ex);
+        }
+        catch (ScriptException e) {
             throw new ExprEvalException("Failed to evaluate javascript function '"+functionName+"'", e);
         }
     }

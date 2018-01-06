@@ -1,16 +1,19 @@
 package dev;
 
+import static org.apache.jena.system.Txn.calculateRead;
+import static org.apache.jena.system.Txn.executeWrite;
+
 import java.util.Map ;
 
-import static org.apache.jena.system.Txn.* ;
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.shared.PrefixMapping ;
 import org.apache.jena.shared.impl.PrefixMappingImpl ;
-import org.apache.jena.sparql.core.GraphView ;
+import org.apache.jena.sparql.core.GraphView;
 import org.apache.jena.tdb.transaction.DatasetGraphTransaction ;
 
 /** Protect all the core operations within a transaction. */ 
 public class PrefixHandlerTDB_Txn extends PrefixMappingImpl {
+    // TDB1
     private final DatasetGraphTransaction dsgtxn ;
     private final GraphView graph ;
     private final String name ;
