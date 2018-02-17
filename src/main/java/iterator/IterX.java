@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package graph;
+package iterator;
 
 import java.util.Iterator;
 

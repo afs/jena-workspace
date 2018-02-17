@@ -19,26 +19,12 @@
 package dev;
 
 import org.apache.jena.atlas.logging.LogCtl ;
-import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.util.iterator.ExtendedIterator;
 
 public class DevWorkspace
 {
     static { LogCtl.setCmdLogging() ; }
     
     public static void main(String ... a) {
-        Graph g = RDFDataMgr.loadGraph("/home/afs/tmp/D.nt");
-        ExtendedIterator<Triple> iter = g.find(NodeFactory.createBlankNode(),null,null);
-//        
-////        for(Optional<Triple> opt = iter.nextOptional(); opt.isPresent(); opt = iter.nextOptional() ) {
-//        
-//            if ( ! opt.isPresent() ) 
-//                break;
-//            System.out.println(opt.get());
-//        }
         System.out.println("DONE");
     }
 }

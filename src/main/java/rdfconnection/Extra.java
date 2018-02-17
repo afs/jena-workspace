@@ -16,30 +16,8 @@
  * limitations under the License.
  */
 
-package binary_protocol;
+package rdfconnection;
 
-import org.apache.jena.graph.Triple;
-import org.apache.jena.sparql.core.Quad;
+public class Extra {
 
-public interface StreamPatch {
-    /** Start processing */
-    public void start() ;
-    
-    public void addTriple(Triple triple) ;
-    public void deleteTriple(Triple triple) ;
-
-    public void addQuad(Quad quad) ;
-    public void deleteQuad(Quad quad) ;
-    
-    /** base declaration seen */
-    public void base(String base) ;
-
-    /** prefix declaration seen */
-    public void addPrefix(String prefix, String iri) ;
-    // Iff uri matches?
-    public void deletePrefix(String prefix, String iri) ;
-    public void deletePrefix(String prefix) ;
-
-    /** Finish processing */
-    public void finish() ;
 }

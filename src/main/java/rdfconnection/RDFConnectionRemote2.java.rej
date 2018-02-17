@@ -1,0 +1,19 @@
+--- jena-rdfconnection/src/main/java/org/apache/jena/rdfconnection/RDFConnectionRemote.java
++++ src/main/java/rdfconnection/RDFConnectionRemote2.java
+@@ -42,6 +42,7 @@
+ import org.apache.jena.sparql.core.DatasetGraph;
+ import org.apache.jena.sparql.core.Transactional;
+ import org.apache.jena.sparql.core.TransactionalLock;
++import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
+ import org.apache.jena.update.UpdateExecutionFactory;
+ import org.apache.jena.update.UpdateProcessor;
+ import org.apache.jena.update.UpdateRequest;
+@@ -297,7 +326,7 @@
+ 
+     protected DatasetGraph fetchDataset$() {
+         HttpCaptureResponse<DatasetGraph> dsg = HttpResponseLib.datasetHandler();
+-        exec(()->HttpOp.execHttpGet(destination, WebContent.defaultDatasetAcceptHeader, dsg, this.httpClient, this.httpContext));
++        exec(()->HttpOp.execHttpGet(destination, acceptDataset, dsg, this.httpClient, this.httpContext));
+         return dsg.get();
+     }
+     

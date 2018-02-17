@@ -28,7 +28,6 @@ import org.apache.jena.atlas.lib.StrUtils ;
 import org.apache.jena.datatypes.xsd.XSDDatatype ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.NodeFactory ;
-import org.apache.jena.iri.IRIFactory ;
 import org.apache.jena.query.* ;
 import org.apache.jena.riot.system.IRIResolver ;
 import org.apache.jena.sparql.core.ResultBinding ;
@@ -72,8 +71,7 @@ public class MainJena1111
     public static void main(String... args) {
         {            
             
-            IRIFactory.iriImplementation() ;
-            IRIResolver.iriFactory.setIsWarning(0, false); 
+            IRIResolver.iriFactory().setIsWarning(0, false); 
             
             /*
             Code 4  : UNWISE_CHARACTER
