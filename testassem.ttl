@@ -1,0 +1,23 @@
+1@prefix :        <#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix tdb:     <http://jena.hpl.hp.com/2008/tdb#> .
+@prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
+
+<#dataset> rdf:type       ja:RDFDatasetOne ;
+    ja:defaultGraph       <#model_inf> ;
+     .
+
+<#model_inf> a ja:InfModel ;
+     ja:baseModel <#tdbGraph> ;
+     ja:reasoner [
+         ja:reasonerURL <http://jena.hpl.hp.com/2003/OWLFBRuleReasoner>
+     ] .
+
+## Base data in TDB.
+<#tdbDataset> rdf:type tdb:DatasetTDB ;
+    tdb:location "--mem--" ;
+    .
+
+<#tdbGraph> rdf:type tdb:GraphTDB ;
+    tdb:dataset <#tdbDataset> .

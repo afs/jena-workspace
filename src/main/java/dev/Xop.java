@@ -67,10 +67,6 @@ public class Xop {
     private static void addSparqlOp(FunctionRegistry registry, String uri, BiFunction<NodeValue, NodeValue, NodeValue> f) {}
     private static void addSparqlOp(FunctionRegistry registry, String uri, Function<NodeValue, NodeValue> f) {}
     private static void addSparqlOp(FunctionRegistry registry, String uri, Supplier<NodeValue> f) {}
-    
-    
-    
-
 
     static {
         //addSparqlOp(null, "bound", ()->NodeFunctions.isBlank(v)

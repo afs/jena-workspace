@@ -23,6 +23,11 @@ import org.apache.jena.atlas.io.IndentedLineBuffer ;
 import org.apache.jena.atlas.lib.BitsInt ;
 import org.apache.jena.atlas.lib.Chars ;
 
+
+// See JSWriter.outputQuotesString.
+
+// This code here is the extracted JSON quoting mechanism.
+// ideally put back into atlas.json
 public class JSON2 {
     
     /** Escape a string according to the JSON quoting rules. 
@@ -47,30 +52,23 @@ public class JSON2 {
         for (int i = 0; i < len; i++) {
             char ch = string.charAt(i) ;
             switch (ch) {
-                case '"':   out.write("\\\"") ; break ;
-                case '\'':  out.write("\\\'") ; break ;
-                case '\\' : out.write("\\\\") ; break ;
+                case '"':
+                case '\'':
+                case '\\' :
+                    esc(out, ch) ;
                 case '/' :
                     // Avoid </ which confuses if it's in HTML (this is from json.org)
                     if ( i > 0 && string.charAt(i - 1) == '<' )
-                        out.write("/") ;
+                        esc(out, ch) ;
                     else
-                        out.write("\\/") ;
+                        out.print(ch);
                     break ;
                 case '\b' :
-                    out.write("\\b") ;
-                    break ;
                 case '\f' :
-                    out.write("\\f") ;
-                    break ;
                 case '\n' :
-                    out.write("\\n") ;
-                    break ;
                 case '\r' :
-                    out.write("\\r") ;
-                    break ;
                 case '\t' :
-                    out.write("\\t") ;
+                    esc(out, ch) ;
                     break ;
                 default :
                     // Character.isISOControl(ch) ; //00-1F, 7F-9F
@@ -89,6 +87,11 @@ public class JSON2 {
                     break ;
             }
         }
+    }
+    
+    private static void esc(AWriter out, char ch) {
+        out.print('\\') ;
+        out.print(ch) ;
     }
     
     private static int oneHex(AWriter out, int x, int i) {

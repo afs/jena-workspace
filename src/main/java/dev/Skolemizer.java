@@ -18,102 +18,88 @@
 
 package dev;
 
-import java.util.function.Function ;
+import java.util.function.Function;
 
-import org.apache.jena.graph.Graph ;
-import org.apache.jena.graph.Node ;
-import org.apache.jena.graph.NodeFactory ;
-import org.apache.jena.graph.Triple ;
-import org.apache.jena.riot.out.NodeFmtLib ;
-import org.apache.jena.riot.system.StreamOps ;
-import org.apache.jena.riot.system.StreamRDF ;
-import org.apache.jena.riot.system.StreamRDFBase ;
-import org.apache.jena.riot.system.StreamRDFLib ;
-import org.apache.jena.sparql.core.Quad ;
-import org.apache.jena.sparql.sse.SSE ;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.riot.system.*;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.expr.nodevalue.NodeFunctions;
+import org.apache.jena.sparql.sse.SSE;
 
 public class Skolemizer {
-    
+
     private static Node skolemize(Node n) {
-        if ( ! n.isBlank() )
-            return n ;
-        // Put somewhere!
-        String x = "_:"+NodeFmtLib.encodeBNodeLabel(n.getBlankNodeLabel()) ;
-        return NodeFactory.createURI(x) ;
+        return NodeFunctions.blankNodeToIri(n); //RiotLib.blankNodeToIri(n);
     }
-    
+
     public static void main(String...args) {
-        Graph g = SSE.parseGraph("(graph"+
-            "(:s :p   _:a)"+
-            "(:s1 :p1 _:a)"+
-            ")") ;
-        StreamRDF out = StreamRDFLib.writer(System.out) ;
-        out.start() ;
-        StreamRDF skol = new StreamRDFNodeExec(out, Skolemizer::skolemize) ;
+        Graph g = SSE.parseGraph("(graph" + "(:s :p   _:a)" + "(:s1 :p1 _:a)" + ")");
+        StreamRDF out = StreamRDFLib.writer(System.out);
+        out.start();
+        StreamRDF skol = new StreamRDFNodeExec(out, Skolemizer::skolemize);
         StreamOps.graphToStream(g, skol);
-        out.finish() ;
+        out.finish();
         System.out.println("DONE");
     }
-    
-    /** Execution a function on nodes in triples and quads.
-     * 
-     */
-    static class StreamRDFNodeExec extends StreamRDFBase {
-        
-        private Function<Node, Node> function ;
-        private StreamRDF output ;
 
-        StreamRDFNodeExec(StreamRDF output, Function<Node, Node> function) {
-            this.output = output ;
-            this.function = function; 
+    /**
+     * Execution a function on nodes in triples and quads. 
+     * If the function returns null, drop the triple or 
+     * quad being processed.
+     */
+    static class StreamRDFNodeExec extends StreamRDFWrapper {
+        private Function<Node, Node> function;
+
+        public StreamRDFNodeExec(StreamRDF output, Function<Node, Node> function) {
+            super(output);
         }
-        
+
         @Override
         public void triple(Triple triple) {
-            Node s = triple.getSubject() ;
-            Node p = triple.getPredicate() ;
-            Node o = triple.getObject() ;
-            
-            Node s1 = function.apply(s) ;
+            Node s = triple.getSubject();
+            Node p = triple.getPredicate();
+            Node o = triple.getObject();
+
+            Node s1 = function.apply(s);
             if ( s1 == null )
                 return;
-            Node p1 = function.apply(p) ;
+            Node p1 = function.apply(p);
             if ( p1 == null )
                 return;
-            Node o1 = function.apply(o) ;
+            Node o1 = function.apply(o);
             if ( o1 == null )
                 return;
             if ( s1 == s && p1 == p && o1 == o )
-                output.triple(triple);
+                super.triple(triple);
             else
-                output.triple(Triple.create(s, p, o)) ;
+                super.triple(Triple.create(s1, p1, o1));
         }
 
         @Override
-        public void quad(Quad quad)
-        {
-            Node g = quad.getGraph() ;
-            Node s = quad.getSubject() ;
-            Node p = quad.getPredicate() ;
-            Node o = quad.getObject() ;
-            
-            Node g1 = function.apply(g) ;
+        public void quad(Quad quad) {
+            Node g = quad.getGraph();
+            Node s = quad.getSubject();
+            Node p = quad.getPredicate();
+            Node o = quad.getObject();
+
+            Node g1 = function.apply(g);
             if ( g1 == null )
                 return;
-            
-            Node s1 = function.apply(s) ;
+            Node s1 = function.apply(s);
             if ( s1 == null )
                 return;
-            Node p1 = function.apply(p) ;
+            Node p1 = function.apply(p);
             if ( p1 == null )
                 return;
-            Node o1 = function.apply(o) ;
+            Node o1 = function.apply(o);
             if ( o1 == null )
                 return;
             if ( g1 == g && s1 == s && p1 == p && o1 == o )
-                output.quad(quad);
+                super.quad(quad);
             else
-                output.quad(Quad.create(g, s, p, o)) ;
+                super.quad(Quad.create(g1, s1, p1, o1));
         }
     }
 }

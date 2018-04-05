@@ -17,7 +17,7 @@ pache Software Foundation (ASF) under one
  * limitations under the License.
  */
 
-package rdfconnection;
+package httpquery;
 
 import java.net.URISyntaxException;
 import java.util.List;

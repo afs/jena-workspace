@@ -56,27 +56,32 @@ class RunMemTimeSpace extends CmdGeneral {
     static { JenaSystem.init(); }
     
     static final ArgDecl argCache       = new ArgDecl(ArgDecl.HasValue, "cache") ;
-    static final ArgDecl argParse       = new ArgDecl(ArgDecl.NoValue, "parse") ;
-    static final ArgDecl argTDB         = new ArgDecl(ArgDecl.NoValue, "tdb", "tdbmem") ;   // Very
-                                                                                            // slow.
-    static final ArgDecl argTIM         = new ArgDecl(ArgDecl.NoValue, "tim") ;
-    static final ArgDecl argNORM        = new ArgDecl(ArgDecl.NoValue, "norm") ;
     static final ArgDecl argNum         = new ArgDecl(ArgDecl.HasValue, "num", "n") ;
     
-    boolean              runCacheMode   = true ;
-    boolean              runNoCacheMode = true ;
-    boolean              runParseOnly   = true ;
+    static final ArgDecl argParse       = new ArgDecl(ArgDecl.NoValue, "parse") ;
+    // TDB, in-memory
+    static final ArgDecl argTDB         = new ArgDecl(ArgDecl.NoValue, "tdb", "tdbmem") ;   // Very slow.
+    // TIM
+    static final ArgDecl argTIM         = new ArgDecl(ArgDecl.NoValue, "tim", "txn") ;
+    // Default graph storage.
+    static final ArgDecl argNORM        = new ArgDecl(ArgDecl.NoValue, "norm") ;
+    
+    // Default args: load in a manner that is "normal Jena"
+    boolean              runCacheStd    = true ;
+    boolean              runCacheMode   = false ;
+    boolean              runNoCacheMode = false ;
+    boolean              runParseOnly   = false ;
     int                  numTim         = 0 ;
     int                  numNorm        = 1 ;
     int                  numTDB         = 0 ;
     
     public static void main(String... args) {
-        main$("--norm",
-              //"--cache=yes",
-              "/home/afs/Datasets/RxNORM/RXNORM.ttl",
-              "/home/afs/Datasets/SnomedCT/snomedct.nt.gz",
-              "/home/afs/Datasets/Chembl/chembl_21.0_unichem.ttl.gz"
-              );
+        main$("--norm" // ,"--tim"
+             , "/home/afs/Datasets/BSBM/bsbm-5m.nt.gz"
+             //,"/home/afs/Datasets/RxNORM/RXNORM.ttl"
+             //,"/home/afs/Datasets/SnomedCT/snomedct.nt.gz",
+             //,"/home/afs/Datasets/Chembl/chembl_21.0_unichem.ttl.gz"
+            );
     }
         
     public static void main$(String... args) {
@@ -124,7 +129,6 @@ class RunMemTimeSpace extends CmdGeneral {
             numTDB = 0 ;
             numTim = 0 ;
             numNorm = 0 ;
-            
         }
         
         if ( hasArg(argTDB) )
@@ -144,6 +148,7 @@ class RunMemTimeSpace extends CmdGeneral {
         }
 
         if ( hasArg(argCache) ) {
+            runCacheStd = false;
             boolean b = parseBoolean(argCache) ;
             runCacheMode = b ;
             runNoCacheMode = !b ;
@@ -200,9 +205,21 @@ class RunMemTimeSpace extends CmdGeneral {
 
     // DRY
     
-    Creator<DatasetGraph> creatorGeneral = () -> DatasetGraphFactory.create() ;
-    Creator<DatasetGraph> creatorTxnMem = () -> DatasetGraphFactory.createTxnMem() ;
-    Creator<DatasetGraph> creatorTDBMem = () -> TDBFactory.createDatasetGraph() ;
+    private Creator<DatasetGraph> creatorGeneral = () -> DatasetGraphFactory.create() ;
+    private Creator<DatasetGraph> creatorTxnMem = () -> DatasetGraphFactory.createTxnMem() ;
+    private Creator<DatasetGraph> creatorTDBMem = () -> TDBFactory.createDatasetGraph() ;
+    
+    // 
+    private FactoryRDF factory() {
+        if ( runCacheStd )
+            // Or null.
+            return RiotLib.factoryRDF();
+        if ( runCacheMode )
+            return new FactoryRDFCaching();
+        if ( runNoCacheMode )
+            return new FactoryRDFStd();
+        return null;
+    }
 
     List<ActionReport> results = new ArrayList<>() ;
     
@@ -217,14 +234,7 @@ class RunMemTimeSpace extends CmdGeneral {
         System.out.println("Data: "+filename);
         count = -1 ;
         if ( runParseOnly ) {
-            if ( runNoCacheMode ) {
-                System.out.println() ;
-                parseOnly("Parse/Standard", filename, new FactoryRDFStd()) ;
-            }
-            if ( runCacheMode ) {
-                System.out.println() ;
-                parseOnly("Parse/Cache", filename, new FactoryRDFCaching()) ;
-            }
+            parseOnly(label("Parse"), filename, factory()) ;
             return ;
         }
         
@@ -238,47 +248,37 @@ class RunMemTimeSpace extends CmdGeneral {
         IntStream.range(0, numTDB) .sequential().forEach((i)->execTDB(filename)) ;
     }
 
-    // DRY
-    
     private void execNorm(String filename) {
-        if ( runNoCacheMode ) {
-            System.out.println() ;
-            execOne("General/NoCache", creatorGeneral, filename, new FactoryRDFStd()) ;
-        }
-        if ( runCacheMode ) {
-            System.out.println();
-            execOne("General/Caching", creatorGeneral, filename, new FactoryRDFCaching()) ;
-        }
+        execOne("General", creatorGeneral, filename);
     }
     
     private void execTim(String filename) {
-        if ( runNoCacheMode ) {
-            System.out.println() ;
-            execOne("TIM/NoCache", creatorTxnMem, filename, new FactoryRDFStd()) ;
-        }
-        if ( runCacheMode ) {
-            System.out.println();
-            execOne("TIM/Caching", creatorTxnMem, filename, new FactoryRDFCaching()) ;
-        }
+        execOne("TIM", creatorTxnMem, filename);
     }
 
     private void execDft(String filename) {
-        if ( runNoCacheMode ) {
-            System.out.println() ;
-            execOne("General/Default", creatorGeneral, filename, RiotLib.factoryRDF()) ;
-        }
+        execOne("General", creatorGeneral, filename) ;
     }
     
     private void execTDB(String filename) {
-        if ( runNoCacheMode ) {
-            System.out.println() ;
-            execOne("TDB/Standard", creatorTDBMem, filename, new FactoryRDFStd()) ;
-        }
-        if ( runCacheMode ) {
-            System.out.println();
-            execOne("TDB/Caching", creatorTDBMem, filename, new FactoryRDFCaching()) ;
-        }
+        execOne("TDB", creatorTDBMem, filename) ;
     }
+    
+    private void execOne(String label, Creator<DatasetGraph> creator, String filename) {
+        System.out.println() ;
+        execOne(label(label), creator, filename, factory());
+    }
+    
+    private String label(String label) {
+        if ( runCacheStd )
+            return label+"/Std";
+        else if ( runNoCacheMode )
+            return label+"/NoCache";
+        else if ( runCacheMode )
+            return label+"/Caching";
+        return label;
+    }
+
     // Put warming into the DSG type code 
     
     private void parseOnly(String label, String filename, FactoryRDF factory) {

@@ -4,16 +4,10 @@ PREFIX :        <http://example/>
 PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
 PREFIX math:    <http://www.w3.org/2005/xpath-functions/math#>
 PREFIX fn:      <http://www.w3.org/2005/xpath-functions#>
-PREFIX afn:     <http://jena.apache.org/ARQ/function#>
 
-SELECT (math:log(?Y) AS ?X) {
-    { ?x rdfs:member ?y . ?x <http://ex/PF1> ?y }
-    UNION {
-       ?x :normal ?y .
-       FILTER ( 1 + math:sqrt(?x) )
-       FILTER EXISTS { ?x  :p ?z .
-                       FILTER EXISTS { ?x  <http://ex/PF2> ?z }
-                       FILTER(math:pi()) }
-     }
+
+SELECT (Count(*) AS ?C)
+{ ?s ?p ?o
+  FILTER (false)
 }
-GROUP BY (math:exp(?x) AS ?Y)
+#GROUP BY ?s

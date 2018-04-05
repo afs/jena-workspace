@@ -14,8 +14,8 @@
   <description>AFS workspace</description>
 
   <properties>
-    <ver.jena>3.7.0-SNAPSHOT</ver.jena>
-    <ver.fuseki>3.7.0-SNAPSHOT</ver.fuseki>
+    <ver.jena>3.8.0-SNAPSHOT</ver.jena>
+    <ver.fuseki>3.8.0-SNAPSHOT</ver.fuseki>
     <ver.jena.text>${ver.jena}</ver.jena.text>
 
     <ver.lucene>6.4.1</ver.lucene>
@@ -61,16 +61,47 @@
       <classifier>tests</classifier> 
     </dependency>
 
+    
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-cmds</artifactId>
+      <version>${ver.jena}</version> 
+      <!-- JUL
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
+      -->
+    </dependency>
+
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-text</artifactId>
       <version>${ver.jena.text}</version>
+      <!-- JUL
+      <exclusions>
+         <exclusion>
+          <groupId>org.apache.jena</groupId>
+          <artifactId>jena-cmds</artifactId>
+        </exclusion>
+       </exclusions>
+       -->
     </dependency>
 
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-fuseki-core</artifactId>
       <version>${ver.fuseki}</version>
+      <!-- JUL
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
+      -->
     </dependency>
 
     <dependency>
@@ -84,8 +115,16 @@
       <artifactId>junit</artifactId>
       <version>4.12</version>
     </dependency>
+    
+    <!-- Require a logging implementation -->
+    <!-- JUL
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <version>1.7.21</version>
+    </dependency>
+    -->
 
-     <!-- Require a logging implementation -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
