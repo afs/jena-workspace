@@ -20,6 +20,7 @@ package tdb2;
 
 import org.apache.jena.riot.system.StreamRDF ;
 import org.apache.jena.riot.system.StreamRDFWrapper;
+import tdb2.loader_parallel.BulkStreamRDF;
 
 /** Add {@link BulkStreamRDF} to a {@link StreamRDF}. */
 public class BulkStreamRDFBase extends StreamRDFWrapper implements BulkStreamRDF

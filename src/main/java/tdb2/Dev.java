@@ -24,6 +24,22 @@ public class Dev {
     // Stats gathering StreamRDF
     // All files vs one file.
     
+    // Add chunks to a Service Executor/FJ pool.
+    // No - overloads RMA use - need phases and fixed threads.
+    // Yes - need to control both CPUs and RAM usage.
+    
+    // ProgressMonitor.Output -> LineOutput
+    
+    // BulkLoader -> "factory".
+    
+    // Sequential - in exclusive mode.
+    // Sequential - BuilderSecondaryIndexesSequential index tick
+    // Sequential - Own package? 
+
+    // Parallel - change file name during loading.
+    // Finished: 100,000,748 EXP 593.59s (Avg: 168,467)
+    
+    
     // Loader 
     // LoaderSimple - parse-dsg.add
     // LoaderSequential - parse to primary // build indexes one by one.  TDB1

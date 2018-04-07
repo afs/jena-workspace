@@ -16,102 +16,85 @@
  * limitations under the License.
  */
 
-package tdb2.early;
+package tdb2;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.jena.atlas.lib.FileOps;
+import org.apache.jena.atlas.lib.Timer;
 import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.util.QueryExecUtils;
 import org.apache.jena.system.JenaSystem;
 import org.apache.jena.system.Txn;
 import org.apache.jena.tdb2.DatabaseMgr;
-import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.sys.IOX;
-import org.apache.jena.tdb2.sys.TDBInternal;
-import tdb2.BulkLoader;
-import tdb2.TimerX;
-import tdb2.loader_parallel.BulkStreamRDF;
 
-public class DevTDB2BulkLoader {
+public class DevCmdBulkLoaderTDB2 {
     static {
         JenaSystem.init();
         LogCtl.setLog4j();
         LogCtl.enable(BulkLoader.LOG);
     }
 
-    // Parallel.
+    // Expose TransactionalComponents
+    //   TupleIndex : TupleIndexRecord < RangeIndex(=BPT)
+    // NodeTable : Index(=BPT) and TransBinaryDataFile < BinaryDataFile
+    // Index 
     
-    // Look for XXX
-    // Proper flush (Txn!)
+    // Extract components.
     
-    // Tools.
-    //   Dump index.
-    //   Dump node table.
+    // BPT.nonTransactional
+    // Better finishing up - count at end of parse "finishing up".
     
-    // -> ProgressMonitor
-    //    ProgressMonitor.copy
-    //    create(Output)
-    //    multistep support.
+    // SDD version - does this fall off the edge?
+    // Quads : split, testing
     
-    // Disable transaction-isms?
-    // Sorted input.
+    // Tidy
+    // Command line.
     
-    // Parser to parallel outputs. 
-    //   One per index.
+    // ** Prefixes TransactionalComponents in the data phase.
+    
+    // Plain.
+    // Sequential.
+    // Parallel - 2 phase (looping phase).
+    
     
     public static void main(String ... args) {
-        DatasetGraph dsg;
-        String data;
-        if ( false ) {
-            dsg = DatabaseMgr.createDatasetGraph();
-            data = "data.ttl"; 
-            BulkLoader.DataTickPoint = 1;
-            BulkLoader.DataSuperTick = 2;
-            BulkLoader.IndexTickPoint = 1;
-            BulkLoader.IndexSuperTick = 2;
-        } else {
-            Path p = Paths.get("DB");
-            if ( Files.exists(p) )
-                deleteAll(p);
-            FileOps.ensureDir("DB");
-            //BulkStreamLoader.SplitTriplesIndexes = 1;
-            dsg = DatabaseMgr.connectDatasetGraph("DB");
-            data = "/home/afs/Datasets/BSBM/bsbm-1m.nt.gz";
-        }
+        reset("DB3");
+        CmdBulkLoaderTDB2.x_main("--loc=DB3", "/home/afs/Datasets/BSBM/bsbm-500m.nt.gz");
         
-        DatasetGraphTDB dsgtdb = TDBInternal.getDatasetGraphTDB(dsg);
-        Txn.executeWrite(dsgtdb, ()->{
-            BulkStreamRDF stream = BulkLoaderJava.create(dsgtdb);
-            // Just start/finish?
-            stream.startBulk();
-            RDFDataMgr.parse(stream, data);
-            stream.finishBulk();
+        DatasetGraph dsg = DatabaseMgr.connectDatasetGraph("DB3");
+        Txn.execute(dsg, ()->{
+            query("SELECT (count(*) AS ?C) { ?s ?p ?o }", dsg) ; 
+            query("SELECT (count(*) AS ?C) { ?s ?p 1 }", dsg) ;
         });
-        
-        Txn.execute(dsgtdb, ()->{
-           query("SELECT (count(*) AS ?C) { ?s ?p ?o }", dsg) ; 
-           query("SELECT (count(*) AS ?C) { ?s ?p 1 }", dsg) ;
-        });
+    }
+    
+    private static void reset(String DIR) {
+        Path p = Paths.get(DIR);
+        if ( Files.exists(p) )
+            deleteAll(p);
+        FileOps.ensureDir(DIR);
     }
 
     private static void query(String string, DatasetGraph dsg) {
-        TimerX.time(()->{
+        long x = TimerX.time(()->{
             Dataset ds = DatasetFactory.wrap(dsg);
             try ( QueryExecution qExec = QueryExecutionFactory.create(string, ds) ) {
                 QueryExecUtils.executeQuery(qExec);
             }
         });
+        System.out.println(Timer.timeStr(x)+" seconds");
     }
     
+    // ==> IO
     /** Delete everything from a {@code Path} start point, including the path itself.
      * Works on files or directories.
      * Walks down the tree and deletes directories on the way backup.

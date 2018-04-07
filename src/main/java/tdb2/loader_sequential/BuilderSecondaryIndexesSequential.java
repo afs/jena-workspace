@@ -16,37 +16,43 @@
  * limitations under the License.
  */
 
-package tdb2.bulkloader_tdb1;
+package tdb2.loader_sequential;
 
+import org.apache.jena.atlas.lib.ProgressMonitor;
 import org.apache.jena.atlas.lib.Timer ;
-import org.apache.jena.tdb.store.tupletable.TupleIndex ;
+import org.apache.jena.atlas.logging.FmtLog;
+import org.apache.jena.tdb2.store.tupletable.TupleIndex ;
+import tdb2.BulkLoader;
+import tdb2.tools.Tools;
 
-public class BuilderSecondaryIndexesSequential_tdb1 implements BuilderSecondaryIndexes_tdb1
+public class BuilderSecondaryIndexesSequential implements BuilderSecondaryIndexes
 {
-    private LoadMonitor_tdb1 monitor ;
-
-    public BuilderSecondaryIndexesSequential_tdb1(LoadMonitor_tdb1 monitor) { this.monitor = monitor ; } 
+    public BuilderSecondaryIndexesSequential() {} 
     
     // Create each secondary indexes, doing one at a time.
     @Override
-    public void createSecondaryIndexes(TupleIndex   primaryIndex ,
-                                       TupleIndex[] secondaryIndexes)
+    public void createSecondaryIndexes(TupleIndex primaryIndex, TupleIndex[] secondaryIndexes)
     {
         Timer timer = new Timer() ;
         timer.startTimer() ;
-
+        boolean printTiming = true;
         for ( TupleIndex index : secondaryIndexes )
         {
-            if ( index != null )
-            {
+            if ( index != null ) {
+                ProgressMonitor monitor = ProgressMonitor.create(BulkLoader.LOG, index.getName(), 
+                    500_000 /*BulkLoader.IndexTickPoint*/,
+                    BulkLoader.IndexSuperTick);
+                monitor.startMessage();
+                monitor.start();
+
                 long time1 = timer.readTimer() ;
-                LoaderNodeTupleTable_tdb1.copyIndex(primaryIndex.all(), new TupleIndex[]{index}, index.getMapping(), monitor) ;
+                Tools.copyIndex(primaryIndex.all(), new TupleIndex[]{index}, index.getMapping().getLabel(), monitor) ;
                 long time2 = timer.readTimer() ;
-                //                if ( printTiming )
-                //                    printf("Time for %s indexing: %.2fs\n", index.getLabel(), (time2-time1)/1000.0) ;
-//                if ( printTiming )
-//                    printer.println() ;
+                monitor.finish();
+                monitor.finishMessage();
+                if ( printTiming )
+                    FmtLog.info(BulkLoader.LOG,"Time for %s indexing: %.2fs", index.getName(), (time2-time1)/1000.0) ;
             }  
-        }
+        }   
     }
 }

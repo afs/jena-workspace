@@ -16,11 +16,15 @@
  * limitations under the License.
  */
 
-package tdb2.bulkloader_tdb1;
+package tdb2.loader_sequential;
 
-import org.apache.jena.tdb.store.tupletable.TupleIndex ;
+import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 
-public interface BuilderSecondaryIndexes_tdb1
+/**
+ * This interface is the mechanism for building indexes given that at leasts one index
+ * already exists (the "primary", which normally is SPO or GSPO).
+ */
+public interface BuilderSecondaryIndexes
 {
     public void createSecondaryIndexes(TupleIndex primaryIndex, TupleIndex[] secondaryIndexes) ;
 }

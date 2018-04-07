@@ -29,7 +29,8 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.slf4j.Logger;
 import tdb2.BulkLoader;
-import tdb2.BulkStreamRDF;
+import tdb2.loader_parallel.BulkStreamRDF;
+import tdb2.loader_sequential.LoaderNodeTupleTable;
 
 /** 
  * TDB2 Bulk loader - pure java, TDB1 style.

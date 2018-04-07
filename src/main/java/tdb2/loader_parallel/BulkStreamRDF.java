@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,18 +16,12 @@
  * limitations under the License.
  */
 
-package tdb2;
+package tdb2.loader_parallel;
 
-import java.util.List;
+import org.apache.jena.riot.system.StreamRDF ;
 
-public interface Loader {
- 
-    public void startBulk();
-    public void finishBulk();
-    public void finishException();
-    
-    public boolean bulkUseTransaction();
-    
-    public void load(List<String> filenames);
-    
+public interface BulkStreamRDF extends StreamRDF
+{
+    public void startBulk() ;
+    public void finishBulk() ;
 }

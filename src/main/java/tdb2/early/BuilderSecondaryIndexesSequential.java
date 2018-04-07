@@ -40,7 +40,8 @@ public class BuilderSecondaryIndexesSequential implements BuilderSecondaryIndexe
         {
             if ( index != null ) {
                 ProgressMonitor monitor = ProgressMonitor.create(BulkLoader.LOG, index.getName(), 
-                    BulkLoader.IndexTickPoint, BulkLoader.IndexSuperTick);
+                    500_000 /*BulkLoader.IndexTickPoint*/,
+                    BulkLoader.IndexSuperTick);
                 monitor.startMessage();
                 monitor.start();
 

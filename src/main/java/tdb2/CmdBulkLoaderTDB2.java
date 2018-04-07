@@ -36,6 +36,8 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.system.Txn;
 import tdb2.cmdline.CmdTDB;
 import tdb2.cmdline.CmdTDBGraph;
+import tdb2.loader_parallel.LoaderParallel;
+import tdb2.loader_simple.LoaderSimple;
 
 // Replaces tdb2.tdbloader.
 
@@ -46,9 +48,9 @@ public class CmdBulkLoaderTDB2 extends CmdTDBGraph {
     private boolean showProgress = true;
     private boolean generateStats = true;
     
-    public static void main(String... args) {
+    public static void x_main(String... args) {
         CmdTDB.init();
-        new tdbloader(args).mainRun();
+        new CmdBulkLoaderTDB2(args).mainRun();
     }
 
     protected CmdBulkLoaderTDB2(String[] argv) {
@@ -118,13 +120,11 @@ public class CmdBulkLoaderTDB2 extends CmdTDBGraph {
     
     private long loader(DatasetGraph dsg, String graphName, List<String> urls, boolean showProgress) {
         Loader loader = chooseLoader(dsg, graphName);
-        long elapsed = TimerX.time(()->
-                Txn.executeWrite(dsg, ()->{
+        long elapsed = TimerX.time(()->{
                     loader.startBulk();
                     loader.load(urls);
                     loader.finishBulk();
-                })
-            );
+        });
         if ( ! super.isQuiet() )
             FmtLog.info(LOG, "Time: %s seconds\n", Timer.timeStr(elapsed)); 
         return elapsed;
@@ -136,6 +136,16 @@ public class CmdBulkLoaderTDB2 extends CmdTDBGraph {
         Node gn = null;
         if ( graphName != null )
             gn = NodeFactory.createURI(graphName);
-        return new LoaderSimple(dsg, gn);
+        
+        boolean empty = Txn.calculateRead(dsg, ()->dsg.isEmpty());
+        if ( empty )
+            // The sequential load does work on non-empty datasets, but it replays the
+            // whole index to rebuild so piotential doing a lot of redundant work.
+            //return new LoaderSequential(dsg, gn, null, showProgress);
+            
+            
+            return new LoaderParallel(dsg, gn, showProgress);
+        else
+            return new LoaderSimple(dsg, gn, showProgress);
     }
 }

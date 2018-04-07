@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,10 +18,11 @@
 
 package tdb2;
 
-import org.apache.jena.riot.system.StreamRDF ;
+import org.apache.jena.dboe.DBOpEnvException;
 
-public interface BulkStreamRDF extends StreamRDF
-{
-    public void startBulk() ;
-    public void finishBulk() ;
+public class BulkLoaderException extends DBOpEnvException {
+    public BulkLoaderException()                          { super() ; }
+    public BulkLoaderException(String msg)                { super(msg) ; }
+    public BulkLoaderException(Throwable th)              { super(th) ; }
+    public BulkLoaderException(String msg, Throwable th)  { super(msg, th) ; }
 }

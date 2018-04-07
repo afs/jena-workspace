@@ -40,9 +40,9 @@ import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.sys.IOX;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import tdb2.BulkLoader;
-import tdb2.BulkStreamLoader;
-import tdb2.BulkStreamRDF;
 import tdb2.TimerX;
+import tdb2.loader_parallel.BulkStreamLoader;
+import tdb2.loader_parallel.BulkStreamRDF;
 
 public class DevTDB2StreamSequentialLoader {
     static {

@@ -39,7 +39,7 @@ import org.apache.jena.tdb2.store.nodetable.NodeTable;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import tdb2.BulkLoader;
-import tdb2.BulkStreamRDF;
+import tdb2.loader_parallel.BulkStreamRDF;
 
 /** Bulk loader stream - sequential (simple) - chunks and processes on a single thread */ 
 public class BulkLoader_Chunked_Sequential implements StreamRDF, BulkStreamRDF {

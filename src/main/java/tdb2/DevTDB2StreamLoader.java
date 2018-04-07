@@ -39,7 +39,10 @@ import org.apache.jena.tdb2.DatabaseMgr;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.sys.IOX;
 import org.apache.jena.tdb2.sys.TDBInternal;
+import tdb2.loader_parallel.BulkStreamLoader;
+import tdb2.loader_parallel.BulkStreamRDF;
 
+// Run the blast loader - breform the command line tool was written 
 public class DevTDB2StreamLoader {
     static {
         JenaSystem.init();
@@ -69,19 +72,6 @@ public class DevTDB2StreamLoader {
     // Sequential.
     // Parallel - 2 phase (looping phase).
     
-    
-    public static void main(String ... args) {
-        reset("DB3");
-        CmdBulkLoaderTDB2.main("--loc=DB3", "/home/afs/Datasets/BSBM/bsbm-1m.nt.gz");
-        
-        DatasetGraph dsg = DatabaseMgr.connectDatasetGraph("DB3");
-        Txn.execute(dsg, ()->{
-            query("SELECT (count(*) AS ?C) { ?s ?p ?o }", dsg) ; 
-            query("SELECT (count(*) AS ?C) { ?s ?p 1 }", dsg) ;
-        });
-        
-    }
-    
     private static void reset(String DIR) {
         Path p = Paths.get(DIR);
         if ( Files.exists(p) )
@@ -89,7 +79,7 @@ public class DevTDB2StreamLoader {
         FileOps.ensureDir(DIR);
     }
     
-    public static void main_BulkStreamLoader(String ... args) {
+    public static void x_main(String ... args) {
         Location location;
         String data;
         if ( false ) {

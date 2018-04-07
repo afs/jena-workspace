@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2;
+package tdb2.early;
 
 import static java.lang.String.format;
 
@@ -56,6 +56,8 @@ import org.apache.jena.tdb2.store.nodetable.NodeTableTRDF;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import org.apache.jena.tdb2.store.tupletable.TupleIndexRecord;
 import org.apache.jena.tdb2.sys.TDBInternal;
+import tdb2.BulkLoader;
+import tdb2.loader_parallel.BulkStreamRDF;
 import tdb2.tools.Tools;
 
 /** Bulk loader stream, parallel */ 
@@ -120,7 +122,7 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
     // 2 -> Parallel parser, SPO loader.
     // 3 -> 2 + 
     
-    // Pahase 2.
+    // Phase 2.
     
     
     // Use of threads is coarse grained so the value of an ExecutorService is limited.

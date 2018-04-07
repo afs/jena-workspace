@@ -23,27 +23,18 @@ import java.util.Objects;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.ProgressMonitor;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.system.ProgressStreamRDF;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWrapper;
-import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 
-/** Simple bulk loader. Algorithm: Parser to dataset. */ 
-public class LoaderSimple extends LoaderBase {
-
-    private static int DataTickPoint = 100_000;
-    private static int DataSuperTick = 10;
+/** Operations for the Loader processes */ 
+public class LoaderOps {
     
-    public LoaderSimple(DatasetGraph dsg, Node graphName) {
-        super(dsg, graphName);
-    }
-    
-    @Override
-    protected void loadOne(StreamRDF dest, String source, boolean showProgress) {
+    /** Parse one file, with an optional progress monitor */ 
+    public static void inputFile(StreamRDF dest, String source, boolean showProgress, int DataTickPoint, int DataSuperTick) {
         StreamRDF sink = dest;
         ProgressMonitor monitor = null;
         if ( showProgress ) { 
@@ -63,15 +54,19 @@ public class LoaderSimple extends LoaderBase {
         }
     }
     
-    private StreamRDF toNamedGraph(StreamRDF dest, String graphName) {
-        Objects.requireNonNull(dest);
-        Objects.requireNonNull(graphName);
+    /** 
+     * Convert to quads: triples from the default graph of parsing become quads using the {@code graphName}. 
+     * If {@code graphName} is null, return the {@code stream} argument.
+     */ 
+    public static StreamRDF toNamedGraph(StreamRDF stream, Node graphName) {
+        Objects.requireNonNull(stream);
+        if ( graphName == null )
+            return stream;
         // Rename the default graph triples. Data quads are dropped.
-        Node gn = NodeFactory.createURI(graphName);
-        return new StreamRDFWrapper(dest) {
+        return new StreamRDFWrapper(stream) {
             @Override
             public void triple(Triple triple) {
-                quad(Quad.create(gn, triple));
+                quad(Quad.create(graphName, triple));
             }
             // Drop quads.
             @Override public void quad(Quad quad) {}
