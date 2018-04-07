@@ -18,11 +18,11 @@
 
 package tdb2.loader.sequential;
 
-import org.apache.jena.atlas.lib.ProgressMonitor;
 import org.apache.jena.atlas.lib.Timer ;
 import org.apache.jena.atlas.logging.FmtLog;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex ;
 import tdb2.loader.BulkLoader;
+import tdb2.loader.base.ProgressMonitor2;
 import tdb2.tools.Tools;
 
 public class BuilderSecondaryIndexesSequential implements BuilderSecondaryIndexes
@@ -39,9 +39,8 @@ public class BuilderSecondaryIndexesSequential implements BuilderSecondaryIndexe
         for ( TupleIndex index : secondaryIndexes )
         {
             if ( index != null ) {
-                ProgressMonitor monitor = ProgressMonitor.create(BulkLoader.LOG, index.getName(), 
-                    500_000 /*BulkLoader.IndexTickPoint*/,
-                    BulkLoader.IndexSuperTick);
+                ProgressMonitor2 monitor = ProgressMonitor2.create(BulkLoader.LOG, index.getName(), 
+                    LoaderSequential.IndexTickPoint, LoaderSequential.IndexSuperTick);
                 monitor.startMessage();
                 monitor.start();
 

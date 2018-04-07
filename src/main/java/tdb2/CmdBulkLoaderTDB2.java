@@ -25,7 +25,8 @@ import java.util.Objects;
 
 import jena.cmd.ArgDecl;
 import jena.cmd.CmdException;
-import org.apache.jena.atlas.lib.Timer;
+import org.apache.jena.atlas.lib.InternalErrorException;
+import org.apache.jena.atlas.lib.Lib;
 import org.apache.jena.atlas.logging.FmtLog;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -36,9 +37,11 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.system.Txn;
 import tdb2.cmdline.CmdTDB;
 import tdb2.cmdline.CmdTDBGraph;
+import tdb2.loader.BulkLoader;
 import tdb2.loader.Loader;
 import tdb2.loader.base.TimerX;
 import tdb2.loader.parallel.LoaderParallel;
+import tdb2.loader.sequential.LoaderSequential;
 import tdb2.loader.simple.LoaderSimple;
 
 // Replaces tdb2.tdbloader.
@@ -46,11 +49,16 @@ import tdb2.loader.simple.LoaderSimple;
 public class CmdBulkLoaderTDB2 extends CmdTDBGraph {
     private static final ArgDecl argNoStats = new ArgDecl(ArgDecl.NoValue, "nostats");
     private static final ArgDecl argStats = new ArgDecl(ArgDecl.HasValue,  "stats");
+    
+    private static final ArgDecl argLoader = new ArgDecl(ArgDecl.HasValue, "loader");
 
+    enum LoaderEnum { Simple, Sequential, Parallel }
+    
     private boolean showProgress = true;
     private boolean generateStats = true;
+    private LoaderEnum loader = null;
     
-    public static void x_main(String... args) {
+    public static void main(String... args) {
         CmdTDB.init();
         new CmdBulkLoaderTDB2(args).mainRun();
     }
@@ -59,11 +67,24 @@ public class CmdBulkLoaderTDB2 extends CmdTDBGraph {
         super(argv);
 //        super.add(argNoStats, "--nostats", "Switch off statistics gathering");
 //        super.add(argStats);   // Hidden argument
+        super.add(argLoader, "--loader", "Loader to use");
     }
 
     @Override
     protected void processModulesAndArgs() {
         super.processModulesAndArgs();
+        
+        if ( contains(argLoader) ) {
+            String loadername = getValue(argLoader).toLowerCase();
+            if ( loadername.matches("simple") )
+                loader = LoaderEnum.Simple;
+            else if ( loadername.matches("seq.*") )
+                loader = LoaderEnum.Sequential;
+            else if ( loadername.matches("para.*") )
+                loader = LoaderEnum.Parallel;
+            else
+                throw new CmdException("Unrecognized value for --loader: "+loadername);
+        }
     }
 
     @Override
@@ -113,22 +134,23 @@ public class CmdBulkLoaderTDB2 extends CmdTDBGraph {
     }
 
     private void loadTriples(String graphName, List<String> urls) {
-        loader(super.getDatasetGraph(), graphName, urls, showProgress);
+        execBulkLoad(super.getDatasetGraph(), graphName, urls, showProgress);
     }
 
     private void loadQuads(List<String> urls) {
-        loader(super.getDatasetGraph(), null, urls, showProgress);
+        execBulkLoad(super.getDatasetGraph(), null, urls, showProgress);
     }
     
-    private long loader(DatasetGraph dsg, String graphName, List<String> urls, boolean showProgress) {
+    private long execBulkLoad(DatasetGraph dsg, String graphName, List<String> urls, boolean showProgress) {
         Loader loader = chooseLoader(dsg, graphName);
+        FmtLog.info(LOG, "Loader = "+Lib.className(loader));
         long elapsed = TimerX.time(()->{
                     loader.startBulk();
                     loader.load(urls);
                     loader.finishBulk();
         });
-        if ( ! super.isQuiet() )
-            FmtLog.info(LOG, "Time: %s seconds\n", Timer.timeStr(elapsed)); 
+//        if ( ! super.isQuiet() )
+//            FmtLog.info(LOG, "Time: %s seconds\n", Timer.timeStr(elapsed)); 
         return elapsed;
     }
 
@@ -139,15 +161,23 @@ public class CmdBulkLoaderTDB2 extends CmdTDBGraph {
         if ( graphName != null )
             gn = NodeFactory.createURI(graphName);
         
-        boolean empty = Txn.calculateRead(dsg, ()->dsg.isEmpty());
-        if ( empty )
-            // The sequential load does work on non-empty datasets, but it replays the
-            // whole index to rebuild so piotential doing a lot of redundant work.
-            //return new LoaderSequential(dsg, gn, null, showProgress);
-            
-            
-            return new LoaderParallel(dsg, gn, showProgress);
-        else
-            return new LoaderSimple(dsg, gn, showProgress);
+        LoaderEnum useLoader = loader; 
+        if ( useLoader == null ) {
+            boolean empty = Txn.calculateRead(dsg, ()->dsg.isEmpty());
+            useLoader = empty ? LoaderEnum.Sequential : LoaderEnum.Simple;
+        }
+
+        MonitorOutput output = BulkLoader.outputToLog();
+        
+        switch(useLoader) {
+            case Parallel :
+                return new LoaderParallel(dsg, gn, output, showProgress);
+            case Sequential :
+                return new LoaderSequential(dsg, gn, output, showProgress);
+            case Simple :
+                return new LoaderSimple(dsg, gn, output, showProgress);
+            default :
+                throw new InternalErrorException("Unrecognized loader: "+useLoader);
+        }
     }
 }

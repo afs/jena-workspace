@@ -20,10 +20,12 @@ package tdb2.loader.base;
 
 import java.util.List;
 
+import org.apache.jena.atlas.lib.Timer;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.TxnType;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
+import tdb2.MonitorOutput;
 import tdb2.loader.Loader;
 
 /** Simple bulk loader framework.
@@ -39,16 +41,22 @@ public abstract class LoaderBase implements Loader {
     protected final Node graphName;
     private final StreamRDF dest;
     protected final boolean showProgress;
+    private Timer timer;
+    protected final MonitorOutput output;
     
-    protected LoaderBase(DatasetGraph dsg, Node graphName, boolean showProgress) {
+    protected LoaderBase(DatasetGraph dsg, Node graphName, MonitorOutput output, boolean showProgress) {
         this.dsg = dsg;
         this.graphName = graphName;
-        this.dest = createDest(dsg, graphName);
+        this.dest = createDest(dsg, graphName, output);
+        this.output = output;
         this.showProgress = showProgress;
+        
     }
     
     @Override
     public void startBulk() {
+        this.timer = new Timer();
+        timer.startTimer();
         if ( bulkUseTransaction() )
             dsg.begin(TxnType.WRITE);
     }
@@ -59,7 +67,13 @@ public abstract class LoaderBase implements Loader {
             dsg.commit();
             dsg.end();
         }
+        // Better in the loader if not transactional.
+//        else
+//            SystemARQ.sync(dsg);
+        long totalElapsed = timer.endTimer();
+        outputTime(totalElapsed);
     }
+
 
     @Override
     public void finishException() {
@@ -71,7 +85,7 @@ public abstract class LoaderBase implements Loader {
 
     @Override
     public void load(List<String> filenames) {
-        try { 
+        try {
             filenames.forEach(fn->loadOne(dest, fn));
         } catch (Exception ex) {
             finishException();
@@ -85,6 +99,20 @@ public abstract class LoaderBase implements Loader {
 
     protected abstract void loadOne(StreamRDF dest, String filename);
     
-    protected abstract StreamRDF createDest(DatasetGraph dsg, Node graphName);
+    protected abstract StreamRDF createDest(DatasetGraph dsg, Node graphName, MonitorOutput output);
     
+    protected void outputTime(long totalElapsed) {
+        if ( showProgress ) {
+            long count = countTriples()+countQuads(); 
+            String label = "Triples/Quads";
+            if ( countTriples() == 0 && countQuads() > 0 )
+                label = "Quads";
+            if ( countTriples() > 0 && countQuads() == 0 )
+                label = "Triples";
+            
+            double seconds = totalElapsed/1000.0;
+            if ( seconds > 1 )
+                output.print("Time = %,.3f seconds : %s = %,d : Rate = %,.0f /s\n", seconds, label, count, count/seconds);  
+        }
+    }
 }

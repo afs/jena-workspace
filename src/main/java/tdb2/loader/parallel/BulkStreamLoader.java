@@ -29,8 +29,7 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.jena.atlas.lib.ArrayUtils;
-import org.apache.jena.atlas.lib.ProgressMonitor;
-import org.apache.jena.atlas.lib.ProgressMonitor.Output;
+import org.apache.jena.atlas.lib.Timer;
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.atlas.lib.tuple.TupleFactory;
 import org.apache.jena.dboe.base.file.BinaryDataFile;
@@ -56,7 +55,9 @@ import org.apache.jena.tdb2.store.nodetable.NodeTableTRDF;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import org.apache.jena.tdb2.store.tupletable.TupleIndexRecord;
 import org.apache.jena.tdb2.sys.TDBInternal;
-import tdb2.loader.BulkLoader;
+import tdb2.MonitorOutput;
+import tdb2.loader.base.ProgressMonitor2;
+import tdb2.loader.base.TimerX;
 import tdb2.tools.Tools;
 
 /** Bulk loader stream, parallel */ 
@@ -105,43 +106,21 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
     private final int waitForCount1;
     private final int waitForCount2;
     private final Semaphore termination = new Semaphore(0);
-    private final ProgressMonitor monitor;
-    private final Output output;  
+    private final MonitorOutput output;
     
     // The maximum number of threads to use. 
     private final int threads = Integer.MAX_VALUE;
+    private long countTriples;
+    private long countQuads;
 
-    // Versions
-    // Phased sequential (TDB1 style).
-    
-    
-    // Phase 1.
-    
-    // 1 -> PahsesSequential => Separate code.
-    // 2 -> Parallel parser, SPO loader.
-    // 3 -> 2 + 
-    
-    // Phase 2.
-    
-    
-    // Use of threads is coarse grained so the value of an ExecutorService is limited.
-    // Instead, multiple   
-    //private ExecutorService executorService = Executors.newFixedThreadPool(??)
-    //private ForkJoinPool fjp = new ForkJoinPool(2);
-
-    static public class Builder {
-        private DatasetGraph dsg = null;
-        
-        
-        public BulkStreamLoader build() { 
-            Objects.requireNonNull(dsg, "Dataset to be loaded not set");
-            return new BulkStreamLoader(dsg); 
-        }
-        
-    }
+    public long getCountTriples() { return countTriples; }
+    public long getCountQuads() { return countQuads; }
     
     @SuppressWarnings("unchecked")
-    public BulkStreamLoader(DatasetGraph dsg) {
+    public BulkStreamLoader(DatasetGraph dsg, MonitorOutput output) {
+        Objects.requireNonNull(dsg);
+        Objects.requireNonNull(output);
+        
         if ( ! TDBInternal.isBackedByTDB(dsg) )
             throw new IllegalArgumentException("Not a TDB2 database");
         
@@ -177,8 +156,7 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
         this.primary3Indexes = idxTriples[0];
         this.primary4Indexes = idxQuads[0];
         
-        this.output = output();
-        this.monitor = new ProgressMonitor("EXP", BulkLoader.DataTickPoint, BulkLoader.DataSuperTick, output);
+        this.output = output(output);
 
         this.pipeTriples = new ArrayBlockingQueue<>(QueueSizeData);
         this.pipeQuads = new ArrayBlockingQueue<>(QueueSizeData);
@@ -201,15 +179,11 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
         waitForCount2 = pipesTripleIndexers2.length;
     }
     
-    static Output output() { 
+    // Add a sync wrapper.
+    private MonitorOutput output(MonitorOutput output) { 
         return (fmt, args)-> {
             synchronized(outputLock) {
-                System.out.printf(fmt, args);
-                System.out.println();
-//            if ( log != null && log.isInfoEnabled() ) {
-//                String str = String.format(fmt, args);
-//                log.info(str);
-//            }
+                output.print(fmt, args);
             }
         } ;
     }
@@ -269,20 +243,7 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
     
     @Override
     public void startBulk() {
-        monitor.startMessage();
-        monitor.start();
-    }
-
-    @Override
-    public void finishBulk() {
-        monitor.finish();
-        monitor.finishMessage();
-        // Debug
         output.print("ChunkSize = %,d : Split = %d : Queue(triples) = %d : Queue(tuples) = %d", ChunkSize, SplitTriplesIndexes, QueueSizeData, QueueSizeTuples);
-    }
-
-    @Override
-    public void start() {
         new Thread(()->stageConverter()).start();
         for ( int j = 0 ; j < idxTriples.length ; j++ ) {
             int k = j ;
@@ -292,18 +253,19 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
     }
 
     @Override
-    public void finish() {
+    public void finishBulk() {
         if ( triples != null )
             dispatchTriples(triples);
-        output.print("Finished reading in data = %,d (triples+quads)", monitor.getTicks());
+        output.print("Finished reading: data = %,d (triples+quads)", countTriples+countQuads);
         dispatchTriples(END_TRIPLES);
         // Essential that the node table and primary have finished their transactions.  
-        acquire(termination, waitForCount1);
+        long z1 = acquire(termination, waitForCount1);
+        output.print("Tasks finalised: %s seconds",Timer.timeStr(z1));
         if ( waitForCount2 <= 0 )
             return ;
         
         // Phase 2.
-        ProgressMonitor monitor2 = new ProgressMonitor("EXP2", BulkLoader.IndexTickPoint, BulkLoader.IndexSuperTick, output);
+        ProgressMonitor2 monitor2 = new ProgressMonitor2("Indexing", LoaderParallel.IndexTickPoint, LoaderParallel.IndexSuperTick, output);
         //monitor2.startMessage();
         //Monitor is just to indicate progress.
         monitor2.start();
@@ -316,14 +278,24 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
         monitor2.finish();
         //monitor2.finishMessage();
 
-        acquire(termination, waitForCount2);
+        long z2 = acquire(termination, waitForCount2);
+        output.print("Tasks finialised %s seconds",Timer.timeStr(z2));
+        // Debug
     }
 
-    private static void acquire(Semaphore semaphore, int numPermits) { 
-        try { semaphore.acquire(numPermits); }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void start() {
+    }
+
+    @Override
+    public void finish() {
+    }
+
+    private static long acquire(Semaphore semaphore, int numPermits) {
+        return TimerX.time(()->{
+            try { semaphore.acquire(numPermits); }
+            catch (InterruptedException e) { e.printStackTrace(); }
+        });
     }
     
     @Override
@@ -331,11 +303,11 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
         if ( quads == null )
             quads = allocChunkQuads();
         quads.add(quad);
+        countQuads++;
         if ( quads.size() >= ChunkSize ) {
             dispatchQuads(quads);
             quads = null;
         }
-        monitor.tick();
     }
 
     @Override
@@ -343,11 +315,11 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
         if ( triples == null )
             triples = allocChunkTriples();
         triples.add(triple);
+        countTriples++;
         if ( triples.size() >= ChunkSize ) {
             dispatchTriples(triples);
             triples = null;
         }
-        monitor.tick();
     }
 
     private void dispatchTriples(List<Triple> triples) {
@@ -437,7 +409,7 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
     }
 
     /** Play the index to the tuples pipes */
-    private void playIndex(TupleIndex idx, ProgressMonitor progress) {
+    private void playIndex(TupleIndex idx, ProgressMonitor2 progress) {
         Journal journal = Journal.create(Location.mem());
         TransactionCoordinator coordinator = new TransactionCoordinator(journal);
         coordinator.add(idxBTree(idx));
@@ -500,7 +472,7 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
     private static void copyIndexes(TupleIndex srcIdx, TupleIndex... dstIndexes) {
         if ( dstIndexes.length == 0 )
             return;
-        ProgressMonitor monitor = null;
+        ProgressMonitor2 monitor = null;
         StringJoiner sj = new StringJoiner(",");
         for(TupleIndex idx : dstIndexes)
             sj.add(idx.getName());
@@ -510,7 +482,7 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
     
     // Copy one index.
     private static void copyIndexs(TupleIndex srcIdx, TupleIndex dstIdx) {
-        ProgressMonitor monitor = null;
+        ProgressMonitor2 monitor = null;
         TupleIndex[] a = { dstIdx } ;
         Tools.copyIndex(srcIdx.all(), a, dstIdx.getName(), monitor); 
     }
@@ -548,5 +520,4 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
         BPlusTree bpt = (BPlusTree)rIndex;
         return bpt;
     }
-
 }

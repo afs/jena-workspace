@@ -18,58 +18,75 @@
 
 package tdb2.loader.parallel;
 
-import java.util.List;
-
 import org.apache.jena.graph.Node;
-import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.system.StreamRDF;
-import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.sparql.core.DatasetGraph;
-import tdb2.loader.Loader;
+import org.apache.jena.tdb2.store.DatasetGraphTDB;
+import org.apache.jena.tdb2.sys.TDBInternal;
+import tdb2.MonitorOutput;
+import tdb2.loader.base.LoaderBase;
 import tdb2.loader.base.LoaderOps;
 
 /** Bulk loader stream, parallel */ 
-public class LoaderParallel implements Loader {
-    protected final DatasetGraph dsg;
-    protected final Node graphName;
-    private final StreamRDF dest;
-    protected final boolean showProgress;
+public class LoaderParallel extends LoaderBase {
+    public static final int DataTickPoint   = 100_000;
+    public static final int DataSuperTick   = 10;
+    public static final int IndexTickPoint  = 1_000_000;
+    public static final int IndexSuperTick  = 10;
     
-    public LoaderParallel(DatasetGraph dsg, Node graphName, boolean showProgress) {
-        this.dsg = dsg;
-        this.graphName = graphName;
-        // We don't do graphName
-        this.dest = createDest(dsg, graphName);
-        this.showProgress = showProgress;
-    }
+    private final DatasetGraphTDB dsgtdb;
+    private BulkStreamLoader bulkLoader;
     
-    private StreamRDF createDest(DatasetGraph dsg, Node graphName) {
-        StreamRDF s = StreamRDFLib.dataset(dsg);
-        return LoaderOps.toNamedGraph(s, graphName);
+    public LoaderParallel(DatasetGraph dsg, Node graphName, MonitorOutput output, boolean showProgress) {
+        // XXX Calls createDest :-(
+        super(dsg, graphName, output, showProgress);
+        dsgtdb = TDBInternal.getDatasetGraphTDB(dsg);
     }
     
     @Override
-    public void startBulk() {
-        // Move some BulkStreamLoader actions here. 
+    protected StreamRDF createDest(DatasetGraph dsg, Node graphName, MonitorOutput output) {
+        this.bulkLoader = new BulkStreamLoader(dsg, output);
+        return LoaderOps.toNamedGraph(bulkLoader, graphName);
     }
-
-    @Override
-    public void finishBulk() {}
-
-    @Override
-    public void finishException() {}
-
+    
     @Override
     public boolean bulkUseTransaction() {
+        // Manipulate the transactions directly by component. 
         return false;
     }
 
     @Override
-    public void load(List<String> filenames) {
-        BulkStreamRDF stream = new BulkStreamLoader(dsg);
-        stream.startBulk();
-        // XXX Change the monitor to reflect the filename. 
-        filenames.forEach(fn->RDFDataMgr.parse(stream, fn));
-        stream.finishBulk();
+    public void startBulk() {
+        // Lock everyone else out while we multithread.
+        dsgtdb.getTxnSystem().getTxnMgr().startExclusiveMode();
+        super.startBulk();
+        bulkLoader.startBulk();
+    }
+
+    @Override
+    public void finishBulk() {
+        bulkLoader.finishBulk();
+        super.finishBulk();
+        dsgtdb.getTxnSystem().getTxnMgr().finishExclusiveMode();
+    }
+    
+    @Override
+    public void finishException() {
+        dsgtdb.getTxnSystem().getTxnMgr().finishExclusiveMode();
+    }
+    
+    @Override
+    public long countTriples() {
+        return bulkLoader.getCountTriples();
+    }
+
+    @Override
+    public long countQuads() {
+        return bulkLoader.getCountQuads();
+    }
+
+    @Override
+    protected void loadOne(StreamRDF dest, String filename) {
+        LoaderOps.inputFile(dest, filename, output, showProgress, DataTickPoint, DataSuperTick);
     }
 }

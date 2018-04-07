@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,23 +16,12 @@
  * limitations under the License.
  */
 
-package tdb2.loader.parallel;
+package tdb2;
 
-import org.apache.jena.riot.system.StreamRDF ;
-import org.apache.jena.riot.system.StreamRDFWrapper;
+import tdb2.loader.base.ProgressMonitor2;
 
-/** Add {@link BulkStreamRDF} to a {@link StreamRDF}. */
-public class BulkStreamRDFBase_X extends StreamRDFWrapper implements BulkStreamRDF
-{
-    public BulkStreamRDFBase_X(StreamRDF other) {
-        super(other);
-    }
-    @Override
-    public void start() {}
-    @Override
-    public void finish() {}
-    @Override
-    public void startBulk() { super.start(); }
-    @Override
-    public void finishBulk() { super.finish(); }
+/** Output abstraction for the {@link ProgressMonitor2}. */ 
+@FunctionalInterface
+public interface MonitorOutput {
+    public void print(String fmt, Object... args);
 }

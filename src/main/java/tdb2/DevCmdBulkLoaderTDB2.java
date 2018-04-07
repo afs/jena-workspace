@@ -34,6 +34,7 @@ import org.apache.jena.sparql.util.QueryExecUtils;
 import org.apache.jena.system.JenaSystem;
 import org.apache.jena.system.Txn;
 import org.apache.jena.tdb2.DatabaseMgr;
+import org.apache.jena.tdb2.sys.DatabaseConnection;
 import org.apache.jena.tdb2.sys.IOX;
 import tdb2.loader.BulkLoader;
 import tdb2.loader.base.TimerX;
@@ -45,32 +46,11 @@ public class DevCmdBulkLoaderTDB2 {
         LogCtl.enable(BulkLoader.LOG);
     }
 
-    // Expose TransactionalComponents
-    //   TupleIndex : TupleIndexRecord < RangeIndex(=BPT)
-    // NodeTable : Index(=BPT) and TransBinaryDataFile < BinaryDataFile
-    // Index 
-    
-    // Extract components.
-    
-    // BPT.nonTransactional
-    // Better finishing up - count at end of parse "finishing up".
-    
-    // SDD version - does this fall off the edge?
-    // Quads : split, testing
-    
-    // Tidy
-    // Command line.
-    
-    // ** Prefixes TransactionalComponents in the data phase.
-    
-    // Plain.
-    // Sequential.
-    // Parallel - 2 phase (looping phase).
-    
-    
     public static void main(String ... args) {
         reset("DB3");
-        CmdBulkLoaderTDB2.x_main("--loc=DB3", "/home/afs/Datasets/BSBM/bsbm-25m.nt.gz");
+        CmdBulkLoaderTDB2.main("--loader=para", "--loc=DB3", "/home/afs/Datasets/BSBM/bsbm-250k.nt.gz");
+        
+        DatabaseConnection.internalReset();
         
         DatasetGraph dsg = DatabaseMgr.connectDatasetGraph("DB3");
         Txn.execute(dsg, ()->{

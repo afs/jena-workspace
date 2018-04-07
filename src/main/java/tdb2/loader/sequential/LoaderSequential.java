@@ -18,8 +18,6 @@
 
 package tdb2.loader.sequential;
 
-import org.apache.jena.atlas.lib.ProgressMonitor;
-import org.apache.jena.atlas.lib.ProgressMonitor.Output;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.system.StreamRDF;
@@ -29,7 +27,7 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.sys.TDBInternal;
-import org.slf4j.Logger;
+import tdb2.MonitorOutput;
 import tdb2.loader.BulkLoader;
 import tdb2.loader.BulkLoaderException;
 import tdb2.loader.base.LoaderBase;
@@ -38,79 +36,54 @@ import tdb2.loader.base.LoaderOps;
 /** Simple bulk loader. Algorithm: Parser to dataset. */ 
 public class LoaderSequential extends LoaderBase {
     
-    private static int DataTickPoint = 100_000;
-    private static int DataSuperTick = 10;
+    public static final int DataTickPoint   = 100_000;
+    public static final int DataSuperTick   = 10;
+    public static final int IndexTickPoint  = 1_000_000;
+    public static final int IndexSuperTick  = 10;
     
     private final LoaderNodeTupleTable triplesLoader;
     private final LoaderNodeTupleTable quadsLoader;
-    private final Output outputToLog = outputToLog(BulkLoader.LOG);
+    private final MonitorOutput outputToLog = BulkLoader.outputToLog();
     private final DatasetGraphTDB dsgtdb;
-    private final ProgressMonitor monitor; 
-
-    protected LoaderSequential(DatasetGraph dsg, Node graphName, ProgressMonitor.Output output, boolean showProgress) {
-        super(dsg, graphName, showProgress);
+    
+    private long countQuads;
+    private long countTriples;
+    
+    public LoaderSequential(DatasetGraph dsg, Node graphName, MonitorOutput output, boolean showProgress) {
+        super(dsg, graphName, output, showProgress);
         
         if ( ! TDBInternal.isBackedByTDB(dsg) )
             throw new BulkLoaderException("Not a TDB2 database");
-        
-        this.monitor = /*ProgressMonitor.*/create(outputToLog, "data", BulkLoader.DataTickPoint, BulkLoader.DataSuperTick);
-        
-        this.dsgtdb = TDBInternal.getDatasetGraphTDB(dsg);
-        this.triplesLoader = new LoaderNodeTupleTable(dsgtdb.getTripleTable().getNodeTupleTable(), "Triples", monitor);
-        this.quadsLoader = new LoaderNodeTupleTable(dsgtdb.getQuadTable().getNodeTupleTable(), "Quads", monitor);
-    }
-    
-    // -> ProgressMonitor
-    /** ProgressMonitor that outputs to a {@link Logger} */ 
-    public static ProgressMonitor create(Output output, String label, long tickPoint, int superTick) {
-        return new ProgressMonitor(label, tickPoint, superTick, output) ;
-    }
-    
-    static Output outputToLog(Logger log) { 
-        return (fmt, args)-> {
-            System.out.printf(fmt, args);
-            System.out.println();
-//            if ( log != null && log.isInfoEnabled() ) {
-//                String str = String.format(fmt, args);
-//                log.info(str);
-//            }
-        } ;
-    }
 
+        this.dsgtdb = TDBInternal.getDatasetGraphTDB(dsg);
+        this.triplesLoader = new LoaderNodeTupleTable(dsgtdb.getTripleTable().getNodeTupleTable(), "Triples");
+        this.quadsLoader = new LoaderNodeTupleTable(dsgtdb.getQuadTable().getNodeTupleTable(), "Quads");
+    }
+    
     @Override
-    protected StreamRDF createDest(DatasetGraph dsg, Node graphName) {
+    protected StreamRDF createDest(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         StreamRDF s = StreamRDFLib.dataset(dsg);
         s = new StreamRDFWrapper(s) {
-            // XXX Tidy up!
             @Override
             public void triple(Triple triple) {
                 triplesLoader.load(triple.getSubject(), triple.getPredicate(), triple.getObject());
+                countTriples++;
             }
 
             @Override
             public void quad(Quad quad) {
                 quadsLoader.load(quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject());
+                countQuads++;
             }
-
-            @Override
-            public void base(String base) {}
-
-//            @Override
-//            public void prefix(String prefix, String iri) {
-//                dsg.getPrefixes().getPrefixMapping().setNsPrefix(prefix, iri);
-//            }
         };    
-        
-        
         return LoaderOps.toNamedGraph(s, graphName);
     }
     
     @Override
     public void startBulk() {
-        super.startBulk();
+        //Not in a transaction.
         //dsgtdb.getTxnSystem().getTxnMgr().startExclusiveMode();
-        monitor.startMessage("START");
-        monitor.start();
+        super.startBulk();
         triplesLoader.loadDataStart();
         quadsLoader.loadDataStart();
     }
@@ -119,8 +92,6 @@ public class LoaderSequential extends LoaderBase {
     public void finishBulk() {
         triplesLoader.loadDataFinish();
         quadsLoader.loadDataFinish();
-        monitor.finish();
-        monitor.finishMessage();
         super.finishBulk();
         //dsgtdb.getTxnSystem().getTxnMgr().finishExclusiveMode();
     }
@@ -133,11 +104,21 @@ public class LoaderSequential extends LoaderBase {
 
     @Override
     protected void loadOne(StreamRDF dest, String filename) {
-        LoaderOps.inputFile(dest, filename, showProgress, DataTickPoint, DataSuperTick);
+        LoaderOps.inputFile(dest, filename, outputToLog, showProgress, DataTickPoint, DataSuperTick);
     }
 
     @Override
     public boolean bulkUseTransaction() {
         return true;
+    }
+    
+    @Override
+    public long countTriples() {
+        return countTriples;
+    }
+
+    @Override
+    public long countQuads() {
+        return countQuads;
     }
 }

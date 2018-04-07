@@ -21,26 +21,25 @@ package tdb2.loader.base;
 import java.util.Objects;
 
 import org.apache.jena.atlas.lib.FileOps;
-import org.apache.jena.atlas.lib.ProgressMonitor;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.system.ProgressStreamRDF;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWrapper;
 import org.apache.jena.sparql.core.Quad;
+import tdb2.MonitorOutput;
 import tdb2.loader.BulkLoader;
 
 /** Operations for the Loader processes */ 
 public class LoaderOps {
     
     /** Parse one file, with an optional progress monitor */ 
-    public static void inputFile(StreamRDF dest, String source, boolean showProgress, int DataTickPoint, int DataSuperTick) {
+    public static void inputFile(StreamRDF dest, String source, MonitorOutput output, boolean showProgress, int DataTickPoint, int DataSuperTick) {
         StreamRDF sink = dest;
-        ProgressMonitor monitor = null;
+        ProgressMonitor2 monitor = null;
         if ( showProgress ) { 
             String basename = FileOps.splitDirFile(source).get(1);
-            monitor = ProgressMonitor.create(BulkLoader.LOG, basename, DataTickPoint, DataSuperTick); 
+            monitor = ProgressMonitor2.create(BulkLoader.LOG, basename, DataTickPoint, DataSuperTick); 
             sink = new ProgressStreamRDF(sink, monitor);
         }
         if ( monitor!= null )

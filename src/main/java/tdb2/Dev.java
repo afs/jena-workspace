@@ -19,47 +19,32 @@
 package tdb2;
 
 public class Dev {
-    // CmdBulkLoaderTDB2 : tdb2.dataloader.
-    //   Complete replacmeent for tdb2.tdbloader.
+    // CmdBulkLoaderTDB2 : tdb2.loader.
     // Stats gathering StreamRDF
     // All files vs one file.
     
     // Add chunks to a Service Executor/FJ pool.
-    // No - overloads RMA use - need phases and fixed threads.
-    // Yes - need to control both CPUs and RAM usage.
+    // No - overloads RAM use - need phases and fixed threads.
+    // Yes - need to control both #CPUs and RAM usage.
     
-    // ProgressMonitor.Output -> LineOutput
     
     // BulkLoader -> "factory".
+    // Loader -> counts, and use in overall time/rate.
     
-    // Sequential - in exclusive mode.
-    // Sequential - BuilderSecondaryIndexesSequential index tick
-    // Sequential - Own package? 
+    // Sequential - in sort of exclusive mode.
 
     // Parallel - change file name during loading.
-    // Finished: 100,000,748 EXP 593.59s (Avg: 168,467)
-    
-    
-    // Loader 
-    // LoaderSimple - parse-dsg.add
-    // LoaderSequential - parse to primary // build indexes one by one.  TDB1
+    // Parallel - CPU and RAM control.
     // LoaderParallel - parse to primary+some parallel indexes // build other indexes in batches.
-    //   == LoaderSequential? with phase 1 = no indexes, and  other in batches of 1.
     
-    // ProgressMonitor - interface; format the output?
-    //   Common - the data phase, including file name.
-    //   "label" of pregress monitor? --> cope with null.
-    //   Timer.time.
+    // Expose TransactionalComponents
+    //   TupleIndex : TupleIndexRecord < RangeIndex(=BPT)
+    // NodeTable : Index(=BPT) and TransBinaryDataFile < BinaryDataFile
+    // Index 
 
-    // No BulkStreamRDF.
-    //   bulkStart/bulkFinish is in Loader.
     
-    // The Load cycle.
-    //    Get the loader.
-    //    stream.startBulk()
-    //    for each file:
-    //       loadOneFile.
-    //    stream.finishBulk(); stream.finishErrorBulk()
+    // Finished: 100,000,748 EXP 593.59s (Avg: 168,467)
+   
     
     static class Figures2 {
         // Cmd and Loader, repackaged.

@@ -30,4 +30,6 @@ public interface Loader {
     
     public void load(List<String> filenames);
     
+    public long countTriples();
+    public long countQuads();
 }

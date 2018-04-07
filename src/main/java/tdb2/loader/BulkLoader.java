@@ -18,34 +18,40 @@
 
 package tdb2.loader;
 
+import java.io.PrintStream;
+import java.util.Objects;
+
+import org.apache.jena.atlas.logging.FmtLog;
 import org.apache.jena.tdb2.TDB2;
 import org.slf4j.Logger;
+import tdb2.MonitorOutput;
 
 public abstract class BulkLoader {
 
-    /** Tick point for messages during loading of data */
-    public static long      DataTickPoint         = 500_000 ;
-    /** Number of ticks per super tick when first loading the data */
-    public static int       DataSuperTick         = 10 ;
-    
-    /** Tick point for messages during secondary index creation */
-    public static long      IndexTickPoint        = 5_000_000 ;
-    /** Number of ticks per super tick when indexing */
-    public static int       IndexSuperTick        = 10 ;
+    public static Logger   LOG                    = TDB2.logLoader;
 
-    public static Logger   LOG                    = TDB2.logLoader ;
-//    
-//    /** Load files. */
-//    public void load(String ... filenames) {
-//        load(Arrays.asList(filenames));
-//    }
-//    
-//    /** Load files. */
-//    public abstract void load(List<String> filenames);
+    /** Output to the loader logger. */ 
+    public static MonitorOutput outputToLog() {
+        return outputToLog(LOG);
+    }
     
-//    public abstract void loadTriples(Iterator<Triple> triples) ;
-//    public abstract void loadTriples(Stream<Triple> triples) ;
-//    public abstract void loadQuads(Iterator<Quad> triples) ;
-//    public abstract void loadQuads(Stream<Quad> triples) ;
+    /** Output to a logger. */ 
+    public static MonitorOutput outputToLog(Logger logger) {
+        Objects.requireNonNull(logger);
+        return (fmt, args) -> {
+            if ( logger.isInfoEnabled() )
+                FmtLog.info(LOG, fmt, args);
+        };
+    }
     
+    /** Output to a PrintStream. */ 
+    public static MonitorOutput outputTo(PrintStream output) {
+        Objects.requireNonNull(output);
+        return (fmt, args) -> {
+            if ( fmt.endsWith("\n") || fmt.endsWith("\r") )
+                output.print(String.format(fmt, args));
+            else
+                output.println(String.format(fmt, args));
+        };
+    }
 }

@@ -18,15 +18,10 @@
 
 package tdb2.loader.sequential;
 
-import java.util.Iterator;
-
 import org.apache.jena.atlas.lib.ArrayUtils;
 import org.apache.jena.atlas.lib.Closeable;
-import org.apache.jena.atlas.lib.ProgressMonitor;
 import org.apache.jena.atlas.lib.Sync;
-import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.graph.Node;
-import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 
@@ -37,8 +32,6 @@ import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 
 public class LoaderNodeTupleTable implements Closeable, Sync
 {
-    private ProgressMonitor dataLoadMonitor = null;
-
     private int          numIndexes; 
     private TupleIndex   primaryIndex;
     private TupleIndex[] secondaryIndexes;
@@ -48,14 +41,15 @@ public class LoaderNodeTupleTable implements Closeable, Sync
     private boolean dropAndRebuildIndexes;
     //private Timer timer;
     private long count = 0;
+    private long countTriples = 0;
+    private long countQuads = 0;
     private String itemsName;
     
     private static Object lock = new Object();
         
-    public LoaderNodeTupleTable(NodeTupleTable nodeTupleTable, String itemsName, ProgressMonitor monitor)
+    public LoaderNodeTupleTable(NodeTupleTable nodeTupleTable, String itemsName)
     {
         this.nodeTupleTable = nodeTupleTable;
-        this.dataLoadMonitor = monitor;
         this.itemsName = itemsName;        // "triples", "quads", "tuples" (plural)
     }
 
@@ -65,7 +59,7 @@ public class LoaderNodeTupleTable implements Closeable, Sync
         dropAndRebuildIndexes = nodeTupleTable.isEmpty();
 
         if ( dropAndRebuildIndexes ) {
-            print("** Load empty %s table\n", itemsName);
+            //print("** Load empty %s table\n", itemsName);
             // SPO, GSPO only.
             dropSecondaryIndexes();
         } else {
@@ -74,7 +68,7 @@ public class LoaderNodeTupleTable implements Closeable, Sync
     }
         
     private void print(String fmt, Object ... args) {
-        // FIX needed ProgressMonitor
+        // FIX needed ProgressMonitors
         // monitor.print("** Load empty %s table", itemsName);
         System.out.printf(fmt, args);
     }
@@ -114,8 +108,11 @@ public class LoaderNodeTupleTable implements Closeable, Sync
     
     /** Stream in items to load ... */
     public void load(Node...nodes) {
-        count++;           // Not zero the first time.
-        dataLoadMonitor.tick();
+        if ( nodes.length == 3 )
+            countTriples++;
+        if ( nodes.length == 4 )
+            countQuads++;
+        count++;
         nodeTupleTable.addRow(nodes);
     }
 
@@ -158,15 +155,6 @@ public class LoaderNodeTupleTable implements Closeable, Sync
     }
     
     private void createSecondaryIndexes() {        
-        
-//        if ( doInParallel )
-//            builder = new BuilderSecondaryIndexesParallel(printer);
-//        else if ( doInterleaved )
-//            builder = new BuilderSecondaryIndexesInterleaved(printer);
-//        else
-//            builder = new BuilderSecondaryIndexesSequential(printer);
-        
-//        ProgressMonitor monitor = ProgressMonitor.create(BulkLoadLib.loadLogger, "index", BulkLoaderJava.IndexTickPoint, BulkLoaderJava.superTick);
         BuilderSecondaryIndexes builder = new BuilderSecondaryIndexesSequential();
         builder.createSecondaryIndexes(primaryIndex, secondaryIndexes);
     }
@@ -176,22 +164,6 @@ public class LoaderNodeTupleTable implements Closeable, Sync
             nodeTupleTable.getTupleTable().setTupleIndex(i, secondaryIndexes[i-1]);
     }
     
-    static void copyIndex(Iterator<Tuple<NodeId>> srcIter, TupleIndex[] destIndexes, String label, ProgressMonitor monitor) {
-        monitor.startMessage(label);
-        long counter = 0;
-        for ( ; srcIter.hasNext() ; ) {
-            counter++;
-            Tuple<NodeId> tuple = srcIter.next();
-            monitor.tick();
-            for ( TupleIndex destIdx : destIndexes ) {
-                if ( destIdx != null )
-                    destIdx.add(tuple);
-            }
-        }
-
-        monitor.finishMessage();
-    }
-
     static private void sync(TupleIndex[] indexes) {
         for ( TupleIndex idx : indexes ) {
             if ( idx != null )
@@ -202,5 +174,4 @@ public class LoaderNodeTupleTable implements Closeable, Sync
     private static boolean tickPoint(long counter, long quantum) {
         return counter % quantum == 0;
     }
-    
 }

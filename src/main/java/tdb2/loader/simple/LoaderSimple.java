@@ -19,9 +19,12 @@
 package tdb2.loader.simple;
 
 import org.apache.jena.graph.Node;
+import org.apache.jena.riot.lang.StreamRDFCounting;
 import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFCountingBase;
 import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.sparql.core.DatasetGraph;
+import tdb2.MonitorOutput;
 import tdb2.loader.base.LoaderBase;
 import tdb2.loader.base.LoaderOps;
 
@@ -30,13 +33,14 @@ public class LoaderSimple extends LoaderBase {
 
     private static int DataTickPoint = 100_000;
     private static int DataSuperTick = 10;
+    private StreamRDFCounting counting;
     
-    public LoaderSimple(DatasetGraph dsg, Node graphName, boolean showProgress) {
-        super(dsg, graphName, showProgress);
+    public LoaderSimple(DatasetGraph dsg, Node graphName, MonitorOutput output, boolean showProgress) {
+        super(dsg, graphName, output, showProgress);
     }
 
     @Override
-    protected StreamRDF createDest(DatasetGraph dsg, Node graphName) {
+    protected StreamRDF createDest(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         return LoaderOps.toNamedGraph(StreamRDFLib.dataset(dsg), graphName);
     }
     
@@ -47,6 +51,17 @@ public class LoaderSimple extends LoaderBase {
 
     @Override
     protected void loadOne(StreamRDF dest, String source) {
-        LoaderOps.inputFile(dest, source, showProgress, DataTickPoint, DataSuperTick);
+        this.counting = new StreamRDFCountingBase(dest);
+        LoaderOps.inputFile(counting, source, output, showProgress, DataTickPoint, DataSuperTick);
+    }
+
+    @Override
+    public long countTriples() {
+        return counting.countTriples();
+    }
+
+    @Override
+    public long countQuads() {
+        return counting.countQuads();
     }
 }
