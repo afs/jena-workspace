@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-package tdb2.loader_simple;
+package tdb2.loader.simple;
 
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.sparql.core.DatasetGraph;
-import tdb2.LoaderBase;
-import tdb2.LoaderOps;
+import tdb2.loader.base.LoaderBase;
+import tdb2.loader.base.LoaderOps;
 
 /** Simple bulk loader. Algorithm: Parser to dataset. */ 
 public class LoaderSimple extends LoaderBase {

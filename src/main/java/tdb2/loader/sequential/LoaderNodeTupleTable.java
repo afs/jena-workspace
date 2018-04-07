@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2.loader_sequential;
+package tdb2.loader.sequential;
 
 import java.util.Iterator;
 

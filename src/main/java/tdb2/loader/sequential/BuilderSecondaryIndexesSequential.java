@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package tdb2.loader_sequential;
+package tdb2.loader.sequential;
 
 import org.apache.jena.atlas.lib.ProgressMonitor;
 import org.apache.jena.atlas.lib.Timer ;
 import org.apache.jena.atlas.logging.FmtLog;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex ;
-import tdb2.BulkLoader;
+import tdb2.loader.BulkLoader;
 import tdb2.tools.Tools;
 
 public class BuilderSecondaryIndexesSequential implements BuilderSecondaryIndexes

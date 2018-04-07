@@ -61,9 +61,25 @@ public class Dev {
     //       loadOneFile.
     //    stream.finishBulk(); stream.finishErrorBulk()
     
+    static class Figures2 {
+        // Cmd and Loader, repackaged.
+        // 2018-04-07
+        
+        // Stream loader direct:
+        //   ChunkSize = 100,000 : Split = 3 : Queue(triples) = 10 : Queue(tuples) = 10
+        //   Finished: 24,997,044 EXP 162.05s (Avg: 154,253)
+        // Cmd:
+        //   (final, final after flush).
+        //   Finished: 24,997,044 EXP 163.13s (Avg: 153,236)
+        //   ChunkSize = 100,000 : Split = 3 : Queue(triples) = 10 : Queue(tuples) = 10
+        
+        
+    }
+    
 
-
-    static class Figures {
+    static class Figures1 {
+        // Before Cmd writtern and Loader written
+        
         // ** tdb1 tdbloader
         // INFO  ** Completed: 100,000,748 triples loaded in 1,454.53 seconds [Rate: 68,751.20 per second]
         

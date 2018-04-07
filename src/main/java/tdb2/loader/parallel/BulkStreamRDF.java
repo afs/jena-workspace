@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,15 +16,12 @@
  * limitations under the License.
  */
 
-package tdb2.early;
+package tdb2.loader.parallel;
 
-import org.apache.jena.tdb2.store.tupletable.TupleIndex;
+import org.apache.jena.riot.system.StreamRDF ;
 
-/**
- * This interface is the mechanism for building indexes given that at leasts one index
- * already exists (the "primary", which normally is SPO or GSPO).
- */
-public interface BuilderSecondaryIndexes
+public interface BulkStreamRDF extends StreamRDF
 {
-    public void createSecondaryIndexes(TupleIndex primaryIndex, TupleIndex[] secondaryIndexes) ;
+    public void startBulk() ;
+    public void finishBulk() ;
 }

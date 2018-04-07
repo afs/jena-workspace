@@ -16,16 +16,15 @@
  * limitations under the License.
  */
 
-package tdb2;
+package tdb2.loader.sequential;
 
-import org.apache.jena.atlas.lib.Timer;
+import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 
-public class TimerX {
-    public static long time(Runnable action) {
-        Timer timer = new Timer();
-        timer.startTimer();
-        action.run();
-        long x = timer.endTimer();
-        return x;
-    }
+/**
+ * This interface is the mechanism for building indexes given that at leasts one index
+ * already exists (the "primary", which normally is SPO or GSPO).
+ */
+public interface BuilderSecondaryIndexes
+{
+    public void createSecondaryIndexes(TupleIndex primaryIndex, TupleIndex[] secondaryIndexes) ;
 }

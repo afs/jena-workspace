@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2;
+package tdb2.loader.base;
 
 import java.util.Objects;
 
@@ -29,6 +29,7 @@ import org.apache.jena.riot.system.ProgressStreamRDF;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWrapper;
 import org.apache.jena.sparql.core.Quad;
+import tdb2.loader.BulkLoader;
 
 /** Operations for the Loader processes */ 
 public class LoaderOps {

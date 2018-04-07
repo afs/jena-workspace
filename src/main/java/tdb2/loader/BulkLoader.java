@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2;
+package tdb2.loader;
 
 import org.apache.jena.tdb2.TDB2;
 import org.slf4j.Logger;

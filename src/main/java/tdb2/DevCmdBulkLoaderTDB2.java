@@ -35,6 +35,8 @@ import org.apache.jena.system.JenaSystem;
 import org.apache.jena.system.Txn;
 import org.apache.jena.tdb2.DatabaseMgr;
 import org.apache.jena.tdb2.sys.IOX;
+import tdb2.loader.BulkLoader;
+import tdb2.loader.base.TimerX;
 
 public class DevCmdBulkLoaderTDB2 {
     static {
@@ -68,7 +70,7 @@ public class DevCmdBulkLoaderTDB2 {
     
     public static void main(String ... args) {
         reset("DB3");
-        CmdBulkLoaderTDB2.x_main("--loc=DB3", "/home/afs/Datasets/BSBM/bsbm-500m.nt.gz");
+        CmdBulkLoaderTDB2.x_main("--loc=DB3", "/home/afs/Datasets/BSBM/bsbm-25m.nt.gz");
         
         DatasetGraph dsg = DatabaseMgr.connectDatasetGraph("DB3");
         Txn.execute(dsg, ()->{

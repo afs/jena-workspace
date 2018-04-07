@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2.early;
+package tdb2.loader.parallel;
 
 import static java.lang.String.format;
 
@@ -56,8 +56,7 @@ import org.apache.jena.tdb2.store.nodetable.NodeTableTRDF;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import org.apache.jena.tdb2.store.tupletable.TupleIndexRecord;
 import org.apache.jena.tdb2.sys.TDBInternal;
-import tdb2.BulkLoader;
-import tdb2.loader_parallel.BulkStreamRDF;
+import tdb2.loader.BulkLoader;
 import tdb2.tools.Tools;
 
 /** Bulk loader stream, parallel */ 

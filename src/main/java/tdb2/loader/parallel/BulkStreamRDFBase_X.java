@@ -16,16 +16,15 @@
  * limitations under the License.
  */
 
-package tdb2;
+package tdb2.loader.parallel;
 
 import org.apache.jena.riot.system.StreamRDF ;
 import org.apache.jena.riot.system.StreamRDFWrapper;
-import tdb2.loader_parallel.BulkStreamRDF;
 
 /** Add {@link BulkStreamRDF} to a {@link StreamRDF}. */
-public class BulkStreamRDFBase extends StreamRDFWrapper implements BulkStreamRDF
+public class BulkStreamRDFBase_X extends StreamRDFWrapper implements BulkStreamRDF
 {
-    public BulkStreamRDFBase(StreamRDF other) {
+    public BulkStreamRDFBase_X(StreamRDF other) {
         super(other);
     }
     @Override

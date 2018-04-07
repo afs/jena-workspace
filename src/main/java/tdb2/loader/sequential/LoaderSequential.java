@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2.loader_sequential;
+package tdb2.loader.sequential;
 
 import org.apache.jena.atlas.lib.ProgressMonitor;
 import org.apache.jena.atlas.lib.ProgressMonitor.Output;
@@ -30,10 +30,10 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import org.slf4j.Logger;
-import tdb2.BulkLoader;
-import tdb2.BulkLoaderException;
-import tdb2.LoaderBase;
-import tdb2.LoaderOps;
+import tdb2.loader.BulkLoader;
+import tdb2.loader.BulkLoaderException;
+import tdb2.loader.base.LoaderBase;
+import tdb2.loader.base.LoaderOps;
 
 /** Simple bulk loader. Algorithm: Parser to dataset. */ 
 public class LoaderSequential extends LoaderBase {

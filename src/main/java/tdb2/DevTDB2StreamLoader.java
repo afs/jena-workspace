@@ -39,8 +39,10 @@ import org.apache.jena.tdb2.DatabaseMgr;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.sys.IOX;
 import org.apache.jena.tdb2.sys.TDBInternal;
-import tdb2.loader_parallel.BulkStreamLoader;
-import tdb2.loader_parallel.BulkStreamRDF;
+import tdb2.loader.BulkLoader;
+import tdb2.loader.base.TimerX;
+import tdb2.loader.parallel.BulkStreamLoader;
+import tdb2.loader.parallel.BulkStreamRDF;
 
 // Run the blast loader - breform the command line tool was written 
 public class DevTDB2StreamLoader {
@@ -79,7 +81,7 @@ public class DevTDB2StreamLoader {
         FileOps.ensureDir(DIR);
     }
     
-    public static void x_main(String ... args) {
+    public static void main(String ... args) {
         Location location;
         String data;
         if ( false ) {
@@ -93,7 +95,7 @@ public class DevTDB2StreamLoader {
             String DIR = "DB";
             reset(DIR);
             location = Location.create(DIR);
-            data = "/home/afs/Datasets/BSBM/bsbm-100m.nt.gz";
+            data = "/home/afs/Datasets/BSBM/bsbm-25m.nt.gz";
             //BulkStreamLoader.ChunkSize = 10_000;
             //BulkStreamLoader.QueueSizeTriples = 5;
             //BulkStreamLoader.QueueSizeTuples =  5;

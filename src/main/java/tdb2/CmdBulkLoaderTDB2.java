@@ -18,7 +18,7 @@
 
 package tdb2;
 
-import static tdb2.BulkLoader.LOG;
+import static tdb2.loader.BulkLoader.LOG;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,8 +36,10 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.system.Txn;
 import tdb2.cmdline.CmdTDB;
 import tdb2.cmdline.CmdTDBGraph;
-import tdb2.loader_parallel.LoaderParallel;
-import tdb2.loader_simple.LoaderSimple;
+import tdb2.loader.Loader;
+import tdb2.loader.base.TimerX;
+import tdb2.loader.parallel.LoaderParallel;
+import tdb2.loader.simple.LoaderSimple;
 
 // Replaces tdb2.tdbloader.
 

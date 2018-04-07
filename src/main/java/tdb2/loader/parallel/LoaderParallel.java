@@ -16,74 +16,60 @@
  * limitations under the License.
  */
 
-package tdb2;
+package tdb2.loader.parallel;
 
 import java.util.List;
 
 import org.apache.jena.graph.Node;
-import org.apache.jena.query.TxnType;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.sparql.core.DatasetGraph;
+import tdb2.loader.Loader;
+import tdb2.loader.base.LoaderOps;
 
-/** Simple bulk loader framework.
- * It puts a write-transaction around the whole process if {@link #bulkUseTransaction}
- * returns true and then calls abstract {@link #loadOne(StreamRDF, String)}
- * for each file.
- * <p>
- * If a graph name is provided, it converts triples to quads in that named graph.  
- */ 
-public abstract class LoaderBase implements Loader {
-
+/** Bulk loader stream, parallel */ 
+public class LoaderParallel implements Loader {
     protected final DatasetGraph dsg;
     protected final Node graphName;
     private final StreamRDF dest;
     protected final boolean showProgress;
     
-    protected LoaderBase(DatasetGraph dsg, Node graphName, boolean showProgress) {
+    public LoaderParallel(DatasetGraph dsg, Node graphName, boolean showProgress) {
         this.dsg = dsg;
         this.graphName = graphName;
+        // We don't do graphName
         this.dest = createDest(dsg, graphName);
         this.showProgress = showProgress;
     }
     
+    private StreamRDF createDest(DatasetGraph dsg, Node graphName) {
+        StreamRDF s = StreamRDFLib.dataset(dsg);
+        return LoaderOps.toNamedGraph(s, graphName);
+    }
+    
     @Override
     public void startBulk() {
-        if ( bulkUseTransaction() )
-            dsg.begin(TxnType.WRITE);
+        // Move some BulkStreamLoader actions here. 
     }
 
     @Override
-    public void finishBulk() {
-        if ( bulkUseTransaction() ) {
-            dsg.commit();
-            dsg.end();
-        }
-    }
+    public void finishBulk() {}
 
     @Override
-    public void finishException() {
-        if ( bulkUseTransaction() ) {
-            dsg.abort();
-            dsg.end();
-        }
+    public void finishException() {}
+
+    @Override
+    public boolean bulkUseTransaction() {
+        return false;
     }
 
     @Override
     public void load(List<String> filenames) {
-        try { 
-            filenames.forEach(fn->loadOne(dest, fn));
-        } catch (Exception ex) {
-            finishException();
-            throw ex;
-        }
+        BulkStreamRDF stream = new BulkStreamLoader(dsg);
+        stream.startBulk();
+        // XXX Change the monitor to reflect the filename. 
+        filenames.forEach(fn->RDFDataMgr.parse(stream, fn));
+        stream.finishBulk();
     }
-
-    /** Subclasses must provide a setting. */ 
-    @Override
-    public abstract boolean bulkUseTransaction();
-
-    protected abstract void loadOne(StreamRDF dest, String filename);
-    
-    protected abstract StreamRDF createDest(DatasetGraph dsg, Node graphName);
-    
 }

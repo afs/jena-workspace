@@ -16,18 +16,13 @@
  * limitations under the License.
  */
 
-package tdb2;
+package tdb2.loader;
 
-import java.util.List;
+import org.apache.jena.dboe.DBOpEnvException;
 
-public interface Loader {
- 
-    public void startBulk();
-    public void finishBulk();
-    public void finishException();
-    
-    public boolean bulkUseTransaction();
-    
-    public void load(List<String> filenames);
-    
+public class BulkLoaderException extends DBOpEnvException {
+    public BulkLoaderException()                          { super() ; }
+    public BulkLoaderException(String msg)                { super(msg) ; }
+    public BulkLoaderException(Throwable th)              { super(th) ; }
+    public BulkLoaderException(String msg, Throwable th)  { super(msg, th) ; }
 }

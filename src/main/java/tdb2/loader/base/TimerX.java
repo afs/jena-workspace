@@ -16,13 +16,16 @@
  * limitations under the License.
  */
 
-package tdb2;
+package tdb2.loader.base;
 
-import org.apache.jena.dboe.DBOpEnvException;
+import org.apache.jena.atlas.lib.Timer;
 
-public class BulkLoaderException extends DBOpEnvException {
-    public BulkLoaderException()                          { super() ; }
-    public BulkLoaderException(String msg)                { super(msg) ; }
-    public BulkLoaderException(Throwable th)              { super(th) ; }
-    public BulkLoaderException(String msg, Throwable th)  { super(msg, th) ; }
+public class TimerX {
+    public static long time(Runnable action) {
+        Timer timer = new Timer();
+        timer.startTimer();
+        action.run();
+        long x = timer.endTimer();
+        return x;
+    }
 }
