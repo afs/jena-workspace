@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import loader.TimerX;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.Timer;
 import org.apache.jena.atlas.logging.LogCtl;
@@ -38,7 +39,6 @@ import org.apache.jena.tdb2.TDB2;
 import org.apache.jena.tdb2.sys.DatabaseConnection;
 import org.apache.jena.tdb2.sys.IOX;
 import tdb2.cmd.load;
-import tdb2.loader.base.TimerX;
 
 public class DevCmdBulkLoaderTDB2 {
     static {

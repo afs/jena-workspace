@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package loader;
+package loader.parallel;
 
-public interface BulkStreamRDF
-{
-    public void startBulk() ;
-    public void finishBulk() ;
-    //public void finishBulkException(Exception ex) ;
+import java.util.List;
+
+@FunctionalInterface
+public interface Destination<X> {
+    public void deliver(List<X> block); 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,14 @@
 
 package loader;
 
-public interface BulkStreamRDF
-{
-    public void startBulk() ;
-    public void finishBulk() ;
-    //public void finishBulkException(Exception ex) ;
+import org.apache.jena.atlas.lib.Timer;
+
+public class TimerX {
+    public static long time(Runnable action) {
+        Timer timer = new Timer();
+        timer.startTimer();
+        action.run();
+        long x = timer.endTimer();
+        return x;
+    }
 }

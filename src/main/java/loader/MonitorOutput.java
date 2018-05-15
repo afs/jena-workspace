@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,8 @@
 
 package loader;
 
-public interface BulkStreamRDF
-{
-    public void startBulk() ;
-    public void finishBulk() ;
-    //public void finishBulkException(Exception ex) ;
+/** Output abstraction for the {@link ProgressMonitorOutput}. */ 
+@FunctionalInterface
+public interface MonitorOutput {
+    public void print(String fmt, Object... args);
 }

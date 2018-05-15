@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,11 +16,25 @@
  * limitations under the License.
  */
 
-package loader;
+package loader.dev;
 
-public interface BulkStreamRDF
-{
-    public void startBulk() ;
-    public void finishBulk() ;
-    //public void finishBulkException(Exception ex) ;
+public class DevNotesLoader {
+    // Stream chunker : functions, not queues?
+    // Index building monitoring : combined (i.e. min), what about sequential use.  
+    // Temp coordinator .create(... parts ...) [add,start]
+    
+    // Temp coordinator shutdown -> do not call TransactionalComponentLifecycle.shutdown
+    
+    // May 15
+    // Total: 24,997,044 triples
+    // Rate: 167,703 TPS
+    // Restructure
+    // INFO  Data: /home/afs/Datasets/BSBM/bsbm-25m.nt.gz: 24,997,044 bsbm-25m.nt.gz 133.27s (Avg: 187,565)
+    // INFO  Time = 146.217 seconds : Triples = 24,997,044 : Rate = 170,959 /s
+
+    // Exception handling in bulkload.
+    // Remove "showprogress flag. Use ProgressMonitorBasic
+    
+    // LoaderParallel - too many objects.
+    // Combine 
 }

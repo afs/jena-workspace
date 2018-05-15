@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2.cmd;
+package loader.cmd;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +27,7 @@ import loader.Loader;
 import loader.MonitorOutput;
 import loader.TimerX;
 import loader.base.LoaderOps;
+import loader.parallel.LoaderParallel;
 import loader.parallel_v1.LoaderParallel_v1;
 import loader.sequential.LoaderSequential;
 import loader.simple.LoaderSimple;
@@ -51,7 +52,7 @@ public class load extends CmdTDBGraph {
     
     private static final MonitorOutput output = LoaderOps.outputToLog();
 
-    enum LoaderEnum { Simple, Sequential, Parallel }
+    enum LoaderEnum { Simple, Sequential, Parallel, Parallel1/* XXX - remove - old parallel loader*/ }
     
     private boolean showProgress = true;
     private boolean generateStats = true;
@@ -79,6 +80,8 @@ public class load extends CmdTDBGraph {
                 loader = LoaderEnum.Simple;
             else if ( loadername.matches("seq.*") )
                 loader = LoaderEnum.Sequential;
+            else if ( loadername.matches("para.*") )
+                loader = LoaderEnum.Parallel;
             else if ( loadername.matches("para.*") )
                 loader = LoaderEnum.Parallel;
             else
@@ -168,6 +171,8 @@ public class load extends CmdTDBGraph {
         
         switch(useLoader) {
             case Parallel :
+                return new LoaderParallel(dsg, gn, output, showProgress);
+            case Parallel1 :
                 return new LoaderParallel_v1(dsg, gn, output, showProgress);
             case Sequential :
                 return new LoaderSequential(dsg, gn, output, showProgress);

@@ -16,11 +16,12 @@
  * limitations under the License.
  */
 
-package loader;
+package loader.parallel_v1;
 
-public interface BulkStreamRDF
+import org.apache.jena.riot.system.StreamRDF ;
+
+public interface BulkStreamRDF extends StreamRDF
 {
     public void startBulk() ;
     public void finishBulk() ;
-    //public void finishBulkException(Exception ex) ;
 }

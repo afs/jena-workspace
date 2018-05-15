@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,11 +16,16 @@
  * limitations under the License.
  */
 
-package loader;
+package loader.sequential;
 
-public interface BulkStreamRDF
+import loader.MonitorOutput;
+import org.apache.jena.tdb2.store.tupletable.TupleIndex;
+
+/**
+ * This interface is the mechanism for building indexes given that at leasts one index
+ * already exists (the "primary", which normally is SPO or GSPO).
+ */
+public interface BuilderSecondaryIndexes
 {
-    public void startBulk() ;
-    public void finishBulk() ;
-    //public void finishBulkException(Exception ex) ;
+    public void createSecondaryIndexes(MonitorOutput output, TupleIndex primaryIndex, TupleIndex[] secondaryIndexes) ;
 }

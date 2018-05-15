@@ -31,11 +31,11 @@ import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import org.apache.jena.tdb2.store.tupletable.TupleIndexRecord;
 import org.apache.jena.tdb2.sys.TDBInternal;
-import tdb2.MonitorOutput;
 import tdb2.cmdline.CmdTDB;
-import tdb2.loader.base.LoaderOps;
-import tdb2.loader.base.ProgressMonitor2;
-import tdb2.tools.Tools;
+import loader.MonitorOutput;
+import loader.ProgressMonitor;
+import loader.ProgressMonitorOutput;
+import loader.base.LoaderOps;
 
 public class idxcp extends CmdTDB {
     public static final int DataTickPoint   = 100_000;
@@ -140,8 +140,8 @@ public class idxcp extends CmdTDB {
                                       dstIndexName, recordFactory,
                                       index);
         
-        ProgressMonitor2 monitor = ProgressMonitor2.create(output, label, IndexTickPoint, IndexSuperTick);
-        Tools.copyIndex(srcIdx.all(), dstIndexes, monitor);  
+        ProgressMonitor monitor = ProgressMonitorOutput.create(output, label, IndexTickPoint, IndexSuperTick);
+        LoaderOps.copyIndex(srcIdx.all(), dstIndexes, monitor);  
     }
 
     private TupleIndex getIndex(String indexName, DatasetGraphTDB dsgtdb) {
