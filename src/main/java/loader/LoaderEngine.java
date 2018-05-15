@@ -16,16 +16,26 @@
  * limitations under the License.
  */
 
-package tdb2.loader.sequential;
+package loader;
 
-import org.apache.jena.tdb2.store.tupletable.TupleIndex;
+import org.apache.jena.sparql.core.DatasetGraph;
 import tdb2.MonitorOutput;
 
-/**
- * This interface is the mechanism for building indexes given that at leasts one index
- * already exists (the "primary", which normally is SPO or GSPO).
- */
-public interface BuilderSecondaryIndexes
-{
-    public void createSecondaryIndexes(MonitorOutput output, TupleIndex primaryIndex, TupleIndex[] secondaryIndexes) ;
+public class LoaderEngine {
+    
+    
+    public LoaderEngine(DatasetGraph dsg) {
+        
+    }
+    
+
+    private final Object outputLock = new Object();
+    // Add a sync wrapper.
+    public MonitorOutput output(MonitorOutput output) { 
+        return (fmt, args)-> {
+            synchronized(outputLock) {
+                output.print(fmt, args);
+            }
+        } ;
+    }
 }

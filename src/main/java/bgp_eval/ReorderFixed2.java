@@ -26,7 +26,7 @@ import org.apache.jena.sparql.engine.optimizer.StatsMatcher ;
 import org.apache.jena.sparql.engine.optimizer.reorder.PatternTriple ;
 import org.apache.jena.sparql.graph.NodeConst ;
 import org.apache.jena.sparql.sse.Item ;
-import org.apache.jena.system.JenaSystem;
+import org.apache.jena.sys.JenaSystem;
 
 /** Fixed scheme for choosing based on the triple patterns, without
  *  looking at the data.  It gives a weight to a triple, with more grounded terms

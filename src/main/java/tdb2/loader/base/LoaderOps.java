@@ -18,20 +18,25 @@
 
 package tdb2.loader.base;
 
+import java.io.PrintStream;
 import java.util.Objects;
 
 import org.apache.jena.atlas.lib.FileOps;
+import org.apache.jena.atlas.logging.FmtLog;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWrapper;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.tdb2.TDB2;
+import org.slf4j.Logger;
 import tdb2.MonitorOutput;
-import tdb2.loader.BulkLoader;
 
 /** Operations for the Loader processes */ 
 public class LoaderOps {
+    
+    private static Logger LOG = TDB2.logLoader;
     
     /** Parse one file, with an optional progress monitor */ 
     public static void inputFile(StreamRDF dest, String source, MonitorOutput output, boolean showProgress, int DataTickPoint, int DataSuperTick) {
@@ -39,7 +44,7 @@ public class LoaderOps {
         ProgressMonitor2 monitor = null;
         if ( showProgress ) { 
             String basename = FileOps.splitDirFile(source).get(1);
-            monitor = ProgressMonitor2.create(BulkLoader.LOG, basename, DataTickPoint, DataSuperTick); 
+            monitor = ProgressMonitor2.create(LOG, basename, DataTickPoint, DataSuperTick); 
             sink = new ProgressStreamRDF(sink, monitor);
         }
         if ( monitor!= null )
@@ -50,7 +55,7 @@ public class LoaderOps {
         sink.finish();
         if ( monitor!= null ) {
             monitor.finish();
-            monitor.finishMessage();
+            monitor.finishMessage("Data: "+source);
         }
     }
     
@@ -70,6 +75,30 @@ public class LoaderOps {
             }
             // Drop quads.
             @Override public void quad(Quad quad) {}
+        };
+    }
+    /** Output to the loader logger. */ 
+    public static MonitorOutput outputToLog() {
+        return outputToLog(LOG);
+    }
+    
+    /** Output to a logger. */ 
+    public static MonitorOutput outputToLog(Logger logger) {
+        Objects.requireNonNull(logger);
+        return (fmt, args) -> {
+            if ( logger.isInfoEnabled() )
+                FmtLog.info(LOG, fmt, args);
+        };
+    }
+    
+    /** Output to a PrintStream. */ 
+    public static MonitorOutput outputTo(PrintStream output) {
+        Objects.requireNonNull(output);
+        return (fmt, args) -> {
+            if ( fmt.endsWith("\n") || fmt.endsWith("\r") )
+                output.print(String.format(fmt, args));
+            else
+                output.println(String.format(fmt, args));
         };
     }
 }

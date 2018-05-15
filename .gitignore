@@ -27,6 +27,10 @@ hs_err_pid*
 .#*
 \#*
 
+
+# Development files
+LOG*
+
 # Databases and Fuseki
 Fuseki-https/run/
 **/run/system/

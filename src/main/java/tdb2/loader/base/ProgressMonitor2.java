@@ -20,6 +20,8 @@ package tdb2.loader.base;
 
 import static org.apache.jena.atlas.lib.DateTimeUtils.nowAsString ;
 
+import java.util.Objects;
+
 import org.apache.jena.atlas.lib.Timer;
 import org.slf4j.Logger ;
 import tdb2.MonitorOutput;
@@ -29,9 +31,6 @@ import tdb2.MonitorOutput;
  * Once per item processed, call the {@link #tick()} operation.  
  */
 public class ProgressMonitor2 {
-    
-    // XXX How different is this? Just Output? Remove startMessage(msg) etc.
-    
     private final MonitorOutput output;
     private final long   tickPoint;
     private final int    superTick;
@@ -45,15 +44,16 @@ public class ProgressMonitor2 {
 
     /** ProgressMonitor that outputs to a {@link Logger} */ 
     public static ProgressMonitor2 create(Logger log, String label, long tickPoint, int superTick) {
-        MonitorOutput outputToLog = (fmt, args)-> {
-            if ( log != null && log.isInfoEnabled() ) {
-                String str = String.format(fmt, args);
-                log.info(str);
-            }
-        } ;
-        return new ProgressMonitor2(label, tickPoint, superTick, outputToLog) ;
+        Objects.requireNonNull(log);
+        return create(LoaderOps.outputToLog(log), label, tickPoint, superTick) ;
     }
     
+    /** ProgressMonitor that outputs to on a {@link MonitorOutput} */ 
+    public static ProgressMonitor2 create(MonitorOutput output, String label, long tickPoint, int superTick) {
+        Objects.requireNonNull(output);
+        return new ProgressMonitor2(label, tickPoint, superTick, output) ;
+    }
+
     /**
      * @param label      
      *      Label added to output strings. 
@@ -87,18 +87,19 @@ public class ProgressMonitor2 {
             output.print("Start: "+label) ;
     }
 
-    public void finishMessage() {
+    // XXX Better to return stats
+    public void finishMessage(String msg) {
         // Elapsed.
         long timePoint = timer.getTimeInterval();
 
-        // *1000L is milli to second conversion
+        // /1000L is milli to second conversion
         if ( timePoint != 0 ) {
             double time = timePoint / 1000.0;
             long runAvgRate = (counterTotal * 1000L) / timePoint;
 
-            print("Finished: %,d %s %.2fs (Avg: %,d)", counterTotal, label, time, runAvgRate);
+            print("%s: %,d %s %.2fs (Avg: %,d)", msg, counterTotal, label, time, runAvgRate);
         } else
-            print("Finished: %,d %s (Avg: ----)", counterTotal, label);
+            print("%s: %,d %s (Avg: ----)", msg, counterTotal, label);
     }
 
     public void start() {

@@ -16,15 +16,12 @@
  * limitations under the License.
  */
 
-package dev;
+package tdb2.cmd;
 
-import org.apache.jena.atlas.logging.LogCtl ;
+public class idxdump {
 
-public class DevWorkspace
-{
-    static { LogCtl.setCmdLogging() ; }
-    
-    public static void main(String ... a) {
-        System.out.println("DONE");
+    public static void main(String[] args) {
+
     }
+
 }

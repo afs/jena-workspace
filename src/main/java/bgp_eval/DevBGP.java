@@ -21,7 +21,7 @@ package bgp_eval;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.optimizer.reorder.ReorderTransformation;
 import org.apache.jena.sparql.sse.SSE;
-import org.apache.jena.system.JenaSystem;
+import org.apache.jena.sys.JenaSystem;
 
 public class DevBGP {
 

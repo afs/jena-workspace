@@ -16,9 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2;
-
-import static tdb2.loader.BulkLoader.LOG;
+package tdb2.cmd;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,7 +25,6 @@ import jena.cmd.ArgDecl;
 import jena.cmd.CmdException;
 import org.apache.jena.atlas.lib.InternalErrorException;
 import org.apache.jena.atlas.lib.Lib;
-import org.apache.jena.atlas.logging.FmtLog;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ARQ;
@@ -35,10 +32,11 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.system.Txn;
+import tdb2.MonitorOutput;
 import tdb2.cmdline.CmdTDB;
 import tdb2.cmdline.CmdTDBGraph;
-import tdb2.loader.BulkLoader;
 import tdb2.loader.Loader;
+import tdb2.loader.base.LoaderOps;
 import tdb2.loader.base.TimerX;
 import tdb2.loader.parallel.LoaderParallel;
 import tdb2.loader.sequential.LoaderSequential;
@@ -46,11 +44,12 @@ import tdb2.loader.simple.LoaderSimple;
 
 // Replaces tdb2.tdbloader.
 
-public class CmdBulkLoaderTDB2 extends CmdTDBGraph {
+public class load extends CmdTDBGraph {
     private static final ArgDecl argNoStats = new ArgDecl(ArgDecl.NoValue, "nostats");
     private static final ArgDecl argStats = new ArgDecl(ArgDecl.HasValue,  "stats");
-    
     private static final ArgDecl argLoader = new ArgDecl(ArgDecl.HasValue, "loader");
+    
+    private static final MonitorOutput output = LoaderOps.outputToLog();
 
     enum LoaderEnum { Simple, Sequential, Parallel }
     
@@ -60,10 +59,10 @@ public class CmdBulkLoaderTDB2 extends CmdTDBGraph {
     
     public static void main(String... args) {
         CmdTDB.init();
-        new CmdBulkLoaderTDB2(args).mainRun();
+        new load(args).mainRun();
     }
 
-    protected CmdBulkLoaderTDB2(String[] argv) {
+    protected load(String[] argv) {
         super(argv);
 //        super.add(argNoStats, "--nostats", "Switch off statistics gathering");
 //        super.add(argStats);   // Hidden argument
@@ -143,7 +142,7 @@ public class CmdBulkLoaderTDB2 extends CmdTDBGraph {
     
     private long execBulkLoad(DatasetGraph dsg, String graphName, List<String> urls, boolean showProgress) {
         Loader loader = chooseLoader(dsg, graphName);
-        FmtLog.info(LOG, "Loader = "+Lib.className(loader));
+        output.print("Loader = "+Lib.className(loader));
         long elapsed = TimerX.time(()->{
                     loader.startBulk();
                     loader.load(urls);
@@ -166,8 +165,6 @@ public class CmdBulkLoaderTDB2 extends CmdTDBGraph {
             boolean empty = Txn.calculateRead(dsg, ()->dsg.isEmpty());
             useLoader = empty ? LoaderEnum.Sequential : LoaderEnum.Simple;
         }
-
-        MonitorOutput output = BulkLoader.outputToLog();
         
         switch(useLoader) {
             case Parallel :

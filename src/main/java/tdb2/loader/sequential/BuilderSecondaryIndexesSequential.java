@@ -19,9 +19,8 @@
 package tdb2.loader.sequential;
 
 import org.apache.jena.atlas.lib.Timer ;
-import org.apache.jena.atlas.logging.FmtLog;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex ;
-import tdb2.loader.BulkLoader;
+import tdb2.MonitorOutput;
 import tdb2.loader.base.ProgressMonitor2;
 import tdb2.tools.Tools;
 
@@ -31,26 +30,26 @@ public class BuilderSecondaryIndexesSequential implements BuilderSecondaryIndexe
     
     // Create each secondary indexes, doing one at a time.
     @Override
-    public void createSecondaryIndexes(TupleIndex primaryIndex, TupleIndex[] secondaryIndexes)
+    public void createSecondaryIndexes(MonitorOutput output, TupleIndex primaryIndex, TupleIndex[] secondaryIndexes)
     {
         Timer timer = new Timer() ;
         timer.startTimer() ;
         boolean printTiming = true;
-        for ( TupleIndex index : secondaryIndexes )
-        {
+        for ( TupleIndex index : secondaryIndexes ) {
             if ( index != null ) {
-                ProgressMonitor2 monitor = ProgressMonitor2.create(BulkLoader.LOG, index.getName(), 
-                    LoaderSequential.IndexTickPoint, LoaderSequential.IndexSuperTick);
+                ProgressMonitor2 monitor = ProgressMonitor2.create(output, index.getName(), 
+                                                                   LoaderSequential.IndexTickPoint,
+                                                                   LoaderSequential.IndexSuperTick);
                 monitor.startMessage();
                 monitor.start();
 
                 long time1 = timer.readTimer() ;
-                Tools.copyIndex(primaryIndex.all(), new TupleIndex[]{index}, index.getMapping().getLabel(), monitor) ;
+                Tools.copyIndex(primaryIndex.all(), new TupleIndex[]{index}, monitor) ;
                 long time2 = timer.readTimer() ;
                 monitor.finish();
-                monitor.finishMessage();
-                if ( printTiming )
-                    FmtLog.info(BulkLoader.LOG,"Time for %s indexing: %.2fs", index.getName(), (time2-time1)/1000.0) ;
+                monitor.finishMessage(index.getName()+" indexing: ");
+//                if ( printTiming )
+//                    output.print("Time for %s indexing: %.2fs", index.getName(), (time2-time1)/1000.0) ;
             }  
         }   
     }

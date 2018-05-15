@@ -112,7 +112,7 @@ public abstract class LoaderBase implements Loader {
             
             double seconds = totalElapsed/1000.0;
             if ( seconds > 1 )
-                output.print("Time = %,.3f seconds : %s = %,d : Rate = %,.0f /s\n", seconds, label, count, count/seconds);  
+                output.print("Time = %,.3f seconds : %s = %,d : Rate = %,.0f /s", seconds, label, count, count/seconds);  
         }
     }
 }

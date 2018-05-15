@@ -27,7 +27,7 @@ import tdb2.loader.base.ProgressMonitor2;
 
 public class Tools {
     /** Copy a stream to several indexes (sequential version) */
-    public static void copyIndex(Iterator<Tuple<NodeId>> srcIter, TupleIndex[] destIndexes, String label, ProgressMonitor2 monitor) {
+    public static void copyIndex(Iterator<Tuple<NodeId>> srcIter, TupleIndex[] destIndexes, ProgressMonitor2 monitor) {
         long counter = 0;
         for ( ; srcIter.hasNext() ; ) {
             counter++;

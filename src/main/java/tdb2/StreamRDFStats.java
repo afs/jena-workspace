@@ -16,16 +16,10 @@
  * limitations under the License.
  */
 
-package tdb2.loader.sequential;
+package tdb2;
 
-import org.apache.jena.tdb2.store.tupletable.TupleIndex;
-import tdb2.MonitorOutput;
+import org.apache.jena.riot.system.StreamRDFBase;
 
-/**
- * This interface is the mechanism for building indexes given that at leasts one index
- * already exists (the "primary", which normally is SPO or GSPO).
- */
-public interface BuilderSecondaryIndexes
-{
-    public void createSecondaryIndexes(MonitorOutput output, TupleIndex primaryIndex, TupleIndex[] secondaryIndexes) ;
+public class StreamRDFStats extends StreamRDFBase {
+
 }

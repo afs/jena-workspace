@@ -58,7 +58,6 @@ import org.apache.jena.tdb2.sys.TDBInternal;
 import tdb2.MonitorOutput;
 import tdb2.loader.base.ProgressMonitor2;
 import tdb2.loader.base.TimerX;
-import tdb2.tools.Tools;
 
 /** Bulk loader stream, parallel */ 
 public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
@@ -132,6 +131,10 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
         //params.getPrimaryIndexQuads()
         //params.getPrimaryIndexPrefix()
         
+        int threadsCount = 2;
+        // Data phase 3 or 4 threads: parse, nodetable, primaryindexes.
+        
+        
         this.nodeTableTriples = dsgtdb.getTripleTable().getNodeTupleTable().getNodeTable();
         this.nodeTableQuads = dsgtdb.getQuadTable().getNodeTupleTable().getNodeTable();
         
@@ -148,10 +151,10 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
         if ( SplitQuadsIndexes < 1 || SplitQuadsIndexes > dbQuads.length )
             throw new IllegalArgumentException(format("SplitQuadsIndexes (%d) must be between %d and %d (inclusive)", SplitQuadsIndexes, 1, dbQuads.length));
         
-        this.idxTriples = Arrays.copyOfRange(dbTriples, 0, SplitTriplesIndexes);
-        this.idxTriples2 = Arrays.copyOfRange(dbTriples, SplitTriplesIndexes, dbTriples.length);
-        this.idxQuads = Arrays.copyOfRange(dbTriples, 0, SplitQuadsIndexes);
-        this.idxQuads2 = Arrays.copyOfRange(dbQuads, SplitQuadsIndexes, dbQuads.length);
+        this.idxTriples   = Arrays.copyOfRange(dbTriples, 0, SplitTriplesIndexes);
+        this.idxTriples2  = Arrays.copyOfRange(dbTriples, SplitTriplesIndexes, dbTriples.length);
+        this.idxQuads     = Arrays.copyOfRange(dbQuads,   0, SplitQuadsIndexes);
+        this.idxQuads2    = Arrays.copyOfRange(dbQuads,   SplitQuadsIndexes, dbQuads.length);
 
         this.primary3Indexes = idxTriples[0];
         this.primary4Indexes = idxQuads[0];
@@ -468,24 +471,24 @@ public class BulkStreamLoader implements StreamRDF, BulkStreamRDF {
 //        }
 //    }
 
-    /** Copy one index into several others */
-    private static void copyIndexes(TupleIndex srcIdx, TupleIndex... dstIndexes) {
-        if ( dstIndexes.length == 0 )
-            return;
-        ProgressMonitor2 monitor = null;
-        StringJoiner sj = new StringJoiner(",");
-        for(TupleIndex idx : dstIndexes)
-            sj.add(idx.getName());
-        String label = sj.toString();
-        Tools.copyIndex(srcIdx.all(), dstIndexes, label, monitor); 
-    }
-    
-    // Copy one index.
-    private static void copyIndexs(TupleIndex srcIdx, TupleIndex dstIdx) {
-        ProgressMonitor2 monitor = null;
-        TupleIndex[] a = { dstIdx } ;
-        Tools.copyIndex(srcIdx.all(), a, dstIdx.getName(), monitor); 
-    }
+//    /** Copy one index into several others */
+//    private static void copyIndexes(TupleIndex srcIdx, TupleIndex... dstIndexes) {
+//        if ( dstIndexes.length == 0 )
+//            return;
+//        StringJoiner sj = new StringJoiner(",");
+//        for(TupleIndex idx : dstIndexes)
+//            sj.add(idx.getName());
+//        String label = sj.toString();
+//        ProgressMonitor2 monitor = ProgressMonitor2.create(
+//        Tools.copyIndex(srcIdx.all(), dstIndexes, monitor); 
+//    }
+//    
+//    // Copy one index.
+//    private static void copyIndexs(TupleIndex srcIdx, TupleIndex dstIdx) {
+//        ProgressMonitor2 monitor = null;
+//        TupleIndex[] a = { dstIdx } ;
+//        Tools.copyIndex(srcIdx.all(), a, dstIdx.getName(), monitor); 
+//    }
 
     @Override
     public void base(String base) {}

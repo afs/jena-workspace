@@ -19,6 +19,23 @@
 package tdb2;
 
 public class Dev {
+    // Thread control.
+    // Dft to 2 threads.
+    // quads vs triples
+    
+    // Indexes are a list, chop entries off the list
+    //   SPO, POS, OSP so 2T == (data, SPO), (POS,OSP)
+    //   GSPO, GPOS, GOSP, SPOG, POSG, OSPG
+    
+    // 3T
+    // (data, GSPO), (GPOS, GOSP, SPOG) (POSG, OSPG)
+    // 2T
+    // (data, GSPO) (GPOS, GOSP), (SPOG, POSG), (OSPG)
+    
+    // Tools: 
+    //   idx to idx copy
+    //   Stream index builder
+    
     // CmdBulkLoaderTDB2 : tdb2.loader.
     // Stats gathering StreamRDF
     // All files vs one file.
@@ -26,7 +43,6 @@ public class Dev {
     // Add chunks to a Service Executor/FJ pool.
     // No - overloads RAM use - need phases and fixed threads.
     // Yes - need to control both #CPUs and RAM usage.
-    
     
     // BulkLoader -> "factory".
     // Loader -> counts, and use in overall time/rate.
@@ -36,15 +52,39 @@ public class Dev {
     // Parallel - change file name during loading.
     // Parallel - CPU and RAM control.
     // LoaderParallel - parse to primary+some parallel indexes // build other indexes in batches.
+    // Parallel - parse, NodeTable on one thread? (= sequential phase one, about 
+    //                  INFO  Finished: 24,997,044 bsbm-25m.nt.gz 268.00s (Avg: 93,273) -- phase one
+    // Parallel - quads not working.  Only reads incoming triples.  
+    // See the nodes->triples stage, which does not do quads.
+
+    // *** Need a queue of Triples // Quads. 
+    //   Pair on queue?  Separate Node -> NodeId processing (sync/locking looks complicated)
+
+    // Remove, rename Monitor finishe dmessage to be "ended phase
     
     // Expose TransactionalComponents
     //   TupleIndex : TupleIndexRecord < RangeIndex(=BPT)
     // NodeTable : Index(=BPT) and TransBinaryDataFile < BinaryDataFile
     // Index 
-
     
     // Finished: 100,000,748 EXP 593.59s (Avg: 168,467)
    
+    // 2018-04-08:
+    // Time to load 25m:
+    //   Simple:      Time = 408.455 seconds : Triples = 24,997,044 : Rate = 61,199 /s
+    //   Sequential:  Time = 375.059 seconds : Triples = 24,997,044 : Rate = 66,648 /s
+    //   Parallel:    Time = 144.567 seconds : Triples = 24,997,044 : Rate = 172,910 /s
+    // Time to load 200m: 39G database
+    //   Simple:      Time = 3,558.681 seconds : Triples = 200,031,975 : Rate = 56,210 /s
+    //   Sequential:  Time = 3,265.094 seconds : Triples = 200,031,975 : Rate = 61,264 /s
+    //   Parallel:    Time = 1,641.079 seconds : Triples = 200,031,975 : Rate = 121,891 /s
+    //                The rate is dropping to 65K
+
+    // RocksDB
+    // Experiment: parse-nodetable only.
+    // Parallel:  Time = 134.738 seconds : Triples = 24,997,044 : Rate = 185,523 /s
+
+    // Look for XXX
     
     static class Figures2 {
         // Cmd and Loader, repackaged.

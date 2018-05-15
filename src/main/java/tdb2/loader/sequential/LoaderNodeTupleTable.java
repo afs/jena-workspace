@@ -24,6 +24,7 @@ import org.apache.jena.atlas.lib.Sync;
 import org.apache.jena.graph.Node;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
+import tdb2.MonitorOutput;
 
 /** 
  * Load into one NodeTupleTable (triples, quads, other).
@@ -44,13 +45,15 @@ public class LoaderNodeTupleTable implements Closeable, Sync
     private long countTriples = 0;
     private long countQuads = 0;
     private String itemsName;
+    private final MonitorOutput output;
     
     private static Object lock = new Object();
         
-    public LoaderNodeTupleTable(NodeTupleTable nodeTupleTable, String itemsName)
+    public LoaderNodeTupleTable(NodeTupleTable nodeTupleTable, MonitorOutput output, String itemsName)
     {
         this.nodeTupleTable = nodeTupleTable;
-        this.itemsName = itemsName;        // "triples", "quads", "tuples" (plural)
+        this.itemsName = itemsName;
+        this.output = output;
     }
 
     // -- LoaderFramework
@@ -59,20 +62,14 @@ public class LoaderNodeTupleTable implements Closeable, Sync
         dropAndRebuildIndexes = nodeTupleTable.isEmpty();
 
         if ( dropAndRebuildIndexes ) {
-            //print("** Load empty %s table\n", itemsName);
+            //output.print("** Load empty %s table", itemsName);
             // SPO, GSPO only.
             dropSecondaryIndexes();
         } else {
-            print("** Load into %s table with existing data\n", itemsName);
+            output.print("** Load into %s table with existing data", itemsName);
         }
     }
         
-    private void print(String fmt, Object ... args) {
-        // FIX needed ProgressMonitors
-        // monitor.print("** Load empty %s table", itemsName);
-        System.out.printf(fmt, args);
-    }
-    
     protected void loadSecondaryIndexes() {
         if ( count > 0 ) {
             if ( dropAndRebuildIndexes )
@@ -156,7 +153,7 @@ public class LoaderNodeTupleTable implements Closeable, Sync
     
     private void createSecondaryIndexes() {        
         BuilderSecondaryIndexes builder = new BuilderSecondaryIndexesSequential();
-        builder.createSecondaryIndexes(primaryIndex, secondaryIndexes);
+        builder.createSecondaryIndexes(output, primaryIndex, secondaryIndexes);
     }
     
     private void attachSecondaryIndexes() {

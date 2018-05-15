@@ -16,16 +16,15 @@
  * limitations under the License.
  */
 
-package tdb2.loader.sequential;
+package dev;
 
-import org.apache.jena.tdb2.store.tupletable.TupleIndex;
-import tdb2.MonitorOutput;
+import org.apache.jena.fuseki.FusekiLogging;
 
-/**
- * This interface is the mechanism for building indexes given that at leasts one index
- * already exists (the "primary", which normally is SPO or GSPO).
- */
-public interface BuilderSecondaryIndexes
+public class DevFuseki
 {
-    public void createSecondaryIndexes(MonitorOutput output, TupleIndex primaryIndex, TupleIndex[] secondaryIndexes) ;
+    static { FusekiLogging.setLogging(); }
+    
+    public static void main(String ... a) {
+        org.apache.jena.fuseki.cmds.FusekiBasicCmd.main("--conf", "config-tdb2.ttl");
+    }
 }

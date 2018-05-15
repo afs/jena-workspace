@@ -28,7 +28,6 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import tdb2.MonitorOutput;
-import tdb2.loader.BulkLoader;
 import tdb2.loader.BulkLoaderException;
 import tdb2.loader.base.LoaderBase;
 import tdb2.loader.base.LoaderOps;
@@ -43,7 +42,7 @@ public class LoaderSequential extends LoaderBase {
     
     private final LoaderNodeTupleTable triplesLoader;
     private final LoaderNodeTupleTable quadsLoader;
-    private final MonitorOutput outputToLog = BulkLoader.outputToLog();
+    private final MonitorOutput outputToLog = LoaderOps.outputToLog();
     private final DatasetGraphTDB dsgtdb;
     
     private long countQuads;
@@ -56,8 +55,8 @@ public class LoaderSequential extends LoaderBase {
             throw new BulkLoaderException("Not a TDB2 database");
 
         this.dsgtdb = TDBInternal.getDatasetGraphTDB(dsg);
-        this.triplesLoader = new LoaderNodeTupleTable(dsgtdb.getTripleTable().getNodeTupleTable(), "Triples");
-        this.quadsLoader = new LoaderNodeTupleTable(dsgtdb.getQuadTable().getNodeTupleTable(), "Quads");
+        this.triplesLoader = new LoaderNodeTupleTable(dsgtdb.getTripleTable().getNodeTupleTable(), output, "Triples");
+        this.quadsLoader = new LoaderNodeTupleTable(dsgtdb.getQuadTable().getNodeTupleTable(), output, "Quads");
     }
     
     @Override
