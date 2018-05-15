@@ -34,10 +34,6 @@ import org.apache.thrift.protocol.TProtocol;
 /** Read the node binary data file and print its contents */
 public class tdbdumpnodes {
 
-    // [0x 1C1E78F3] 
-    // last    1BFEA0FD
-    //         1E7718F5
-    // File length: 511,121,653 [0x        1E7718F5]
     public static void main(String[] args) throws TException {
         //String FN = "/home/afs/disk1/xTDB2/skosmos-demo-broken/Data-0001/nodes-data.obj"; 
         String FN = "DB2/Data-0001/nodes-data.obj";

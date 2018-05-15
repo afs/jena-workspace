@@ -23,13 +23,6 @@ import java.util.Objects;
 
 import jena.cmd.ArgDecl;
 import jena.cmd.CmdException;
-import loader.Loader;
-import loader.MonitorOutput;
-import loader.TimerX;
-import loader.base.LoaderOps;
-import loader.parallel_v1.LoaderParallel_v1;
-import loader.sequential.LoaderSequential;
-import loader.simple.LoaderSimple;
 import org.apache.jena.atlas.lib.InternalErrorException;
 import org.apache.jena.atlas.lib.Lib;
 import org.apache.jena.graph.Node;
@@ -41,6 +34,14 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.system.Txn;
 import tdb2.cmdline.CmdTDB;
 import tdb2.cmdline.CmdTDBGraph;
+import tdb2.loader.Loader;
+import tdb2.loader.MonitorOutput;
+import tdb2.loader.TimerX;
+import tdb2.loader.base.LoaderOps;
+import tdb2.loader.parallel.LoaderParallel;
+import tdb2.loader.parallel_v1.LoaderParallel_v1;
+import tdb2.loader.sequential.LoaderSequential;
+import tdb2.loader.simple.LoaderSimple;
 
 // Replaces tdb2.tdbloader.
 
@@ -51,7 +52,7 @@ public class load extends CmdTDBGraph {
     
     private static final MonitorOutput output = LoaderOps.outputToLog();
 
-    enum LoaderEnum { Simple, Sequential, Parallel }
+    enum LoaderEnum { Simple, Sequential, Parallel, Parallel1/* XXX - remove - old parallel loader*/ }
     
     private boolean showProgress = true;
     private boolean generateStats = true;
@@ -79,6 +80,8 @@ public class load extends CmdTDBGraph {
                 loader = LoaderEnum.Simple;
             else if ( loadername.matches("seq.*") )
                 loader = LoaderEnum.Sequential;
+            else if ( loadername.matches("para.*1") )
+                loader = LoaderEnum.Parallel1;
             else if ( loadername.matches("para.*") )
                 loader = LoaderEnum.Parallel;
             else
@@ -168,6 +171,8 @@ public class load extends CmdTDBGraph {
         
         switch(useLoader) {
             case Parallel :
+                return new LoaderParallel(dsg, gn, output, showProgress);
+            case Parallel1 :
                 return new LoaderParallel_v1(dsg, gn, output, showProgress);
             case Sequential :
                 return new LoaderSequential(dsg, gn, output, showProgress);

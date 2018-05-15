@@ -32,11 +32,13 @@ import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import org.apache.jena.tdb2.store.tupletable.TupleIndexRecord;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import tdb2.cmdline.CmdTDB;
-import loader.MonitorOutput;
-import loader.ProgressMonitor;
-import loader.ProgressMonitorOutput;
-import loader.base.LoaderOps;
+import tdb2.loader.MonitorOutput;
+import tdb2.loader.ProgressMonitor;
+import tdb2.loader.ProgressMonitorOutput;
+import tdb2.loader.base.LoaderOps;
 
+/** Copy and index to another, new index.
+ */
 public class idxcp extends CmdTDB {
     public static final int DataTickPoint   = 100_000;
     public static final int DataSuperTick   = 10;
