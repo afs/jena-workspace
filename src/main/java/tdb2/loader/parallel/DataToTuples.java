@@ -44,12 +44,13 @@ import tdb2.loader.BulkLoaderException;
 import tdb2.loader.MonitorOutput;
 import tdb2.loader.base.LoaderOps;
 
-/** Batch: Triples to Tuples */ 
+/** Batch prcoessing: Triples or Quads to Tuples */ 
 public class DataToTuples {//implements DataInput {
     private long countTriples;
     private long countQuads;
 
-    private final Destination<Tuple<NodeId>> dest;
+    private final Destination<Tuple<NodeId>> dest3;
+    private final Destination<Tuple<NodeId>> dest4;
     private final DatasetGraphTDB dsgtdb;
     private final NodeTable nodeTable;
     private final DatasetPrefixStorage prefixes;
@@ -58,11 +59,12 @@ public class DataToTuples {//implements DataInput {
     private List<Tuple<NodeId>> quads = null;
     private List<Tuple<NodeId>> triples = null;
     private final MonitorOutput output;
-    private BlockingQueue<List<Triple>> input;
+    private BlockingQueue<DataBlock> input;
 
-    public DataToTuples(DatasetGraphTDB dsgtdb, Destination<Tuple<NodeId>> function, MonitorOutput output) {
+    public DataToTuples(DatasetGraphTDB dsgtdb, Destination<Tuple<NodeId>> tuples3, Destination<Tuple<NodeId>> tuples4, MonitorOutput output) {
         this.dsgtdb = dsgtdb;
-        this.dest = function;
+        this.dest3 = tuples3;
+        this.dest4 = tuples4;
         this.input = new ArrayBlockingQueue<>(LoaderConst.QueueSizeData);
         this.nodeTable = dsgtdb.getQuadTable().getNodeTupleTable().getNodeTable();
         this.prefixes = dsgtdb.getPrefixes();
@@ -76,25 +78,44 @@ public class DataToTuples {//implements DataInput {
     private TransactionCoordinator coordinator;
     private Transaction transaction; 
     
-    // Function to deliver triples.
-    public Destination<Triple> data() {
-        return this::index; 
+    private static final DataBlock END_CHUNK = new DataBlock(null, null);
+    
+    public Destination<Triple> dataTriples() {
+        return this::indexTriples; 
     }
     
-    private void index(List<Triple> chunk) {
+    public Destination<Quad> dataQuads() {
+        return this::indexQuads; 
+    }
+
+    private void indexTriples(List<Triple> chunk) {
         try {
-            input.put(chunk);
+            DataBlock dataBlock = 
+                ( chunk == null ) ? LoaderConst.END_DATA : new DataBlock(chunk, null);
+            input.put(dataBlock);
         }
         catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
     
+    private void indexQuads(List<Quad> chunk) {
+        try {
+            DataBlock dataBlock = 
+                ( chunk == null ) ? LoaderConst.END_DATA : new DataBlock(null, chunk);
+            input.put(dataBlock);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     //@Override
     public void start() {
         new Thread(()->action()).start();
     }
      
+    // Triples.
     private void action() {
         // Dummy transaction coordinator because TDB2 is transactional only.
         Journal journal = Journal.create(Location.mem());
@@ -113,17 +134,29 @@ public class DataToTuples {//implements DataInput {
 
         try {
             for (;;) {
-                List<Triple> data = input.take();
-                if ( data.isEmpty() )
+                
+                DataBlock data = input.take();
+                if ( data.isEnd() )
                     break;
-                List<Tuple<NodeId>> chunk = new ArrayList<>(LoaderConst.ChunkSize);
-                for ( Triple t : data ) {
-                    countTriples++;
-                    accTuples(t, nodeTable, chunk);
+                if ( data.triples != null ) {
+                    List<Tuple<NodeId>> tuples = new ArrayList<>(data.triples.size());
+                    for ( Triple t : data.triples ) {
+                        countTriples++;
+                        accTuples(t, nodeTable, tuples);
+                    }
+                    dispatchTuples3(tuples);
                 }
-                dispatch(chunk);
+                if ( data.quads != null ) {
+                    List<Tuple<NodeId>> tuples = new ArrayList<>(data.quads.size());
+                    for ( Quad q : data.quads ) {
+                        countQuads++;
+                        accTuples(q, nodeTable, tuples);
+                    }
+                    dispatchTuples4(tuples);
+                }
             }
-            dispatch(LoaderConst.END_TUPLES);
+            dispatchTuples3(LoaderConst.END_TUPLES);
+            dispatchTuples4(LoaderConst.END_TUPLES);
             transaction.commit();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -139,10 +172,14 @@ public class DataToTuples {//implements DataInput {
     //@Override
     public long getCountQuads()     { return countQuads; }
 
-    private void dispatch(List<Tuple<NodeId>> chunk) {
-        dest.deliver(chunk);
+    private void dispatchTuples3(List<Tuple<NodeId>> chunk) {
+        dest3.deliver(chunk);
     }
     
+    private void dispatchTuples4(List<Tuple<NodeId>> chunk) {
+        dest4.deliver(chunk);
+    }
+
     private static void accTuples(Triple triple, NodeTable nodeTable, List<Tuple<NodeId>> acc) {
         acc.add(nodes(nodeTable, triple));
     }

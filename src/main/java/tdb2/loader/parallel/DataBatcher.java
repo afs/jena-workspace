@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.Quad;
@@ -45,7 +44,7 @@ public class DataBatcher implements StreamRDF, BulkStreamRDF {
                        Destination<Quad> pipeQuads,
                        MonitorOutput output,
                        BiConsumer<String, String> prefixHandler) {
-        this(pipeTriples, pipeQuads, LoaderConst.DataTickPoint, LoaderConst.DataSuperTick, output, prefixHandler);
+        this(pipeTriples, pipeQuads, LoaderParallel.DataTickPoint, LoaderParallel.DataSuperTick, output, prefixHandler);
     }
     
     public DataBatcher(Destination<Triple> pipeTriples,
@@ -64,11 +63,21 @@ public class DataBatcher implements StreamRDF, BulkStreamRDF {
 
     @Override
     public void finishBulk() {
-        if ( triples != null && ! triples.isEmpty() ) {
+        if ( ! isEmpty(triples) ) {
             dispatchTriples(triples);
             triples = null;
         }
-        dispatchTriples(LoaderConst.END_TRIPLES);
+        if ( ! isEmpty(quads) ) {
+            dispatchQuads(quads);
+            quads = null;
+        }
+        
+        dispatchTriples(null);
+        dispatchQuads(null);
+    }
+    
+    private <X> boolean isEmpty(List<X> list) {
+        return list == null || list.isEmpty() ;
     }
     
     @Override
@@ -116,13 +125,7 @@ public class DataBatcher implements StreamRDF, BulkStreamRDF {
     }
 
     private void dispatchQuads(List<Quad> quads) {
-        throw new NotImplementedException("Quads");
-//        try {
-//            pipeQuads.put(quads);
-//        }
-//        catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        destQuads.deliver(quads);
     }
 
     @Override

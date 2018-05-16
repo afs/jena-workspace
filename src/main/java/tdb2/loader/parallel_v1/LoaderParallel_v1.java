@@ -27,6 +27,8 @@ import tdb2.loader.MonitorOutput;
 import tdb2.loader.base.LoaderBase;
 import tdb2.loader.base.LoaderOps;
 
+// TEMPORARY - kept for timing experiments.
+
 /** Bulk loader stream, parallel */ 
 public class LoaderParallel_v1 extends LoaderBase {
     public static final int DataTickPoint   = 100_000;
@@ -38,16 +40,16 @@ public class LoaderParallel_v1 extends LoaderBase {
     private final StreamRDF stream;
     private BulkStreamLoader_v1 bulkLoader;
     
-    public LoaderParallel_v1(DatasetGraph dsg, Node graphName, MonitorOutput output, boolean showProgress) {
+    public LoaderParallel_v1(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         // XXX Calls createDest :-(
-        super(dsg, graphName, output, showProgress);
+        super(dsg, graphName, output);
         dsgtdb = TDBInternal.getDatasetGraphTDB(dsg);
         this.bulkLoader = new BulkStreamLoader_v1(dsg, output);
         this.stream = LoaderOps.toNamedGraph(bulkLoader, graphName);  
     }
     
     @Override
-    protected StreamRDF getStream() {
+    public StreamRDF stream() {
         return stream;
     }
     
@@ -88,7 +90,7 @@ public class LoaderParallel_v1 extends LoaderBase {
     }
 
     @Override
-    protected void loadOne(StreamRDF dest, String filename) {
-        LoaderOps.inputFile(dest, filename, output, showProgress, DataTickPoint, DataSuperTick);
+    protected void loadOne(String filename) {
+        LoaderOps.inputFile(stream, filename, output, DataTickPoint, DataSuperTick);
     }
 }

@@ -19,10 +19,26 @@
 package tdb2.loader.dev;
 
 public class DevNotesLoader {
-    // Stream chunker : functions, not queues?
-    // Index building monitoring : combined (i.e. min), what about sequential use.  
-    // Temp coordinator .create(... parts ...) [add,start]
+    // quads
+    // triples + quads.
     
+    // Triples - concurrent - limits on size? log every 1 million? Log on driver size.
+    // Quads - phase loading
+    
+    // parallel 1:
+    // parallel 1:
+    
+    // API : Loader, LoaderFactory
+    
+    // Phase 1 : data (2 threads), primary1, primary2 (2 threads, likely 1 inactive)
+    // Phase 2 : 2 indexes : POS, SPO
+    // Phase 3 : GPOS, GOSP 
+    // Phase 4 : SPOG, POSG, OSPG 
+    
+    // excessive indexing?
+    // Break up!
+
+    // Temp coordinator .create(... parts ...) [add,start]
     // Temp coordinator shutdown -> do not call TransactionalComponentLifecycle.shutdown
     
     /*
@@ -33,8 +49,21 @@ public class DevNotesLoader {
     
     INFO  Data: /home/afs/Datasets/BSBM/bsbm-100m.nt.gz: 100,000,748 bsbm-100m.nt.gz 553.71s (Avg: 180,601)
     INFO  Time = 579.233 seconds : Triples = 100,000,748 : Rate = 172,643 /s
+    
+    5m: parallel:   149,481 TPS
+    5m: sequential:  60,851 TPS
+    5m: simple:      61,318 TPS
+    
+    25m: parallel:  169,223 TPS
+    25m: sequential: 67,338 TPS
+    25m: simple:     61,529 TPS
+
+    TDB1
+    INFO  ** Data: 5,000,599 triples loaded in 53.55 seconds [Rate: 93,383.61 per second]
+    ** Completed: 5,000,599 triples loaded in 75.55 seconds [Rate: 66,188.39 per second]
     */
 
+    
     // Exception handling in bulkload.
     // Remove "showprogress flag. Use ProgressMonitorBasic
 }

@@ -23,14 +23,14 @@ import java.util.List;
 import org.apache.jena.atlas.lib.Timer;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.TxnType;
-import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
 import tdb2.loader.Loader;
 import tdb2.loader.MonitorOutput;
 
 /** Simple bulk loader framework.
+ * <p>
  * It puts a write-transaction around the whole process if {@link #bulkUseTransaction}
- * returns true and then calls abstract {@link #loadOne(StreamRDF, String)}
+ * returns true and then calls abstract {@link #loadOne(String)}
  * for each file.
  * <p>
  * If a graph name is provided, it converts triples to quads in that named graph.  
@@ -39,15 +39,13 @@ public abstract class LoaderBase implements Loader {
 
     protected final DatasetGraph dsg;
     protected final Node graphName;
-    protected final boolean showProgress;
     private Timer timer;
     protected final MonitorOutput output;
     
-    protected LoaderBase(DatasetGraph dsg, Node graphName, MonitorOutput output, boolean showProgress) {
+    protected LoaderBase(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         this.dsg = dsg;
         this.graphName = graphName;
         this.output = output;
-        this.showProgress = showProgress;
     }
     
     @Override
@@ -82,26 +80,22 @@ public abstract class LoaderBase implements Loader {
 
     @Override
     public void load(List<String> filenames) {
-        StreamRDF dest = getStream();
-        
+        // Default implementation.
         try {
-            filenames.forEach(fn->loadOne(dest, fn));
+            filenames.forEach(fn->loadOne(fn));
         } catch (Exception ex) {
             finishException();
             throw ex;
         }
     }
 
-    protected abstract StreamRDF getStream();
-
     /** Subclasses must provide a setting. */ 
-    @Override
-    public abstract boolean bulkUseTransaction();
+    protected abstract boolean bulkUseTransaction();
 
-    protected abstract void loadOne(StreamRDF dest, String filename);
+    protected abstract void loadOne(String filename);
     
     protected void outputTime(long totalElapsed) {
-        if ( showProgress ) {
+        if ( output != null ) {
             long count = countTriples()+countQuads(); 
             String label = "Triples/Quads";
             if ( countTriples() == 0 && countQuads() > 0 )

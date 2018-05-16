@@ -39,10 +39,14 @@ import org.apache.jena.tdb2.store.DatasetPrefixesTDB;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetable.NodeTable;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
-import tdb2.loader.*;
+import tdb2.loader.BulkLoaderException;
+import tdb2.loader.BulkStreamRDF;
+import tdb2.loader.MonitorOutput;
+import tdb2.loader.ProgressMonitorOutput;
 import tdb2.loader.base.LoaderOps;
 import tdb2.loader.parallel.Destination;
 import tdb2.loader.parallel.LoaderConst;
+import tdb2.loader.parallel.LoaderParallel;
 
 /** Triple to chunks of Tuples. 
  *  Single threaded version
@@ -71,7 +75,7 @@ public class DataInput implements StreamRDF, BulkStreamRDF {
         this.prefixes = dsgtdb.getPrefixes();
         this.output = output;
         
-        this.progress = new ProgressMonitorOutput("Data", LoaderConst.DataTickPoint, LoaderConst.DataSuperTick, output);
+        this.progress = new ProgressMonitorOutput("Data", LoaderParallel.DataTickPoint, LoaderParallel.DataSuperTick, output);
         
         NodeTable nodeTable2 = dsgtdb.getTripleTable().getNodeTupleTable().getNodeTable();
         if ( nodeTable != nodeTable2 )

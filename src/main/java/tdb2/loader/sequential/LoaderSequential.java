@@ -42,15 +42,14 @@ public class LoaderSequential extends LoaderBase {
     
     private final LoaderNodeTupleTable triplesLoader;
     private final LoaderNodeTupleTable quadsLoader;
-    private final MonitorOutput outputToLog = LoaderOps.outputToLog();
     private final DatasetGraphTDB dsgtdb;
     
     private long countQuads;
     private long countTriples;
     private StreamRDF stream;
     
-    public LoaderSequential(DatasetGraph dsg, Node graphName, MonitorOutput output, boolean showProgress) {
-        super(dsg, graphName, output, showProgress);
+    public LoaderSequential(DatasetGraph dsg, Node graphName, MonitorOutput output) {
+        super(dsg, graphName, output);
         
         if ( ! TDBInternal.isBackedByTDB(dsg) )
             throw new BulkLoaderException("Not a TDB2 database");
@@ -99,13 +98,13 @@ public class LoaderSequential extends LoaderBase {
     }
 
     @Override
-    protected StreamRDF getStream() {
+    public StreamRDF stream() {
         return stream;
     }
 
     @Override
-    protected void loadOne(StreamRDF dest, String filename) {
-        LoaderOps.inputFile(dest, filename, outputToLog, showProgress, DataTickPoint, DataSuperTick);
+    protected void loadOne(String filename) {
+        LoaderOps.inputFile(stream, filename, output, DataTickPoint, DataSuperTick);
     }
 
     @Override

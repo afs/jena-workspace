@@ -35,13 +35,11 @@ import org.apache.jena.system.Txn;
 import tdb2.cmdline.CmdTDB;
 import tdb2.cmdline.CmdTDBGraph;
 import tdb2.loader.Loader;
+import tdb2.loader.LoaderFactory;
 import tdb2.loader.MonitorOutput;
 import tdb2.loader.TimerX;
 import tdb2.loader.base.LoaderOps;
-import tdb2.loader.parallel.LoaderParallel;
 import tdb2.loader.parallel_v1.LoaderParallel_v1;
-import tdb2.loader.sequential.LoaderSequential;
-import tdb2.loader.simple.LoaderSimple;
 
 // Replaces tdb2.tdbloader.
 
@@ -171,13 +169,13 @@ public class load extends CmdTDBGraph {
         
         switch(useLoader) {
             case Parallel :
-                return new LoaderParallel(dsg, gn, output, showProgress);
+                return LoaderFactory.parallelLoader(dsg, gn, output);
             case Parallel1 :
-                return new LoaderParallel_v1(dsg, gn, output, showProgress);
+                return new LoaderParallel_v1(dsg, gn, output);
             case Sequential :
-                return new LoaderSequential(dsg, gn, output, showProgress);
+                return LoaderFactory.sequentialLoader(dsg, gn, output);
             case Simple :
-                return new LoaderSimple(dsg, gn, output, showProgress);
+                return LoaderFactory.simpleLoader(dsg, gn, output);
             default :
                 throw new InternalErrorException("Unrecognized loader: "+useLoader);
         }

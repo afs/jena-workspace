@@ -25,6 +25,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.sys.TDBInternal;
@@ -44,15 +45,15 @@ public class LoaderParallel extends LoaderBase implements Loader {
     private StreamRDF stream;
     private DataBatcher dataBatcher;
     private DataToTuples dtt;
-    private Indexer indexer;
+    private Indexer indexer3;
+    private Indexer indexer4;
     
-    public LoaderParallel(DatasetGraph dsg, MonitorOutput output, boolean showProgress) {
-        this(dsg, null, output, showProgress);
+    public LoaderParallel(DatasetGraph dsg, MonitorOutput output) {
+        this(dsg, null, output);
     }
     
-    public LoaderParallel(DatasetGraph dsg, Node graphName, MonitorOutput output, boolean showProgress) {
-        // XXX Calls createDest :-(
-        super(dsg, graphName, output, showProgress);
+    public LoaderParallel(DatasetGraph dsg, Node graphName, MonitorOutput output) {
+        super(dsg, graphName, output);
         dsgtdb = TDBInternal.getDatasetGraphTDB(dsg);
         
         BiConsumer<String, String> prefixHandler = (prefix, uristr) -> {
@@ -61,18 +62,22 @@ public class LoaderParallel extends LoaderBase implements Loader {
         };
         
         // Contains a splitter of Tuples -> Tuples per index.
-        indexer = new Indexer(output, dsgtdb.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes());
-        Destination<Tuple<NodeId>> functionIndexer = indexer.index();
+        indexer3 = new Indexer(output, dsgtdb.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes());
+        indexer4 = new Indexer(output, dsgtdb.getQuadTable().getNodeTupleTable().getTupleTable().getIndexes());
         
-        dtt = new DataToTuples(dsgtdb, functionIndexer, output);
-        Destination<Triple> dest = dtt.data();
+        Destination<Tuple<NodeId>> functionIndexer3 = indexer3.index();
+        Destination<Tuple<NodeId>> functionIndexer4 = indexer4.index();
+        
+        dtt = new DataToTuples(dsgtdb, functionIndexer3, functionIndexer4, output);
+        Destination<Triple> dest3 = dtt.dataTriples();
+        Destination<Quad> dest4 = dtt.dataQuads();
 
-        dataBatcher = new DataBatcher(dest, null, output, prefixHandler);
+        dataBatcher = new DataBatcher(dest3, dest4, output, prefixHandler);
         stream = LoaderOps.toNamedGraph(dataBatcher, graphName);
     }
     
     @Override
-    protected StreamRDF getStream() {
+    public StreamRDF stream() {
         return stream;
     }
     
@@ -92,7 +97,8 @@ public class LoaderParallel extends LoaderBase implements Loader {
     public void startBulk() {
         // Lock everyone else out while we multithread.
         dsgtdb.getTxnSystem().getTxnMgr().startExclusiveMode();
-        indexer.start();
+        indexer3.start();
+        indexer4.start();
         dtt.start();
         dataBatcher.startBulk();
         super.startBulk();
@@ -102,7 +108,8 @@ public class LoaderParallel extends LoaderBase implements Loader {
     public void finishBulk() {
         dataBatcher.finishBulk();
         //dtt.finish();
-        indexer.waitFinish();
+        indexer4.waitFinish();
+        indexer3.waitFinish();
         super.finishBulk();
         dsgtdb.getTxnSystem().getTxnMgr().finishExclusiveMode();
     }
@@ -123,7 +130,7 @@ public class LoaderParallel extends LoaderBase implements Loader {
     }
 
     @Override
-    protected void loadOne(StreamRDF dest, String filename) {
-        LoaderOps.inputFile(dest, filename, output, showProgress, DataTickPoint, DataSuperTick);
+    protected void loadOne(String filename) {
+        LoaderOps.inputFile(stream, filename, output, DataTickPoint, DataSuperTick);
     }
 }

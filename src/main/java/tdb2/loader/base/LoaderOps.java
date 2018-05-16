@@ -48,8 +48,6 @@ import tdb2.loader.ProgressMonitor;
 import tdb2.loader.ProgressMonitorOutput;
 
 public class LoaderOps {
-    private static Logger LOG = TDB2.logLoader;
-    
     public static TransBinaryDataFile ntDataFile(NodeTable nt) {
         NodeTableTRDF ntt = (NodeTableTRDF)(nt.baseNodeTable());
         BinaryDataFile bdf = ntt.getData();
@@ -70,23 +68,50 @@ public class LoaderOps {
         return bpt;
     }
 
-    /** Output to the loader logger. */ 
-    public static MonitorOutput outputToLog() {
-        return outputToLog(LOG);
+    // API?
+    private static ProgressMonitor progressMonitor(String label, MonitorOutput output, int dataTickPoint, int dataSuperTick) {
+        if ( output == null )
+            return null;
+        ProgressMonitor monitor = ProgressMonitorOutput.create(output, label, dataTickPoint, dataSuperTick);
+        return monitor;
     }
     
-    /** Parse one file, with an optional progress monitor */ 
-    public static void inputFile(StreamRDF dest, String source, MonitorOutput output, boolean showProgress, int DataTickPoint, int DataSuperTick) {
-        StreamRDF sink = dest;
+    /** Wrap an existing {@link StreamRDF} to add output of progress messages. */
+    // API?
+    private static StreamRDF streamWithProgressMonitor(StreamRDF dest, String label, MonitorOutput output, int dataTickPoint, int dataSuperTick) {
+        ProgressMonitor monitor = ProgressMonitorOutput.create(output, label, dataTickPoint, dataSuperTick);
+        return new ProgressStreamRDF(dest, monitor); 
+    }
+    
+
+    /** Calculate a label for a progress montior. */  
+    // API?
+    private static String label(String fileName) {
+        String basename = FileOps.splitDirFile(fileName).get(1);  
+        return basename;
+    }
+    
+    /**
+     * Parse one file, with an optional progress output.
+     */
+    public static void inputFile(StreamRDF dest, String source, MonitorOutput output, int dataTickPoint, int dataSuperTick) {
+        Objects.requireNonNull(dest);
         ProgressMonitor monitor = null;
-        if ( showProgress ) { 
-            String basename = FileOps.splitDirFile(source).get(1);
-            monitor = ProgressMonitorOutput.create(LOG, basename, DataTickPoint, DataSuperTick); 
-            sink = new ProgressStreamRDF(sink, monitor);
-        }
-        if ( monitor!= null )
-            monitor.start();
+        if ( output != null )
+            monitor = progressMonitor(label(source), output, dataTickPoint, dataSuperTick);
+        inputFile(dest, source, monitor);
+    }
         
+    /** 
+     * Parse one file, with an optional progress monitor.
+     * Pass null to {@code monitor} for "no output". 
+     */
+    public static void inputFile(StreamRDF sink, String source, ProgressMonitor monitor) {
+        
+        if ( monitor != null ) {
+            sink = new ProgressStreamRDF(sink, monitor); 
+            monitor.start();
+        }
         sink.start();
         RDFDataMgr.parse(sink, source);
         sink.finish();
@@ -96,6 +121,20 @@ public class LoaderOps {
         }
     }
     
+    /** Copy a stream to several indexes (sequential version) */
+    public static void copyIndex(Iterator<Tuple<NodeId>> srcIter, TupleIndex[] destIndexes, ProgressMonitor monitor) {
+        long counter = 0;
+        for ( ; srcIter.hasNext() ; ) {
+            counter++;
+            Tuple<NodeId> tuple = srcIter.next();
+            monitor.tick();
+            for ( TupleIndex destIdx : destIndexes ) {
+                if ( destIdx != null )
+                    destIdx.add(tuple);
+            }
+        }
+    }
+
     /** 
      * Convert to quads: triples from the default graph of parsing become quads using the {@code graphName}. 
      * If {@code graphName} is null, return the {@code stream} argument.
@@ -113,6 +152,13 @@ public class LoaderOps {
             // Drop quads.
             @Override public void quad(Quad quad) {}
         };
+    }
+    
+    private static Logger LOG = TDB2.logLoader;
+    
+    /** Output to the loader logger. */ 
+    public static MonitorOutput outputToLog() {
+        return outputToLog(LOG);
     }
     
     /** Output to a logger. */ 
@@ -133,19 +179,5 @@ public class LoaderOps {
             else
                 output.println(String.format(fmt, args));
         };
-    }
-
-    /** Copy a stream to several indexes (sequential version) */
-    public static void copyIndex(Iterator<Tuple<NodeId>> srcIter, TupleIndex[] destIndexes, ProgressMonitor monitor) {
-        long counter = 0;
-        for ( ; srcIter.hasNext() ; ) {
-            counter++;
-            Tuple<NodeId> tuple = srcIter.next();
-            monitor.tick();
-            for ( TupleIndex destIdx : destIndexes ) {
-                if ( destIdx != null )
-                    destIdx.add(tuple);
-            }
-        }
     }
 }

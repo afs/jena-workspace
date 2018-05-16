@@ -30,40 +30,40 @@ import tdb2.loader.base.LoaderOps;
 
 /** Simple bulk loader. Algorithm: Parser to dataset. */ 
 public class LoaderSimple extends LoaderBase {
-
     private static int DataTickPoint = 100_000;
     private static int DataSuperTick = 10;
-    private StreamRDFCounting counting;
-    private StreamRDF dest;
+    // The destination for loading data.
+    private final StreamRDFCounting dest;
+    private final StreamRDF baseDest;
     
-    public LoaderSimple(DatasetGraph dsg, Node graphName, MonitorOutput output, boolean showProgress) {
-        super(dsg, graphName, output, showProgress);
-        dest = LoaderOps.toNamedGraph(StreamRDFLib.dataset(dsg), graphName);
+    public LoaderSimple(DatasetGraph dsg, Node graphName, MonitorOutput output) {
+        super(dsg, graphName, output);
+        baseDest = LoaderOps.toNamedGraph(StreamRDFLib.dataset(dsg), graphName);
+        dest = new StreamRDFCountingBase(StreamRDFLib.dataset(dsg));
     }
 
     @Override
-    public boolean bulkUseTransaction() {
+    protected boolean bulkUseTransaction() {
         return true;
     }
 
     @Override
-    protected StreamRDF getStream() {
-        return new StreamRDFCountingBase(dest);
+    public StreamRDF stream() {
+        return dest;
     }
 
     @Override
-    protected void loadOne(StreamRDF dest, String source) {
-        this.counting = new StreamRDFCountingBase(dest);
-        LoaderOps.inputFile(counting, source, output, showProgress, DataTickPoint, DataSuperTick);
+    protected void loadOne(String source) {
+        LoaderOps.inputFile(dest, source, output, DataTickPoint, DataSuperTick);
     }
 
     @Override
     public long countTriples() {
-        return counting.countTriples();
+        return dest.countTriples();
     }
 
     @Override
     public long countQuads() {
-        return counting.countQuads();
+        return dest.countQuads();
     }
 }

@@ -22,8 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.jena.atlas.lib.tuple.Tuple;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.tdb2.store.NodeId;
 
 public class LoaderConst {
@@ -36,17 +34,8 @@ public class LoaderConst {
 
     //public final static int pipeSize = 10;
     
-    // Sequential
-    public static final int DataTickPoint   = 100_000;
-    public static final int DataSuperTick   = 10;
-    public static final int IndexTickPoint  = 1_000_000;
-    public static final int IndexSuperTick  = 10;
-
-    // Parallel
-
-    /*package*/ static final List<Triple> END_TRIPLES        = Collections.emptyList();
-    /*package*/ static final List<Quad>   END_QUADS          = Collections.emptyList();
-    /*package*/ static final List<Tuple<NodeId>> END_TUPLES  = Collections.emptyList();
+    /* package */ static final DataBlock           END_DATA        = new DataBlock(null, null);
+    /* package */ static final List<Tuple<NodeId>> END_TUPLES      = Collections.emptyList();
 
     /*package*/ static final int QueueSizeData = 10;
 

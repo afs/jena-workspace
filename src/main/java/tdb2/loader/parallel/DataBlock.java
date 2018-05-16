@@ -16,38 +16,21 @@
  * limitations under the License.
  */
 
-package tdb2.loader;
+package tdb2.loader.parallel;
 
 import java.util.List;
 
-import org.apache.jena.riot.system.StreamRDF;
-import tdb2.loader.base.LoaderOps;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.sparql.core.Quad;
 
-/** Interface to bulk loading.
-* To use a loader,
- * <pre>
- *   loader.startBulk();
- *   send data ... either stream() or load(files) or a mixture.    
- *   loader.finishBulk();
- * </pre>
- */  
-public interface Loader {
-    public void startBulk();
-    public void finishBulk();
-    public void finishException();
-
-    /** Load fileswith synatx given by the file name extension,
-     * or URLs, with content negotiation.
-     * @param filenames
-     */
-    public void load(List<String> filenames);
-    
-    /** 
-     * 
-     * @see LoaderOps#progressMonitor
-     */
-    public StreamRDF stream();
-    
-    public long countTriples();
-    public long countQuads();
+class DataBlock {
+    List<Triple> triples = null;
+    List<Quad> quads = null;
+    DataBlock( List<Triple> triples, List<Quad> quads) {
+        this.triples = triples;
+        this.quads = quads;
+    }
+    boolean isEnd() {
+        return triples == null && quads == null;
+    }
 }
