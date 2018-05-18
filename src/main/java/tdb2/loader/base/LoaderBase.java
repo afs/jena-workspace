@@ -25,7 +25,6 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.query.TxnType;
 import org.apache.jena.sparql.core.DatasetGraph;
 import tdb2.loader.Loader;
-import tdb2.loader.MonitorOutput;
 
 /** Simple bulk loader framework.
  * <p>

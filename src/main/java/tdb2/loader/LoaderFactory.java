@@ -24,9 +24,10 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
+import tdb2.loader.base.MonitorOutput;
+import tdb2.loader.basic.LoaderBasic;
 import tdb2.loader.parallel.LoaderParallel;
 import tdb2.loader.sequential.LoaderSequential;
-import tdb2.loader.simple.LoaderSimple;
 
 /** Obtain a {@link Loader}.
  * <p>
@@ -46,9 +47,9 @@ public class LoaderFactory {
      * Supply a {@link MonitorOutput} for the desirabled progress and summary output messages
      * or {@code null} for no output. 
      */
-    public static Loader simpleLoader(DatasetGraph dsg, MonitorOutput output) {
+    public static Loader basicLoader(DatasetGraph dsg, MonitorOutput output) {
         Objects.requireNonNull(dsg);
-        return new LoaderSimple(dsg, null, output);
+        return new LoaderBasic(dsg, null, output);
     }
     
     /**
@@ -60,16 +61,16 @@ public class LoaderFactory {
      * data is read, default graph data is sent to the destination named graph but all
      * other quad data is discarded.
      * <p>
-     * For other behaviours, use {@link #simpleLoader(DatasetGraph, MonitorOutput)} 
+     * For other behaviours, use {@link #basicLoader(DatasetGraph, MonitorOutput)} 
      * and wrap the {@linkStreamRDF} from {@link Loader#stream()}) with the required
      * transformation.  
      * 
-     * @see #simpleLoader(DatasetGraph, MonitorOutput)
+     * @see #basicLoader(DatasetGraph, MonitorOutput)
      */
-    public static Loader simpleLoader(DatasetGraph dsg, Node graphName, MonitorOutput output) {
+    public static Loader basicLoader(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         Objects.requireNonNull(dsg);
         Objects.requireNonNull(graphName);
-        return new LoaderSimple(dsg, graphName, output);
+        return new LoaderBasic(dsg, graphName, output);
     }
 
     /** A loader that takes all the data into the primary indexes in one phase, then 
@@ -99,7 +100,7 @@ public class LoaderFactory {
      * data is read, default graph data is sent to the destination named graph but all
      * other quad data is discarded.
      * <p>
-     * For other behaviours, use {@link #simpleLoader(DatasetGraph, MonitorOutput)} 
+     * For other behaviours, use {@link #basicLoader(DatasetGraph, MonitorOutput)} 
      * and wrap the {@linkStreamRDF} from {@link Loader#stream()}) with the required
      * transformation.
      * 

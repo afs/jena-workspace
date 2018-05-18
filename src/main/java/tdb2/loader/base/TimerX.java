@@ -16,10 +16,16 @@
  * limitations under the License.
  */
 
-package tdb2.loader;
+package tdb2.loader.base;
 
-/** Output abstraction for the {@link ProgressMonitorOutput}. */ 
-@FunctionalInterface
-public interface MonitorOutput {
-    public void print(String fmt, Object... args);
+import org.apache.jena.atlas.lib.Timer;
+
+public class TimerX {
+    public static long time(Runnable action) {
+        Timer timer = new Timer();
+        timer.startTimer();
+        action.run();
+        long x = timer.endTimer();
+        return x;
+    }
 }

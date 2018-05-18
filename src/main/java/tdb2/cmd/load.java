@@ -36,9 +36,9 @@ import tdb2.cmdline.CmdTDB;
 import tdb2.cmdline.CmdTDBGraph;
 import tdb2.loader.Loader;
 import tdb2.loader.LoaderFactory;
-import tdb2.loader.MonitorOutput;
-import tdb2.loader.TimerX;
 import tdb2.loader.base.LoaderOps;
+import tdb2.loader.base.MonitorOutput;
+import tdb2.loader.base.TimerX;
 import tdb2.loader.parallel_v1.LoaderParallel_v1;
 
 // Replaces tdb2.tdbloader.
@@ -50,7 +50,7 @@ public class load extends CmdTDBGraph {
     
     private static final MonitorOutput output = LoaderOps.outputToLog();
 
-    enum LoaderEnum { Simple, Sequential, Parallel, Parallel1/* XXX - remove - old parallel loader*/ }
+    enum LoaderEnum { Basic, Parallel, Sequential/* historical */, Parallel1/* XXX - remove - old parallel loader*/ }
     
     private boolean showProgress = true;
     private boolean generateStats = true;
@@ -75,7 +75,7 @@ public class load extends CmdTDBGraph {
         if ( contains(argLoader) ) {
             String loadername = getValue(argLoader).toLowerCase();
             if ( loadername.matches("simple") )
-                loader = LoaderEnum.Simple;
+                loader = LoaderEnum.Basic;
             else if ( loadername.matches("seq.*") )
                 loader = LoaderEnum.Sequential;
             else if ( loadername.matches("para.*1") )
@@ -164,7 +164,7 @@ public class load extends CmdTDBGraph {
         LoaderEnum useLoader = loader; 
         if ( useLoader == null ) {
             boolean empty = Txn.calculateRead(dsg, ()->dsg.isEmpty());
-            useLoader = empty ? LoaderEnum.Sequential : LoaderEnum.Simple;
+            useLoader = empty ? LoaderEnum.Sequential : LoaderEnum.Basic;
         }
         
         switch(useLoader) {
@@ -174,8 +174,8 @@ public class load extends CmdTDBGraph {
                 return new LoaderParallel_v1(dsg, gn, output);
             case Sequential :
                 return LoaderFactory.sequentialLoader(dsg, gn, output);
-            case Simple :
-                return LoaderFactory.simpleLoader(dsg, gn, output);
+            case Basic :
+                return LoaderFactory.basicLoader(dsg, gn, output);
             default :
                 throw new InternalErrorException("Unrecognized loader: "+useLoader);
         }

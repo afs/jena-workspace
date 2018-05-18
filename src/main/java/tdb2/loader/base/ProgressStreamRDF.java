@@ -22,7 +22,6 @@ import org.apache.jena.graph.Triple ;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWrapper;
 import org.apache.jena.sparql.core.Quad ;
-import tdb2.loader.ProgressMonitor;
 
 /** Send ticks to a {@link ProgressMonitor} as triples and quads
  * are sent along the {@link StreamRDF}.

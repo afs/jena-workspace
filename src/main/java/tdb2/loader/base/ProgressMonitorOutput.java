@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2.loader;
+package tdb2.loader.base;
 
 import static org.apache.jena.atlas.lib.DateTimeUtils.nowAsString ;
 
@@ -24,7 +24,6 @@ import java.util.Objects;
 
 import org.apache.jena.atlas.lib.Timer;
 import org.slf4j.Logger ;
-import tdb2.loader.base.LoaderOps;
 
 /** Progress monitor - output lines to show the progress of some long running operation.
  * This is based on "ticks", not time.
@@ -46,7 +45,7 @@ public class ProgressMonitorOutput implements ProgressMonitor {
     /** ProgressMonitor that outputs to a {@link Logger} */ 
     public static ProgressMonitorOutput create(Logger log, String label, long tickPoint, int superTick) {
         Objects.requireNonNull(log);
-        return create(LoaderOps.outputToLog(log), label, tickPoint, superTick) ;
+        return create(ProgressMonitorFactory.outputToLog(log), label, tickPoint, superTick) ;
     }
     
     /** ProgressMonitor that outputs to on a {@link MonitorOutput} */ 

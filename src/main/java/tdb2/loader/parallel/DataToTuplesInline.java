@@ -16,11 +16,10 @@
  * limitations under the License.
  */
 
-package tdb2.loader.other;
+package tdb2.loader.parallel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.atlas.lib.tuple.TupleFactory;
@@ -39,45 +38,45 @@ import org.apache.jena.tdb2.store.DatasetPrefixesTDB;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetable.NodeTable;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
+import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import tdb2.loader.BulkLoaderException;
 import tdb2.loader.BulkStreamRDF;
-import tdb2.loader.MonitorOutput;
-import tdb2.loader.ProgressMonitorOutput;
 import tdb2.loader.base.LoaderOps;
-import tdb2.loader.parallel.Destination;
-import tdb2.loader.parallel.LoaderConst;
-import tdb2.loader.parallel.LoaderParallel;
+import tdb2.loader.base.MonitorOutput;
 
-/** Triple to chunks of Tuples. 
- *  Single threaded version
+/** Triple to chunks of Tuples.  
+ *  Same thread version.
+ *  This is a {@link StreamRDF}.
  *  Also loads prefixes.
  */ 
-public class DataInput implements StreamRDF, BulkStreamRDF {
-    private long countTriples;
-    private long countQuads;
-
-    private final Destination<Tuple<NodeId>> dest;
+public class DataToTuplesInline implements StreamRDF, BulkStreamRDF {
+    public static final int DataTickPoint   = 100_000;
+    public static final int DataSuperTick   = 10;
+    
+    private final Destination<Tuple<NodeId>> dest3;
+    private final Destination<Tuple<NodeId>> dest4;
     private final DatasetGraphTDB dsgtdb;
     private final NodeTable nodeTable;
     private final DatasetPrefixStorage prefixes;
 
+    private final MonitorOutput output;
     // Chunk accumulators.
+    private long countTriples = 0;
+    private long countQuads = 0;
     private List<Tuple<NodeId>> quads = null;
     private List<Tuple<NodeId>> triples = null;
-    private final MonitorOutput output;
-    private final ProgressMonitorOutput progress;
-
     // Prefix handler.
-    public DataInput(DatasetGraphTDB dsgtdb, Destination<Tuple<NodeId>> function, MonitorOutput output) {
+    public DataToTuplesInline(DatasetGraphTDB dsgtdb,
+                              Destination<Tuple<NodeId>> dest3,
+                              Destination<Tuple<NodeId>> dest4, 
+                              MonitorOutput output) {
         this.dsgtdb = dsgtdb;
-        this.dest = function;
-        this.nodeTable = dsgtdb.getQuadTable().getNodeTupleTable().getNodeTable();
-        this.prefixes = dsgtdb.getPrefixes();
+        this.dest3 = dest3;
+        this.dest4 = dest4;
         this.output = output;
-        
-        this.progress = new ProgressMonitorOutput("Data", LoaderParallel.DataTickPoint, LoaderParallel.DataSuperTick, output);
-        
-        NodeTable nodeTable2 = dsgtdb.getTripleTable().getNodeTupleTable().getNodeTable();
+        this.nodeTable = dsgtdb.getTripleTable().getNodeTupleTable().getNodeTable();
+        this.prefixes = dsgtdb.getPrefixes();
+        NodeTable nodeTable2 = dsgtdb.getQuadTable().getNodeTupleTable().getNodeTable();
         if ( nodeTable != nodeTable2 )
             throw new BulkLoaderException("Different node tables");
     }
@@ -93,30 +92,29 @@ public class DataInput implements StreamRDF, BulkStreamRDF {
         coordinator.add(LoaderOps.ntDataFile(nodeTable));
         coordinator.add(LoaderOps.ntBPTree(nodeTable));
         
-        // Clean up coordinator setup.
+        // Prefixes
         NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
         coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
         coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
-        // Only has one index.
-        coordinator.add(LoaderOps.idxBTree(p.getTupleTable().getIndex(0)));
+        for ( TupleIndex pIdx : p.getTupleTable().getIndexes() ) {
+            coordinator.add(LoaderOps.idxBTree(pIdx));
+        }
+        
         coordinator.start();
         transaction = coordinator.begin(TxnType.WRITE);
-        progress.startMessage();
-        progress.start();
     }
 
     @Override
     public void finishBulk() {
         if ( triples != null && ! triples.isEmpty() ) {
-            dispatch(triples);
+            dispatchTriples(triples);
             triples = null;
         }
-        dispatch(new ArrayList<>()/*LoaderConst.END_TUPLES*/);
+        dispatchTriples(LoaderConst.END_TUPLES);
         transaction.commit();
-        progress.finish();
-        progress.finishMessage("triples/quads");
-        //transaction.end();
-        //coordinator.shutdown();
+        transaction.end();
+        // No - closes TransactionalComponents, preventing use of the dataset.
+        // coordinator.shutdown();
     }
 
     @Override
@@ -131,18 +129,13 @@ public class DataInput implements StreamRDF, BulkStreamRDF {
     @Override
     public void triple(Triple triple) {
         countTriples++;
-        progress.tick();
         if ( triples == null )
             triples = allocChunkTriples();
         accTuples(triple, nodeTable, triples);
         if ( triples.size() >= LoaderConst.ChunkSize ) {
-            dispatch(triples);
+            dispatchTriples(triples);
             triples = null;
         }
-    }
-
-    private void dispatch(List<Tuple<NodeId>> chunk) {
-        dest.deliver(chunk);
     }
 
     @Override
@@ -152,9 +145,17 @@ public class DataInput implements StreamRDF, BulkStreamRDF {
             quads = allocChunkQuads();
         accTuples(quad, nodeTable, quads);
         if ( quads.size() >= LoaderConst.ChunkSize ) {
-            dispatch(quads);
+            dispatchQuads(quads);
             quads = null;
         }
+    }
+    
+    private void dispatchQuads(List<Tuple<NodeId>> chunk) {
+        dest4.deliver(chunk);
+    }
+
+    private void dispatchTriples(List<Tuple<NodeId>> chunk) {
+        dest3.deliver(chunk);
     }
     
     @Override
@@ -190,17 +191,7 @@ public class DataInput implements StreamRDF, BulkStreamRDF {
         return TupleFactory.tuple(s,p,o);
     }
     
-    private Function<List<Quad>, List<Tuple<NodeId>>> quadsToNodeIds(NodeTable nodeTable) {
-        return (List<Quad> quads) -> {
-            List<Tuple<NodeId>> x = new ArrayList<>(quads.size()); 
-            for(Quad quad: quads) {
-                x.add(nodes(nodeTable, quad));
-            }
-            return x;
-        };
-    }
-
-    private static Tuple<NodeId> nodes(NodeTable nt, Quad quad) {
+   private static Tuple<NodeId> nodes(NodeTable nt, Quad quad) {
         NodeId g = idForNode(nt, quad.getGraph());
         NodeId s = idForNode(nt, quad.getSubject());
         NodeId p = idForNode(nt, quad.getPredicate());

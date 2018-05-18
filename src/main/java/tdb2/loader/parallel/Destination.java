@@ -20,7 +20,8 @@ package tdb2.loader.parallel;
 
 import java.util.List;
 
+/** Unit of delivery to a processing stage. */
 @FunctionalInterface
 public interface Destination<X> {
-    public void deliver(List<X> block); 
+    void deliver(List<X> block); 
 }

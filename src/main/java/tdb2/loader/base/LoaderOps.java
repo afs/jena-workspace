@@ -18,13 +18,11 @@
 
 package tdb2.loader.base;
 
-import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Objects;
 
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.tuple.Tuple;
-import org.apache.jena.atlas.logging.FmtLog;
 import org.apache.jena.dboe.base.file.BinaryDataFile;
 import org.apache.jena.dboe.index.Index;
 import org.apache.jena.dboe.index.RangeIndex;
@@ -43,9 +41,6 @@ import org.apache.jena.tdb2.store.nodetable.NodeTableTRDF;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import org.apache.jena.tdb2.store.tupletable.TupleIndexRecord;
 import org.slf4j.Logger;
-import tdb2.loader.MonitorOutput;
-import tdb2.loader.ProgressMonitor;
-import tdb2.loader.ProgressMonitorOutput;
 
 public class LoaderOps {
     public static TransBinaryDataFile ntDataFile(NodeTable nt) {
@@ -68,14 +63,6 @@ public class LoaderOps {
         return bpt;
     }
 
-    // API?
-    private static ProgressMonitor progressMonitor(String label, MonitorOutput output, int dataTickPoint, int dataSuperTick) {
-        if ( output == null )
-            return null;
-        ProgressMonitor monitor = ProgressMonitorOutput.create(output, label, dataTickPoint, dataSuperTick);
-        return monitor;
-    }
-    
     /** Wrap an existing {@link StreamRDF} to add output of progress messages. */
     // API?
     private static StreamRDF streamWithProgressMonitor(StreamRDF dest, String label, MonitorOutput output, int dataTickPoint, int dataSuperTick) {
@@ -98,7 +85,7 @@ public class LoaderOps {
         Objects.requireNonNull(dest);
         ProgressMonitor monitor = null;
         if ( output != null )
-            monitor = progressMonitor(label(source), output, dataTickPoint, dataSuperTick);
+            monitor = ProgressMonitorFactory.progressMonitor(label(source), output, dataTickPoint, dataSuperTick);
         inputFile(dest, source, monitor);
     }
         
@@ -158,26 +145,6 @@ public class LoaderOps {
     
     /** Output to the loader logger. */ 
     public static MonitorOutput outputToLog() {
-        return outputToLog(LOG);
-    }
-    
-    /** Output to a logger. */ 
-    public static MonitorOutput outputToLog(Logger logger) {
-        Objects.requireNonNull(logger);
-        return (fmt, args) -> {
-            if ( logger.isInfoEnabled() )
-                FmtLog.info(LOG, fmt, args);
-        };
-    }
-    
-    /** Output to a PrintStream. */ 
-    public static MonitorOutput outputTo(PrintStream output) {
-        Objects.requireNonNull(output);
-        return (fmt, args) -> {
-            if ( fmt.endsWith("\n") || fmt.endsWith("\r") )
-                output.print(String.format(fmt, args));
-            else
-                output.println(String.format(fmt, args));
-        };
+        return ProgressMonitorFactory.outputToLog(LOG);
     }
 }

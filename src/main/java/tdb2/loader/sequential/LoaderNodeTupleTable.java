@@ -24,7 +24,7 @@ import org.apache.jena.atlas.lib.Sync;
 import org.apache.jena.graph.Node;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
-import tdb2.loader.MonitorOutput;
+import tdb2.loader.base.MonitorOutput;
 
 /** 
  * Load into one NodeTupleTable (triples, quads, other).

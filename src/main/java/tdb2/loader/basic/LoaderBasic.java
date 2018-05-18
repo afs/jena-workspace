@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2.loader.simple;
+package tdb2.loader.basic;
 
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.lang.StreamRDFCounting;
@@ -24,19 +24,19 @@ import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFCountingBase;
 import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.sparql.core.DatasetGraph;
-import tdb2.loader.MonitorOutput;
 import tdb2.loader.base.LoaderBase;
 import tdb2.loader.base.LoaderOps;
+import tdb2.loader.base.MonitorOutput;
 
 /** Simple bulk loader. Algorithm: Parser to dataset. */ 
-public class LoaderSimple extends LoaderBase {
+public class LoaderBasic extends LoaderBase {
     private static int DataTickPoint = 100_000;
     private static int DataSuperTick = 10;
     // The destination for loading data.
     private final StreamRDFCounting dest;
     private final StreamRDF baseDest;
     
-    public LoaderSimple(DatasetGraph dsg, Node graphName, MonitorOutput output) {
+    public LoaderBasic(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         super(dsg, graphName, output);
         baseDest = LoaderOps.toNamedGraph(StreamRDFLib.dataset(dsg), graphName);
         dest = new StreamRDFCountingBase(StreamRDFLib.dataset(dsg));

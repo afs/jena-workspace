@@ -32,10 +32,10 @@ import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import org.apache.jena.tdb2.store.tupletable.TupleIndexRecord;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import tdb2.cmdline.CmdTDB;
-import tdb2.loader.MonitorOutput;
-import tdb2.loader.ProgressMonitor;
-import tdb2.loader.ProgressMonitorOutput;
 import tdb2.loader.base.LoaderOps;
+import tdb2.loader.base.MonitorOutput;
+import tdb2.loader.base.ProgressMonitor;
+import tdb2.loader.base.ProgressMonitorOutput;
 
 /** Copy and index to another, new index.
  */

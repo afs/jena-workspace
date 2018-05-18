@@ -23,9 +23,9 @@ import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.sys.TDBInternal;
-import tdb2.loader.MonitorOutput;
 import tdb2.loader.base.LoaderBase;
 import tdb2.loader.base.LoaderOps;
+import tdb2.loader.base.MonitorOutput;
 
 // TEMPORARY - kept for timing experiments.
 

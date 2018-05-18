@@ -28,11 +28,11 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import tdb2.loader.BulkLoaderException;
-import tdb2.loader.MonitorOutput;
 import tdb2.loader.base.LoaderBase;
 import tdb2.loader.base.LoaderOps;
+import tdb2.loader.base.MonitorOutput;
 
-/** Simple bulk loader. Algorithm: Parser to dataset. */ 
+/** Bulk loader. Algorithm: Parser to primaryindexes, then build secondary indexes. */ 
 public class LoaderSequential extends LoaderBase {
     
     public static final int DataTickPoint   = 100_000;

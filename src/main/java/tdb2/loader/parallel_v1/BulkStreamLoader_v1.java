@@ -55,9 +55,9 @@ import org.apache.jena.tdb2.store.nodetable.NodeTableTRDF;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import org.apache.jena.tdb2.store.tupletable.TupleIndexRecord;
 import org.apache.jena.tdb2.sys.TDBInternal;
-import tdb2.loader.MonitorOutput;
-import tdb2.loader.ProgressMonitorOutput;
-import tdb2.loader.TimerX;
+import tdb2.loader.base.MonitorOutput;
+import tdb2.loader.base.ProgressMonitorOutput;
+import tdb2.loader.base.TimerX;
 
 /** Bulk loader stream, parallel */ 
 public class BulkStreamLoader_v1 implements StreamRDF, BulkStreamRDF {

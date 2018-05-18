@@ -20,10 +20,10 @@ package tdb2.loader.sequential;
 
 import org.apache.jena.atlas.lib.Timer ;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex ;
-import tdb2.loader.MonitorOutput;
-import tdb2.loader.ProgressMonitor;
-import tdb2.loader.ProgressMonitorOutput;
 import tdb2.loader.base.LoaderOps;
+import tdb2.loader.base.MonitorOutput;
+import tdb2.loader.base.ProgressMonitor;
+import tdb2.loader.base.ProgressMonitorOutput;
 
 public class BuilderSecondaryIndexesSequential implements BuilderSecondaryIndexes
 {

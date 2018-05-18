@@ -19,7 +19,7 @@
 package tdb2.loader.sequential;
 
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
-import tdb2.loader.MonitorOutput;
+import tdb2.loader.base.MonitorOutput;
 
 /**
  * This interface is the mechanism for building indexes given that at leasts one index

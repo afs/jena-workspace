@@ -30,10 +30,23 @@ import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import tdb2.loader.Loader;
-import tdb2.loader.MonitorOutput;
 import tdb2.loader.base.LoaderBase;
 import tdb2.loader.base.LoaderOps;
+import tdb2.loader.base.MonitorOutput;
 
+/**
+ * The parallel Loader.
+ * <p>
+ * The process is:
+ * <blockquote>
+ * {@code DataBatcher -> DataToTuples -> Indexer}
+ * <blockquote>
+ * {@link DataBatcher} produces {@link DataBlock}s - grouping of triples and quads. It uses 
+ * <br/>
+ * {@link DataToTuples} processes {@link DataBlock} to create 2 outputs blocks of {@code Tuple<NodeId>}, one output for triples, oue for quads.
+ * <br/>
+ * {@link Indexer} processes blocks of {@code Tuple<NodeId>} (of the same tuple length) and writes them to a number of indexes.
+ */
 public class LoaderParallel extends LoaderBase implements Loader {
     public static final int DataTickPoint   = 100_000;
     public static final int DataSuperTick   = 10;
@@ -61,6 +74,21 @@ public class LoaderParallel extends LoaderBase implements Loader {
             output.print("PREFIX %s: %s\n", prefix, uristr); 
         };
         
+        
+//      // Clean up coordinator setup.
+//      NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
+//      coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
+//      coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
+//      NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
+//      coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
+//      coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
+//      for ( TupleIndex pIdx : p.getTupleTable().getIndexes() ) {
+//          coordinator.add(LoaderOps.idxBTree(pIdx));
+//      }
+//        transaction = coordinator.begin(TxnType.WRITE);
+
+//         transaction.commit
+        
         // Contains a splitter of Tuples -> Tuples per index.
         indexer3 = new Indexer(output, dsgtdb.getTripleTable().getNodeTupleTable().getTupleTable().getIndexes());
         indexer4 = new Indexer(output, dsgtdb.getQuadTable().getNodeTupleTable().getTupleTable().getIndexes());
@@ -81,12 +109,6 @@ public class LoaderParallel extends LoaderBase implements Loader {
         return stream;
     }
     
-//    @Override
-//    protected StreamRDF createDest(DatasetGraph dsg, Node graphName, MonitorOutput output) {
-//        //this.bulkLoader = new BulkStreamLoader(dsg, output);
-//        return LoaderOps.toNamedGraph(this.getStream(), graphName);
-//    }
-//    
     @Override
     public boolean bulkUseTransaction() {
         // Manipulate the transactions directly by component. 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2.loader;
+package tdb2.loader.base;
 
 /** Interface {@code ProgressMonitor} - monitor progress.*/
 public interface ProgressMonitor {

@@ -21,31 +21,61 @@ package tdb2.loader;
 import java.util.List;
 
 import org.apache.jena.riot.system.StreamRDF;
-import tdb2.loader.base.LoaderOps;
 
-/** Interface to bulk loading.
-* To use a loader,
+/**
+ * Bulk loaders imporve the loading of data into datasets. Each bulk loader has
+ * consequences in achiving its improvements, including in some cases locking out
+ * all other access to the daatset while the loading is underway.
+ * <p> 
+ * To create a lareg datasest from 
+ * 
+ * 
+ * 
+ * 
+ * To use a loader,
+ * 
  * <pre>
  *   loader.startBulk();
  *   send data ... either stream() or load(files) or a mixture.    
  *   loader.finishBulk();
  * </pre>
- */  
+ * 
+ * Loaders
+ * 
+ * <h3>I/O and RAM.
+ * 
+ * <ul>
+ * <li>basic</li>
+ * <li>sequential</li>
+ * <li>parallel</li>
+ * </ul>
+ * 
+ * 
+ * <h3>To use a loader,
+ * 
+ * <pre>
+ *   loader.startBulk();
+ *   send data ... 
+ *        use stream()
+ *        or load(files)
+ *        or a mixture.    
+ *   loader.finishBulk();
+ * </pre>
+ * 
+ * Loading for parallel is not transaction-safe.
+ */
 public interface Loader {
     public void startBulk();
     public void finishBulk();
     public void finishException();
 
-    /** Load fileswith synatx given by the file name extension,
+    /** Load files with synatx given by the file name extension,
      * or URLs, with content negotiation.
      * @param filenames
      */
     public void load(List<String> filenames);
     
-    /** 
-     * 
-     * @see LoaderOps#progressMonitor
-     */
+    /** Send data to the loader by {@link StreamRDF} */
     public StreamRDF stream();
     
     public long countTriples();

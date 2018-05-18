@@ -34,7 +34,6 @@ public class LoaderConst {
 
     //public final static int pipeSize = 10;
     
-    /* package */ static final DataBlock           END_DATA        = new DataBlock(null, null);
     /* package */ static final List<Tuple<NodeId>> END_TUPLES      = Collections.emptyList();
 
     /*package*/ static final int QueueSizeData = 10;

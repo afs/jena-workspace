@@ -33,16 +33,19 @@ import org.apache.jena.dboe.transaction.txn.journal.Journal;
 import org.apache.jena.query.TxnType;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
-import tdb2.loader.MonitorOutput;
-import tdb2.loader.TimerX;
 import tdb2.loader.base.LoaderOps;
+import tdb2.loader.base.MonitorOutput;
+import tdb2.loader.base.TimerX;
 
 /**
  * Build index(es).
- * Provides a function {@link #index()} that should be called (any thread)
- * to deliver chunks of tuples ({@code  List<Tuple<NodeId>>}).  
+ * Provides a function {@link #index()} that should be called from another thread
+ * to deliver chunks of tuples ({@code  List<Tuple<NodeId>>}).
+ * Each chunk should be the same Tuyple length and this must correspond to the length of the {@link TupleIndex}s being loaded. 
+ * <p>
+ * This class creates one thread per {@link TupleIndex}.  
  */
-public class Indexer {
+class Indexer {
 
     private BlockingQueue<List<Tuple<NodeId>>>[] pipesTripleIndexers;
     private final int N;
@@ -69,7 +72,7 @@ public class Indexer {
         });
     }
     
-    // Function to multiplex.
+    /** Return a function that delivers multiple {@code List<Tuple<NodeId>>>} to this indexer */
     public Destination<Tuple<NodeId>> index() {
         return this::index; 
     }
@@ -94,7 +97,7 @@ public class Indexer {
         }
     }
     
-    /** Wait for all the inddexing threads to complete. */ 
+    /** Wait for all the indexing threads to complete. */ 
     public void waitFinish() {
         System.out.println("Wait for "+N+" indexers");
         acquire(termination, N);

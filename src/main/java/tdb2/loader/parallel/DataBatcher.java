@@ -26,9 +26,13 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.Quad;
 import tdb2.loader.BulkStreamRDF;
-import tdb2.loader.MonitorOutput;
+import tdb2.loader.base.MonitorOutput;
 
-/** A {@link StreamRDF} that groups triples and quads and dispatches them in batches. */   
+/**
+ * A {@link StreamRDF} that groups triples and quads and dispatches them in batches. This
+ * class is a {@link StreamRDF} and runs on the calling thread; it does not create any
+ * threads.
+ */   
 public class DataBatcher implements StreamRDF, BulkStreamRDF {
     
     private List<Triple> triples = null;
@@ -81,42 +85,62 @@ public class DataBatcher implements StreamRDF, BulkStreamRDF {
     }
     
     @Override
-    public void start() {}
+    public void start() { }
 
     @Override
-    public void finish() {}
+    public void finish() { }
 
     public long countTriples() { return countTriples; }
     public long countQuads() { return countQuads; }
     
-//    private static long acquire(Semaphore semaphore, int numPermits) {
-//        return TimerX.time(()->{
-//            try { semaphore.acquire(numPermits); }
-//            catch (InterruptedException e) { e.printStackTrace(); }
-//        });
-//    }
-    
-    @Override
-    public void quad(Quad quad) {
-        if ( quads == null )
-            quads = allocChunkQuads();
-        quads.add(quad);
-        countQuads++;
-        if ( quads.size() >= LoaderConst.ChunkSize ) {
-            dispatchQuads(quads);
-            quads = null;
-        }
-    }
-
     @Override
     public void triple(Triple triple) {
         if ( triples == null )
             triples = allocChunkTriples();
         triples.add(triple);
         countTriples++;
+        maybeDispatch3();
+    }
+
+    @Override
+    public void quad(Quad quad) {
+        if ( quads == null )
+            quads = allocChunkQuads();
+        quads.add(quad);
+        countQuads++;
+        maybeDispatch4();
+    }
+
+    // Single function output.
+//    private void maybeDispatch() {
+//        long x = 0;
+//        if ( triples != null )
+//            x += triples.size();
+//        if ( quads != null )
+//            x += quads.size();
+//        if ( x <= LoaderConst.ChunkSize )
+//            return ;
+//        if ( x <= LoaderConst.ChunkSize )
+//            return;
+//        
+//        DataBlock block = new DataBlock(triples, quads) ;
+//        // Dispatch.
+//        dispatch(block);
+//        triples = null;
+//        quads = null;
+//    }
+    
+    private void maybeDispatch3() {
         if ( triples.size() >= LoaderConst.ChunkSize ) {
             dispatchTriples(triples);
             triples = null;
+        }
+    }
+    
+    private void maybeDispatch4() {
+        if ( quads.size() >= LoaderConst.ChunkSize ) {
+            dispatchQuads(quads);
+            quads = null;
         }
     }
 
@@ -130,6 +154,17 @@ public class DataBatcher implements StreamRDF, BulkStreamRDF {
 
     @Override
     public void base(String base) {}
+
+//    // Clean up coordinator setup.
+//    NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
+//    coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
+//    coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
+//    NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
+//    coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
+//    coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
+//    for ( TupleIndex pIdx : p.getTupleTable().getIndexes() ) {
+//        coordinator.add(LoaderOps.idxBTree(pIdx));
+//    }
 
     @Override
     public void prefix(String prefix, String iri) {

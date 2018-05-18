@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package tdb2.loader;
+package tdb2.loader.base;
 
 import org.apache.jena.atlas.lib.Timer;
 
-/** Simple {@link ProgressMonitor} that record time and ticks but does not print anything */ 
+/** Simple {@link ProgressMonitor} that records time and ticks but does not print anything */ 
 public class ProgressMonitorBasic implements ProgressMonitor {
 
     private Timer timer = new Timer(); 

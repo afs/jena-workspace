@@ -41,11 +41,20 @@ import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetable.NodeTable;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
 import tdb2.loader.BulkLoaderException;
-import tdb2.loader.MonitorOutput;
 import tdb2.loader.base.LoaderOps;
+import tdb2.loader.base.MonitorOutput;
 
-/** Batch prcoessing: Triples or Quads to Tuples */ 
-public class DataToTuples {//implements DataInput {
+/** Batch processing of {@link DataBlock}s (triples or Quads) converting them to two output of
+ * to blocks of {@code Tuple<NodeId>}.
+ * <p>
+ * This class runs one task thread.
+ * <p>
+ * Data is deliver into the process by calling the provided functions for {@code Destination<Tuple<NodeId>}.
+ * <p>
+ * Assumes triples and quads share a node table.
+ */ 
+ 
+public class DataToTuples {
     private long countTriples;
     private long countQuads;
 
@@ -91,7 +100,7 @@ public class DataToTuples {//implements DataInput {
     private void indexTriples(List<Triple> chunk) {
         try {
             DataBlock dataBlock = 
-                ( chunk == null ) ? LoaderConst.END_DATA : new DataBlock(chunk, null);
+                ( chunk == null ) ? DataBlock.END : new DataBlock(chunk, null);
             input.put(dataBlock);
         }
         catch (InterruptedException e) {
@@ -102,7 +111,7 @@ public class DataToTuples {//implements DataInput {
     private void indexQuads(List<Quad> chunk) {
         try {
             DataBlock dataBlock = 
-                ( chunk == null ) ? LoaderConst.END_DATA : new DataBlock(null, chunk);
+                ( chunk == null ) ? DataBlock.END : new DataBlock(null, chunk);
             input.put(dataBlock);
         }
         catch (InterruptedException e) {
@@ -110,11 +119,12 @@ public class DataToTuples {//implements DataInput {
         }
     }
 
-    //@Override
     public void start() {
         new Thread(()->action()).start();
     }
      
+//    public void finish() { }
+
     // Triples.
     private void action() {
         // Dummy transaction coordinator because TDB2 is transactional only.
@@ -136,7 +146,7 @@ public class DataToTuples {//implements DataInput {
             for (;;) {
                 
                 DataBlock data = input.take();
-                if ( data.isEnd() )
+                if ( data == DataBlock.END )
                     break;
                 if ( data.triples != null ) {
                     List<Tuple<NodeId>> tuples = new ArrayList<>(data.triples.size());

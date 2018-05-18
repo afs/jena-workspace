@@ -16,16 +16,10 @@
  * limitations under the License.
  */
 
-package tdb2.loader;
+package tdb2.loader.base;
 
-import org.apache.jena.atlas.lib.Timer;
-
-public class TimerX {
-    public static long time(Runnable action) {
-        Timer timer = new Timer();
-        timer.startTimer();
-        action.run();
-        long x = timer.endTimer();
-        return x;
-    }
+/** Output abstraction for the {@link ProgressMonitor}. */ 
+@FunctionalInterface
+public interface MonitorOutput {
+    public void print(String fmt, Object... args);
 }
