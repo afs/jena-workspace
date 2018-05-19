@@ -21,6 +21,27 @@ package tdb2.loader.dev;
 public class DevNotesLoader {
     // JENA-1550.
     
+    // Other Loader -> package and "ClsLoader"
+    
+    // LoaderParallel
+    
+  //----------------    
+//  // Clean up coordinator setup.
+//  NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
+//  coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
+//  coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
+//  NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
+//  coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
+//  coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
+//  for ( TupleIndex pIdx : p.getTupleTable().getIndexes() ) {
+//      coordinator.add(LoaderOps.idxBTree(pIdx));
+//  }
+//    transaction = coordinator.begin(TxnType.WRITE);
+
+//     transaction.commit
+//----------------    
+
+    
     // quads
     // triples + quads.
     

@@ -61,13 +61,9 @@ public abstract class LoaderBase implements Loader {
             dsg.commit();
             dsg.end();
         }
-        // Better in the loader if not transactional.
-//        else
-//            SystemARQ.sync(dsg);
         long totalElapsed = timer.endTimer();
         outputTime(totalElapsed);
     }
-
 
     @Override
     public void finishException() {

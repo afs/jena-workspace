@@ -30,6 +30,7 @@ import org.apache.jena.dboe.transaction.txn.journal.Journal;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.TxnType;
+import org.apache.jena.riot.lang.StreamRDFCounting;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetPrefixStorage;
 import org.apache.jena.sparql.core.Quad;
@@ -40,7 +41,6 @@ import org.apache.jena.tdb2.store.nodetable.NodeTable;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import tdb2.loader.BulkLoaderException;
-import tdb2.loader.BulkStreamRDF;
 import tdb2.loader.base.LoaderOps;
 import tdb2.loader.base.MonitorOutput;
 
@@ -49,7 +49,7 @@ import tdb2.loader.base.MonitorOutput;
  *  This is a {@link StreamRDF}.
  *  Also loads prefixes.
  */ 
-public class DataToTuplesInline implements StreamRDF, BulkStreamRDF {
+public class DataToTuplesInline implements StreamRDFCounting, BulkStartFinish {
     public static final int DataTickPoint   = 100_000;
     public static final int DataSuperTick   = 10;
     
@@ -117,14 +117,15 @@ public class DataToTuplesInline implements StreamRDF, BulkStreamRDF {
         // coordinator.shutdown();
     }
 
-    @Override
-    public void start() {}
+    @Override public void start() {}
 
-    @Override
-    public void finish() {}
+    @Override public void finish() {}
 
-    public long getCountTriples()   { return countTriples; }
-    public long getCountQuads()     { return countQuads; }
+    @Override public long count()           { return countTriples() + countQuads(); }
+
+    @Override public long countTriples()    { return countTriples; }
+
+    @Override public long countQuads()      { return countQuads; }
 
     @Override
     public void triple(Triple triple) {

@@ -54,7 +54,7 @@ import tdb2.loader.base.MonitorOutput;
  * Assumes triples and quads share a node table.
  */ 
  
-public class DataToTuples {
+public class DataToTuples implements BulkStartFinish {
     private long countTriples;
     private long countQuads;
 
@@ -119,11 +119,13 @@ public class DataToTuples {
         }
     }
 
-    public void start() {
+    @Override
+    public void startBulk() {
         new Thread(()->action()).start();
     }
      
-//    public void finish() { }
+    @Override
+    public void finishBulk() { }
 
     // Triples.
     private void action() {

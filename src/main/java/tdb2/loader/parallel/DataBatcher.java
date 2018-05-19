@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 import org.apache.jena.graph.Triple;
+import org.apache.jena.riot.lang.StreamRDFCounting;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.Quad;
-import tdb2.loader.BulkStreamRDF;
 import tdb2.loader.base.MonitorOutput;
 
 /**
@@ -33,7 +33,7 @@ import tdb2.loader.base.MonitorOutput;
  * class is a {@link StreamRDF} and runs on the calling thread; it does not create any
  * threads.
  */   
-public class DataBatcher implements StreamRDF, BulkStreamRDF {
+public class DataBatcher implements StreamRDFCounting, BulkStartFinish {
     
     private List<Triple> triples = null;
     private List<Quad> quads = null;
@@ -84,14 +84,15 @@ public class DataBatcher implements StreamRDF, BulkStreamRDF {
         return list == null || list.isEmpty() ;
     }
     
-    @Override
-    public void start() { }
+    @Override public void start() {}
 
-    @Override
-    public void finish() { }
+    @Override public void finish() {}
 
-    public long countTriples() { return countTriples; }
-    public long countQuads() { return countQuads; }
+    @Override public long count()           { return countTriples() + countQuads(); }
+
+    @Override public long countTriples()    { return countTriples; }
+
+    @Override public long countQuads()      { return countQuads; }
     
     @Override
     public void triple(Triple triple) {

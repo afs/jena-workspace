@@ -45,7 +45,7 @@ import tdb2.loader.base.TimerX;
  * <p>
  * This class creates one thread per {@link TupleIndex}.  
  */
-class Indexer {
+class Indexer implements BulkStartFinish {
 
     private BlockingQueue<List<Tuple<NodeId>>>[] pipesTripleIndexers;
     private final int N;
@@ -89,7 +89,8 @@ class Indexer {
     }
 
     /** Start the threads that will do the indexing */ 
-    public void start() {
+    @Override
+    public void startBulk() {
         for ( int i = 0 ; i < N ; i++ ) {
             TupleIndex idx = indexes[i];
             BlockingQueue<List<Tuple<NodeId>>> pipe = pipesTripleIndexers[i];
@@ -98,8 +99,9 @@ class Indexer {
     }
     
     /** Wait for all the indexing threads to complete. */ 
-    public void waitFinish() {
-        System.out.println("Wait for "+N+" indexers");
+    @Override
+    public void finishBulk() {
+        //output.print("Wait for %d indexers", N);
         acquire(termination, N);
     }
     

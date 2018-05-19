@@ -18,6 +18,7 @@
 
 package tdb2.loader;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.jena.riot.system.StreamRDF;
@@ -69,11 +70,18 @@ public interface Loader {
     public void finishBulk();
     public void finishException();
 
-    /** Load files with synatx given by the file name extension,
+    /** Load files with syntax given by the file name extension,
      * or URLs, with content negotiation.
      * @param filenames
      */
     public void load(List<String> filenames);
+    
+    /** Load files with syntax given by the file name extension,
+     * or URLs, with content negotiation.
+     * @param filenames
+     */
+    default public void load(String ... filenames) { load(Arrays.asList(filenames)); }
+
     
     /** Send data to the loader by {@link StreamRDF} */
     public StreamRDF stream();

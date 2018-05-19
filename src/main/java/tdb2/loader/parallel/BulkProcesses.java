@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,11 +16,20 @@
  * limitations under the License.
  */
 
-package tdb2.loader;
+package tdb2.loader.parallel;
 
-public interface BulkStreamRDF
-{
-    public void startBulk() ;
-    public void finishBulk() ;
-    //public void finishBulkException(Exception ex) ;
+import java.util.List;
+
+import org.apache.jena.ext.com.google.common.collect.Lists;
+
+public class BulkProcesses {
+    
+    public static void start(List<BulkStartFinish> list) {
+        list.forEach(x->x.startBulk());
+    }
+    
+    public static void finish(List<BulkStartFinish> list) {
+        Lists.reverse(list).forEach(x->x.finishBulk());
+    }
+
 }
