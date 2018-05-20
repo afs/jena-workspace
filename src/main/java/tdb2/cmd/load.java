@@ -30,14 +30,13 @@ import org.apache.jena.query.ARQ;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.tdb2.loader.DataLoader;
+import org.apache.jena.tdb2.loader.LoaderFactory;
+import org.apache.jena.tdb2.loader.base.LoaderOps;
+import org.apache.jena.tdb2.loader.base.MonitorOutput;
+import org.apache.jena.tdb2.loader.base.TimerX;
 import tdb2.cmdline.CmdTDB;
 import tdb2.cmdline.CmdTDBGraph;
-import tdb2.loader.DataLoader;
-import tdb2.loader.LoaderFactory;
-import tdb2.loader.base.LoaderOps;
-import tdb2.loader.base.MonitorOutput;
-import tdb2.loader.base.TimerX;
-import tdb2.loader.parallel_v1.LoaderParallel_v1;
 
 // Replaces tdb2.tdbloader.
 
@@ -46,7 +45,7 @@ public class load extends CmdTDBGraph {
     private static final ArgDecl argStats = new ArgDecl(ArgDecl.HasValue,  "stats");
     private static final ArgDecl argLoader = new ArgDecl(ArgDecl.HasValue, "loader");
     
-    enum LoaderEnum { Basic, Parallel, Sequential/* historical */, Parallel1/* XXX - remove - old parallel loader*/ }
+    enum LoaderEnum { Basic, Parallel, Sequential/* historical */ }
     
     private boolean showProgress = true;
     private boolean generateStats = true;
@@ -74,8 +73,6 @@ public class load extends CmdTDBGraph {
                 loader = LoaderEnum.Basic;
             else if ( loadername.matches("seq.*") )
                 loader = LoaderEnum.Sequential;
-            else if ( loadername.matches("para[^:]*1") )
-                loader = LoaderEnum.Parallel1;
             else if ( loadername.matches("para.*") )
                 loader = LoaderEnum.Parallel;
             else
@@ -169,8 +166,6 @@ public class load extends CmdTDBGraph {
         switch(useLoader) {
             case Parallel :
                 return LoaderFactory.parallelLoader(dsg, gn, output);
-            case Parallel1 :
-                return new LoaderParallel_v1(dsg, gn, output);
             case Sequential :
                 return LoaderFactory.sequentialLoader(dsg, gn, output);
             case Basic :

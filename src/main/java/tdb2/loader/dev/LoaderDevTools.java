@@ -43,13 +43,13 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.util.QueryExecUtils;
 import org.apache.jena.system.Txn;
+import org.apache.jena.tdb2.loader.DataLoader;
+import org.apache.jena.tdb2.loader.base.*;
+import org.apache.jena.tdb2.loader.parallel.*;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.sys.IOX;
 import org.apache.jena.tdb2.sys.TDBInternal;
-import tdb2.loader.DataLoader;
-import tdb2.loader.base.*;
-import tdb2.loader.parallel.*;
 
 /** Code in support of TDB2 loader development */
 public class LoaderDevTools {

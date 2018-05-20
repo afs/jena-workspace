@@ -26,16 +26,16 @@ import org.apache.jena.atlas.lib.tuple.TupleMap;
 import org.apache.jena.dboe.base.record.RecordFactory;
 import org.apache.jena.dboe.index.RangeIndex;
 import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.tdb2.loader.base.LoaderOps;
+import org.apache.jena.tdb2.loader.base.MonitorOutput;
+import org.apache.jena.tdb2.loader.base.ProgressMonitor;
+import org.apache.jena.tdb2.loader.base.ProgressMonitorOutput;
 import org.apache.jena.tdb2.setup.TDBBuilder;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import org.apache.jena.tdb2.store.tupletable.TupleIndexRecord;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import tdb2.cmdline.CmdTDB;
-import tdb2.loader.base.LoaderOps;
-import tdb2.loader.base.MonitorOutput;
-import tdb2.loader.base.ProgressMonitor;
-import tdb2.loader.base.ProgressMonitorOutput;
 
 /** Copy and index to another, new index.
  */

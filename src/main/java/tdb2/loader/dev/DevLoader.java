@@ -27,7 +27,7 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.system.Txn;
 import org.apache.jena.tdb2.DatabaseMgr;
-import tdb2.loader.LoaderFactory;
+import org.apache.jena.tdb2.loader.LoaderFactory;
 
 /** code in support of TDB2 loader development */
 public class DevLoader {

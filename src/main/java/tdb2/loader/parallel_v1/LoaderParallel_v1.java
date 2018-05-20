@@ -21,11 +21,11 @@ package tdb2.loader.parallel_v1;
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.tdb2.loader.base.LoaderBase;
+import org.apache.jena.tdb2.loader.base.LoaderOps;
+import org.apache.jena.tdb2.loader.base.MonitorOutput;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.sys.TDBInternal;
-import tdb2.loader.base.LoaderBase;
-import tdb2.loader.base.LoaderOps;
-import tdb2.loader.base.MonitorOutput;
 
 // TEMPORARY - kept for timing experiments.
 

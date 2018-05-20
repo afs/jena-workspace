@@ -47,6 +47,9 @@ import org.apache.jena.query.TxnType;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.tdb2.loader.base.MonitorOutput;
+import org.apache.jena.tdb2.loader.base.ProgressMonitorOutput;
+import org.apache.jena.tdb2.loader.base.TimerX;
 import org.apache.jena.tdb2.setup.StoreParams;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.store.NodeId;
@@ -55,9 +58,6 @@ import org.apache.jena.tdb2.store.nodetable.NodeTableTRDF;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import org.apache.jena.tdb2.store.tupletable.TupleIndexRecord;
 import org.apache.jena.tdb2.sys.TDBInternal;
-import tdb2.loader.base.MonitorOutput;
-import tdb2.loader.base.ProgressMonitorOutput;
-import tdb2.loader.base.TimerX;
 
 /** Bulk loader stream, parallel */ 
 public class BulkStreamLoader_v1 implements StreamRDF, BulkStreamRDF {
