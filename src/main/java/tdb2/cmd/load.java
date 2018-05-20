@@ -24,6 +24,7 @@ import java.util.Objects;
 import jena.cmd.ArgDecl;
 import jena.cmd.CmdException;
 import org.apache.jena.atlas.lib.InternalErrorException;
+import org.apache.jena.atlas.lib.Timer;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ARQ;
@@ -34,7 +35,6 @@ import org.apache.jena.tdb2.loader.DataLoader;
 import org.apache.jena.tdb2.loader.LoaderFactory;
 import org.apache.jena.tdb2.loader.base.LoaderOps;
 import org.apache.jena.tdb2.loader.base.MonitorOutput;
-import org.apache.jena.tdb2.loader.base.TimerX;
 import tdb2.cmdline.CmdTDB;
 import tdb2.cmdline.CmdTDBGraph;
 
@@ -136,7 +136,7 @@ public class load extends CmdTDBGraph {
     
     private long execBulkLoad(DatasetGraph dsg, String graphName, List<String> urls, boolean showProgress) {
         DataLoader loader = chooseLoader(dsg, graphName);
-        long elapsed = TimerX.time(()->{
+        long elapsed = Timer.time(()->{
                     loader.startBulk();
                     loader.load(urls);
                     loader.finishBulk();

@@ -108,7 +108,7 @@ public class LoaderDevTools {
     }
     
     public static void inputExecute(String taskName, List<BulkStartFinish> processes, StreamRDFCounting stream, Semaphore sema, List<String> data) {
-        long time = TimerX.time(()->{
+        long time = Timer.time(()->{
             BulkProcesses.start(processes);
             data.forEach(fn-> {
                 ProgressMonitor monitor = ProgressMonitorOutput.create(output, "data", 100_000, 10);
@@ -142,7 +142,7 @@ public class LoaderDevTools {
         // << The core of "tdb2.load" 
         DataLoader loader = creator.create();
         output.print("Loader = "+Lib.className(loader));
-        long time = TimerX.time(()->{
+        long time = Timer.time(()->{
           loader.startBulk();
           loader.load(data);
           loader.finishBulk();
@@ -158,7 +158,7 @@ public class LoaderDevTools {
     }
     
     public static void query(String string, DatasetGraph dsg) {
-        long x = TimerX.time(()->{
+        long x = Timer.time(()->{
             Dataset ds = DatasetFactory.wrap(dsg);
             try ( QueryExecution qExec = QueryExecutionFactory.create(string, ds) ) {
                 QueryExecUtils.executeQuery(qExec);

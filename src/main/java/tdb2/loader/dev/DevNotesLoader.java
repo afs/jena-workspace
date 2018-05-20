@@ -25,8 +25,8 @@ public class DevNotesLoader {
     //     destination is an acceptor of DataBlocks.
     // + Documentation page
 
-    // Parallel and phased.
-    // Dataloader specialised to one graph.
+    // + Parallel and phased.
+    // + DataLoader specialised to one graph.
     
     // Phase 1 : data (2 threads), primary1, primary2 (2 threads, likely 1 inactive)
     // Phase 2 : 2 indexes : POS, SPO

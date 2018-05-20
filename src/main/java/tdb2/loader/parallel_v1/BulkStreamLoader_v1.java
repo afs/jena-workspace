@@ -49,7 +49,6 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.tdb2.loader.base.MonitorOutput;
 import org.apache.jena.tdb2.loader.base.ProgressMonitorOutput;
-import org.apache.jena.tdb2.loader.base.TimerX;
 import org.apache.jena.tdb2.setup.StoreParams;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.store.NodeId;
@@ -295,7 +294,7 @@ public class BulkStreamLoader_v1 implements StreamRDF, BulkStreamRDF {
     }
 
     private static long acquire(Semaphore semaphore, int numPermits) {
-        return TimerX.time(()->{
+        return Timer.time(()->{
             try { semaphore.acquire(numPermits); }
             catch (InterruptedException e) { e.printStackTrace(); }
         });
