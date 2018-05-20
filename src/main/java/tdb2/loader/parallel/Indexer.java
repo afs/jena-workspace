@@ -26,14 +26,11 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.jena.atlas.lib.ArrayUtils;
 import org.apache.jena.atlas.lib.tuple.Tuple;
-import org.apache.jena.dboe.base.file.Location;
 import org.apache.jena.dboe.transaction.txn.Transaction;
 import org.apache.jena.dboe.transaction.txn.TransactionCoordinator;
-import org.apache.jena.dboe.transaction.txn.journal.Journal;
 import org.apache.jena.query.TxnType;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
-import tdb2.loader.base.LoaderOps;
 import tdb2.loader.base.MonitorOutput;
 import tdb2.loader.base.TimerX;
 
@@ -106,12 +103,11 @@ class Indexer implements BulkStartFinish {
     }
     
     private void stageIndex(BlockingQueue<List<Tuple<NodeId>>> pipe, TupleIndex idx) {
-        Journal journal = Journal.create(Location.mem());
-        
-        TransactionCoordinator coordinator = new TransactionCoordinator(journal);
-        coordinator.add(LoaderOps.idxBTree(idx));
-        coordinator.start();
+        TransactionCoordinator coordinator = CoLib.newCoordinator();
+        CoLib.add(coordinator, idx);
+        CoLib.start(coordinator);
         Transaction transaction = coordinator.begin(TxnType.WRITE);
+        boolean workHasBeenDone; 
         try {
             Destination<Tuple<NodeId>> loader = loadTuples(idx);
             for (;;) {
@@ -120,14 +116,16 @@ class Indexer implements BulkStartFinish {
                     break;
                 loader.deliver(tuples);
             }
+            workHasBeenDone = ! idx.isEmpty();
             transaction.commit();
         } catch (Exception ex) {
             ex.printStackTrace();
             transaction.abort();
+            workHasBeenDone = false;
         }
-        // Do not call - this would shutdown the TransactionCompoents for the temporary coordinator
-        //coordinator.shutdown();
-        output.print("Finish - index "+idx.getName());
+        CoLib.finish(coordinator);
+        if ( workHasBeenDone )
+            output.print("Finish - index %s", idx.getName());
         termination.release();
     }
     

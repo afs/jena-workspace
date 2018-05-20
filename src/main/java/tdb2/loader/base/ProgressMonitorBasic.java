@@ -27,6 +27,8 @@ public class ProgressMonitorBasic implements ProgressMonitor {
     private long timeInMillis = -1;  
     private long tickCounter = 0;
     
+    public ProgressMonitorBasic() {}
+    
     @Override
     public void startMessage() {}
 

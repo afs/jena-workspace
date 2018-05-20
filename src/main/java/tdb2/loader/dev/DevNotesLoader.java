@@ -20,73 +20,18 @@ package tdb2.loader.dev;
 
 public class DevNotesLoader {
     // JENA-1550.
-    
-    // Other Loader -> package and "ClsLoader"
-    
-    // LoaderParallel
-    
-  //----------------    
-//  // Clean up coordinator setup.
-//  NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
-//  coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
-//  coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
-//  NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
-//  coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
-//  coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
-//  for ( TupleIndex pIdx : p.getTupleTable().getIndexes() ) {
-//      coordinator.add(LoaderOps.idxBTree(pIdx));
-//  }
-//    transaction = coordinator.begin(TxnType.WRITE);
 
-//     transaction.commit
-//----------------    
-
-    
-    // quads
-    // triples + quads.
-    
-    // simple => basic
-    
-    // Rate of (1) DataInput (2) DataInputInline
-    // on their own.
-    
-    // + Sort out prefixes. Should be in DataBatcher, not DataToTuples.
-    // + Add inline converter to load cmd (default?)
-    // + Prefix setup / DataBatcher.
-    // + Tests
-    // + Time inline/parallel loader. 
     // + DataBatcher : Better DataBlock : triples and quads
     //     destination is an acceptor of DataBlocks.
-    // "N threads"
-    
-    // Sequential: one pass secondary 
-    
-    // Components 
-    // * Input stage
-    //     Parser, tuples converter separate (DataToTuples)
-    //     Parser, tuples converter combined (DataToTuplesInline)
-    //     Parser, tuples converter, primary index loaders combined (DataToTuplesInline+Indexer*2)
-    // * Tuple fan out == function.
-    // * Indexer : 
-    // * Multiphase indexing.
-    // * Time to wait for indexers.
-    
-    // + Cmd: Parallel setup.
     // + Documentation page
-    // API : Loader, LoaderFactory
-    
-    // Two thread input stage
-    
-    // Triples - concurrent - limits on size? log every 1 million? Log on driver size.
-    // Quads - phase loading
+
+    // Parallel and phased.
+    // Dataloader specialised to one graph.
     
     // Phase 1 : data (2 threads), primary1, primary2 (2 threads, likely 1 inactive)
     // Phase 2 : 2 indexes : POS, SPO
     // Phase 3 : GPOS, GOSP 
     // Phase 4 : SPOG, POSG, OSPG 
-    
-    // Temp coordinator .create(... parts ...) [add,start]
-    // Temp coordinator shutdown -> do not call TransactionalComponentLifecycle.shutdown
     
     /*
     // 2018-05-15:
@@ -140,8 +85,4 @@ public class DevNotesLoader {
     INFO  ** Data: 5,000,599 triples loaded in 53.55 seconds [Rate: 93,383.61 per second]
     ** Completed: 5,000,599 triples loaded in 75.55 seconds [Rate: 66,188.39 per second]
     */
-
-    
-    // Exception handling in bulkload.
-    // Remove "showprogress flag. Use ProgressMonitorBasic
 }

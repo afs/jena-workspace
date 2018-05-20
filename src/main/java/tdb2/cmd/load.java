@@ -24,17 +24,15 @@ import java.util.Objects;
 import jena.cmd.ArgDecl;
 import jena.cmd.CmdException;
 import org.apache.jena.atlas.lib.InternalErrorException;
-import org.apache.jena.atlas.lib.Lib;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.system.Txn;
 import tdb2.cmdline.CmdTDB;
 import tdb2.cmdline.CmdTDBGraph;
-import tdb2.loader.Loader;
+import tdb2.loader.DataLoader;
 import tdb2.loader.LoaderFactory;
 import tdb2.loader.base.LoaderOps;
 import tdb2.loader.base.MonitorOutput;
@@ -48,8 +46,6 @@ public class load extends CmdTDBGraph {
     private static final ArgDecl argStats = new ArgDecl(ArgDecl.HasValue,  "stats");
     private static final ArgDecl argLoader = new ArgDecl(ArgDecl.HasValue, "loader");
     
-    private static final MonitorOutput output = LoaderOps.outputToLog();
-
     enum LoaderEnum { Basic, Parallel, Sequential/* historical */, Parallel1/* XXX - remove - old parallel loader*/ }
     
     private boolean showProgress = true;
@@ -74,11 +70,11 @@ public class load extends CmdTDBGraph {
         
         if ( contains(argLoader) ) {
             String loadername = getValue(argLoader).toLowerCase();
-            if ( loadername.matches("simple") )
+            if ( loadername.matches("basic.*") )
                 loader = LoaderEnum.Basic;
             else if ( loadername.matches("seq.*") )
                 loader = LoaderEnum.Sequential;
-            else if ( loadername.matches("para.*1") )
+            else if ( loadername.matches("para[^:]*1") )
                 loader = LoaderEnum.Parallel1;
             else if ( loadername.matches("para.*") )
                 loader = LoaderEnum.Parallel;
@@ -142,31 +138,34 @@ public class load extends CmdTDBGraph {
     }
     
     private long execBulkLoad(DatasetGraph dsg, String graphName, List<String> urls, boolean showProgress) {
-        Loader loader = chooseLoader(dsg, graphName);
-        output.print("Loader = "+Lib.className(loader));
+        DataLoader loader = chooseLoader(dsg, graphName);
         long elapsed = TimerX.time(()->{
                     loader.startBulk();
                     loader.load(urls);
                     loader.finishBulk();
         });
-//        if ( ! super.isQuiet() )
-//            FmtLog.info(LOG, "Time: %s seconds\n", Timer.timeStr(elapsed)); 
         return elapsed;
     }
 
-    /** Choose the bulkloader. */ 
-    private Loader chooseLoader(DatasetGraph dsg, String graphName) {
+    /** Decide on the bulk loader. */ 
+    private DataLoader chooseLoader(DatasetGraph dsg, String graphName) {
         Objects.requireNonNull(dsg);
         Node gn = null;
         if ( graphName != null )
             gn = NodeFactory.createURI(graphName);
         
         LoaderEnum useLoader = loader; 
-        if ( useLoader == null ) {
-            boolean empty = Txn.calculateRead(dsg, ()->dsg.isEmpty());
-            useLoader = empty ? LoaderEnum.Sequential : LoaderEnum.Basic;
-        }
+        if ( useLoader == null )
+            useLoader = LoaderEnum.Parallel;
         
+        MonitorOutput output = isQuiet() ? LoaderOps.nullOutput() : LoaderOps.outputToLog();
+        DataLoader loader = createLoader(useLoader, dsg, gn, output);
+        if ( output != null )
+            output.print("Loader = %s", loader.getClass().getSimpleName());
+        return loader ;
+    }
+        
+    private DataLoader createLoader(LoaderEnum useLoader, DatasetGraph dsg, Node gn, MonitorOutput output) {
         switch(useLoader) {
             case Parallel :
                 return LoaderFactory.parallelLoader(dsg, gn, output);

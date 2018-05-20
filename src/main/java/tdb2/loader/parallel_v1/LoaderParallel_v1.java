@@ -75,7 +75,7 @@ public class LoaderParallel_v1 extends LoaderBase {
     }
     
     @Override
-    public void finishException() {
+    public void finishException(Exception ex) {
         dsgtdb.getTxnSystem().getTxnMgr().finishExclusiveMode();
     }
     

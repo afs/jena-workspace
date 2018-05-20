@@ -18,74 +18,63 @@
 
 package tdb2.loader;
 
-import java.util.Arrays;
+import static java.util.Arrays.asList;
+
 import java.util.List;
 
-import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.sparql.core.DatasetGraph;
+import tdb2.loader.base.LoaderOps;
+import tdb2.loader.base.MonitorOutput;
 
-/**
- * Bulk loaders imporve the loading of data into datasets. Each bulk loader has
- * consequences in achiving its improvements, including in some cases locking out
- * all other access to the daatset while the loading is underway.
- * <p> 
- * To create a lareg datasest from 
- * 
- * 
- * 
- * 
- * To use a loader,
- * 
- * <pre>
- *   loader.startBulk();
- *   send data ... either stream() or load(files) or a mixture.    
- *   loader.finishBulk();
- * </pre>
- * 
- * Loaders
- * 
- * <h3>I/O and RAM.
- * 
- * <ul>
- * <li>basic</li>
- * <li>sequential</li>
- * <li>parallel</li>
- * </ul>
- * 
- * 
- * <h3>To use a loader,
- * 
- * <pre>
- *   loader.startBulk();
- *   send data ... 
- *        use stream()
- *        or load(files)
- *        or a mixture.    
- *   loader.finishBulk();
- * </pre>
- * 
- * Loading for parallel is not transaction-safe.
+/** TDB2 loader operations.
+ *  These operations only work on TDB2 datasets.
+ *  
+ * @see LoaderFactory
+ * @see DataLoader
  */
-public interface Loader {
-    public void startBulk();
-    public void finishBulk();
-    public void finishException();
+public class Loader {
+    /** Load the contents of files or remote web data into a dataset. */
+    public static void load(DatasetGraph dataset, String...dataURLs) {
+        load(dataset, false, dataURLs);
+    }
 
-    /** Load files with syntax given by the file name extension,
-     * or URLs, with content negotiation.
-     * @param filenames
-     */
-    public void load(List<String> filenames);
-    
-    /** Load files with syntax given by the file name extension,
-     * or URLs, with content negotiation.
-     * @param filenames
-     */
-    default public void load(String ... filenames) { load(Arrays.asList(filenames)); }
+    /** Load the contents of files or remote web data into a dataset. */
+    public static void load(DatasetGraph dataset, boolean showProgress, String...dataURLs) {
+        load(dataset, asList(dataURLs), showProgress);
+    }
 
-    
-    /** Send data to the loader by {@link StreamRDF} */
-    public StreamRDF stream();
-    
-    public long countTriples();
-    public long countQuads();
+    /** Load the contents of files or remote web data into a dataset. */
+    public static void load(DatasetGraph dataset, List<String> dataURLs, boolean showProgress) {
+        DataLoader loader = create(dataset, showProgress);
+        loader.startBulk();
+        try {
+            loader.load(dataURLs);
+            loader.finishBulk();
+        }
+        catch (RuntimeException ex) {
+            loader.finishException(ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Create a {@link DataLoader}. {@code DataLoader}s provide a {@code StreamRDF}
+     * interface as well as an operation to load data from files or URLs.
+     * <p>
+     * To use the loader:
+     * 
+     * <pre>
+     *  loader.startBulk();
+     *    send data ... 
+     *        use stream()
+     *        or load(files)
+     *        or a mixture.    
+     *  loader.finishBulk();
+     * </pre>
+     */ 
+    public static DataLoader create(DatasetGraph dataset, boolean showProgress) {
+        MonitorOutput output = showProgress ? LoaderOps.outputToLog() : LoaderOps.nullOutput();
+        DataLoader loader = LoaderFactory.createLoader(dataset, output);
+        return loader;
+    }
 }

@@ -24,7 +24,7 @@ import org.apache.jena.atlas.lib.Timer;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.TxnType;
 import org.apache.jena.sparql.core.DatasetGraph;
-import tdb2.loader.Loader;
+import tdb2.loader.DataLoader;
 
 /** Simple bulk loader framework.
  * <p>
@@ -34,7 +34,7 @@ import tdb2.loader.Loader;
  * <p>
  * If a graph name is provided, it converts triples to quads in that named graph.  
  */ 
-public abstract class LoaderBase implements Loader {
+public abstract class LoaderBase implements DataLoader {
 
     protected final DatasetGraph dsg;
     protected final Node graphName;
@@ -66,7 +66,7 @@ public abstract class LoaderBase implements Loader {
     }
 
     @Override
-    public void finishException() {
+    public void finishException(Exception ex) {
         if ( bulkUseTransaction() ) {
             dsg.abort();
             dsg.end();
@@ -79,7 +79,7 @@ public abstract class LoaderBase implements Loader {
         try {
             filenames.forEach(fn->loadOne(fn));
         } catch (Exception ex) {
-            finishException();
+            finishException(ex);
             throw ex;
         }
     }
@@ -97,7 +97,6 @@ public abstract class LoaderBase implements Loader {
                 label = "Quads";
             if ( countTriples() > 0 && countQuads() == 0 )
                 label = "Triples";
-            
             double seconds = totalElapsed/1000.0;
             if ( seconds > 1 )
                 output.print("Time = %,.3f seconds : %s = %,d : Rate = %,.0f /s", seconds, label, count, count/seconds);  

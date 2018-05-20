@@ -45,7 +45,7 @@ public class ProgressMonitorOutput implements ProgressMonitor {
     /** ProgressMonitor that outputs to a {@link Logger} */ 
     public static ProgressMonitorOutput create(Logger log, String label, long tickPoint, int superTick) {
         Objects.requireNonNull(log);
-        return create(ProgressMonitorFactory.outputToLog(log), label, tickPoint, superTick) ;
+        return create(LoaderOps.outputToLog(log), label, tickPoint, superTick) ;
     }
     
     /** ProgressMonitor that outputs to on a {@link MonitorOutput} */ 

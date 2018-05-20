@@ -18,144 +18,228 @@
 
 package tdb2.loader.dev ;
 
-import java.io.InputStream ;
-import java.util.List ;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import org.apache.jena.atlas.io.IO ;
-import org.apache.jena.atlas.iterator.Iter ;
-import org.apache.jena.atlas.junit.BaseTest ;
-import org.apache.jena.atlas.logging.LogCtl ;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+
+import org.apache.jena.atlas.iterator.Iter;
+import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.NodeFactory ;
-import org.apache.jena.graph.Triple ;
-import org.apache.jena.query.ARQ ;
-import org.apache.jena.sparql.core.Quad ;
-import org.apache.jena.tdb2.store.DatasetGraphTDB;
-import org.junit.AfterClass ;
-import org.junit.BeforeClass ;
-import org.junit.Test ;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.query.ARQ;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.util.IsoMatcher;
+import org.apache.jena.sys.JenaSystem;
+import org.apache.jena.system.Txn;
+import org.apache.jena.tdb2.DatabaseMgr;
+import org.apache.jena.tdb2.TDB2;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import tdb2.loader.DataLoader;
+import tdb2.loader.LoaderFactory;
+import tdb2.loader.base.LoaderOps;
+import tdb2.loader.base.MonitorOutput;
 
-public class TestLoader extends BaseTest {
-    private static String DIR = null ;
-    private static final Node   g   = NodeFactory.createURI("g") ;
-    private static final Node   s   = NodeFactory.createURI("s") ;
-    private static final Node   p   = NodeFactory.createURI("p") ;
-    private static final Node   o   = NodeFactory.createURI("o") ;
+@RunWith(Parameterized.class)
+public class TestLoader {
+    static { JenaSystem.init(); }
+    
+    @Parameters(name = "{index}: {0}")
+    public static Iterable<Object[]> data() {
+        List<Object[]> x = new ArrayList<>() ;
+        BiFunction<DatasetGraph, Node, DataLoader> basic = (dsg, gn)->LoaderFactory.basicLoader(dsg, gn, output);
+        BiFunction<DatasetGraph, Node, DataLoader> sequential = (dsg, gn)->LoaderFactory.sequentialLoader(dsg, gn, output);
+        BiFunction<DatasetGraph, Node, DataLoader> parallel = (dsg, gn)->LoaderFactory.parallelLoader(dsg, gn, output);
+        x.add(new Object[]{"Basic loader", basic}) ;
+        x.add(new Object[]{"Sequential loader", sequential}) ;
+        x.add(new Object[]{"Parallel loader", parallel}) ;
+        return x ; 
+    }
+    
+    static MonitorOutput output = LoaderOps.nullOutput();
+    private String name;
+    private BiFunction<DatasetGraph, Node, DataLoader> maker;
+    
+    public TestLoader(String name, BiFunction<DatasetGraph, Node, DataLoader> maker) {
+        this.name = name;
+        this.maker = maker;
+    }
+    
+    /** Load the contents of files or remote web data into a dataset. */
+    static void load(DatasetGraph dataset, BiFunction<DatasetGraph, Node, DataLoader> maker, String ... dataURLs) {
+        load(dataset, null, maker, dataURLs);
+    }
+    
+    static void load(DatasetGraph dataset, Node graphName, BiFunction<DatasetGraph, Node, DataLoader> maker, String ... dataURLs) {
+        DataLoader loader = maker.apply(dataset, graphName);
+        loader.startBulk();
+        try {
+            loader.load(dataURLs);
+            loader.finishBulk();
+        }
+        catch (RuntimeException ex) {
+            loader.finishException(ex);
+            throw ex;
+        }
+    }
+    
+    private static String DIR = "testing/Loader/";
+    private static final Node g  = NodeFactory.createURI("g") ;
+    private static final Node s  = NodeFactory.createURI("s") ;
+    private static final Node p  = NodeFactory.createURI("p") ;
+    private static final Node o  = NodeFactory.createURI("o") ;
+    private static final Node o1 = NodeFactory.createURI("o1") ;
+    private static final Node o2 = NodeFactory.createURI("o2") ;
+    
+    private static final Node gn  = NodeFactory.createURI("http://example/g") ;
 
-//    @BeforeClass
-//    static public void beforeClass() {
-//        DIR = ConfigTest.getTestingDataRoot()+"/Loader/" ;
-//        LogCtl.disable(ARQ.logExecName) ;
-//        LogCtl.disable(TDB.logLoaderName) ;
-//    }
-//
-//    @AfterClass
-//    static public void afterClass() {
-//        LogCtl.enable(ARQ.logExecName) ;
-//        LogCtl.enable(TDB.logLoaderName) ;
-//    }
-//
-//    static DatasetGraphTDB fresh() {
-//        return TDBMaker.createDatasetGraphTDB(Location.mem(), null) ;
-//    }
-//
-//    @Test
-//    public void load_dataset_01() {
-//        DatasetGraphTDB dsg = fresh() ;
-//        TDBLoader.load(dsg, DIR + "data-1.nq", false) ;
-//        assertTrue(dsg.getDefaultGraph().isEmpty()) ;
-//        assertEquals(1, dsg.getGraph(g).size()) ;
-//    }
-//
-//    @Test
-//    public void load_dataset_02() {
-//        DatasetGraphTDB dsg = fresh() ;
-//        InputStream in = IO.openFile(DIR + "data-1.nq") ;
-//        TDBLoader.load(dsg, in, false) ;
-//        assertTrue(dsg.getDefaultGraph().isEmpty()) ;
-//        assertEquals(1, dsg.getGraph(g).size()) ;
-//    }
-//
-//    @Test
-//    public void load_dataset_03() {
-//        DatasetGraphTDB dsg = fresh() ;
-//        TDBLoader.load(dsg, DIR + "data-3.trig", false) ;
-//        String uri = dsg.getDefaultGraph().getPrefixMapping().getNsPrefixURI("") ;
-//        assertEquals("http://example/", uri) ;
-//    }
-//    
-//
-//    @Test
-//    public void load_graph_01() {
-//        DatasetGraphTDB dsg = fresh() ;
-//        TDBLoader.load(dsg, DIR + "data-2.nt", false) ;
-//        assertEquals(1, dsg.getDefaultGraph().size()) ;
-//    }
-//
-//    @Test
-//    public void load_graph_02() {
-//        DatasetGraphTDB dsg = fresh() ;
-//        TDBLoader.load(dsg.getDefaultGraphTDB(), DIR + "data-2.nt", false) ;
-//        assertEquals(1, dsg.getDefaultGraph().size()) ;
-//    }
-//
-//    @Test
-//    public void load_graph_03() {
-//        DatasetGraphTDB dsg = fresh() ;
-//        TDBLoader.load(dsg.getGraphTDB(g), DIR + "data-2.nt", false) ;
-//        assertEquals(0, dsg.getDefaultGraph().size()) ;
-//        assertEquals(1, dsg.getGraph(g).size()) ;
-//
-//        // Check indexes.
-//        List<Triple> x = Iter.toList(dsg.getDefaultGraph().find(null, null, null)) ;
-//        assertEquals(0, x.size()) ;
-//
-//        x = Iter.toList(dsg.getGraph(g).find(null, null, null)) ;
-//        assertEquals(1, x.size()) ;
-//        x = Iter.toList(dsg.getGraph(g).find(s, null, null)) ;
-//        assertEquals(1, x.size()) ;
-//        x = Iter.toList(dsg.getGraph(g).find(null, p, null)) ;
-//        assertEquals(1, x.size()) ;
-//        x = Iter.toList(dsg.getGraph(g).find(null, null, o)) ;
-//        assertEquals(1, x.size()) ;
-//
-//        List<Quad> z = Iter.toList(dsg.find(null, null, null, null)) ;
-//        assertEquals(1, z.size()) ;
-//        z = Iter.toList(dsg.find(g, null, null, null)) ;
-//        assertEquals(1, z.size()) ;
-//        z = Iter.toList(dsg.find(null, s, null, null)) ;
-//        assertEquals(1, z.size()) ;
-//        z = Iter.toList(dsg.find(null, null, p, null)) ;
-//        assertEquals(1, z.size()) ;
-//        z = Iter.toList(dsg.find(null, null, null, o)) ;
-//        assertEquals(1, z.size()) ;
-//    }
-//
-//    @Test
-//    public void load_graph_04() {
-//        DatasetGraphTDB dsg = fresh() ;
-//        TDBLoader.load(dsg, DIR + "data-4.ttl", false) ;
-//        String uri = dsg.getDefaultGraph().getPrefixMapping().getNsPrefixURI("") ;
-//        assertEquals("http://example/", uri) ;
-//    }
-//
-//    @Test
-//    public void load_graph_05() {
-//        DatasetGraphTDB dsg = fresh() ;
-//        GraphNonTxnTDB graph = dsg.getDefaultGraphTDB() ;
-//        TDBLoader.load(graph, DIR + "data-4.ttl", false) ;
-//        String uri = dsg.getDefaultGraph().getPrefixMapping().getNsPrefixURI("") ;
-//        assertEquals("http://example/", uri) ;
-//    }
-//    
-//    @Test
-//    public void load_graph_06() {
-//        DatasetGraphTDB dsg = fresh() ;
-//        GraphNonTxnTDB graph = dsg.getGraphTDB(g) ;
-//        TDBLoader.load(graph, DIR + "data-4.ttl", false) ;
-//        String uri1 = dsg.getGraph(g).getPrefixMapping().getNsPrefixURI("") ;
-//        assertEquals("http://example/", uri1) ;
-//        String uri2 = dsg.getDefaultGraph().getPrefixMapping().getNsPrefixURI("") ;
-//        assertNull(uri2) ;
-//    }
+    @BeforeClass
+    static public void beforeClass() {
+        LogCtl.disable(ARQ.logExecName) ;
+        //LogCtl.disable(TDB2.logLoaderName) ;
+    }
+
+    @AfterClass
+    static public void afterClass() {
+        LogCtl.enable(ARQ.logExecName) ;
+        LogCtl.enable(TDB2.logLoaderName) ;
+    }
+
+    static DatasetGraph fresh() {
+        return DatabaseMgr.createDatasetGraph() ;
+    }
+
+    @Test
+    public void load_dataset_01() {
+        DatasetGraph dsg = fresh() ;
+        load(dsg, maker, DIR + "data-1.nq") ;
+        Txn.executeRead(dsg, ()->{
+            assertTrue(dsg.getDefaultGraph().isEmpty()) ;
+            assertEquals(1, dsg.getGraph(g).size()) ;
+        });
+    }
+
+    @Test
+    public void load_dataset_02() {
+        DatasetGraph dsg = fresh() ;
+        load(dsg, maker , DIR + "data-1.nq", DIR + "data-2.nt") ;
+        Txn.executeRead(dsg, ()->{
+            assertEquals(1, dsg.getGraph(g).size()) ;
+            assertEquals(2, dsg.getDefaultGraph().size());
+        });
+    }
+
+    @Test
+    public void load_dataset_03() {
+        DatasetGraph dsg = fresh();
+        DataLoader loader = maker.apply(dsg, null);
+        loader.startBulk();
+        RDFDataMgr.parse(loader.stream(), DIR + "data-1.nq");
+        loader.finishBulk();
+        Txn.executeRead(dsg, ()->{
+            assertTrue(dsg.getDefaultGraph().isEmpty()) ;
+            assertEquals(1, dsg.getGraph(g).size()) ;
+        });
+    }
+
+    @Test
+    public void load_dataset_04() {
+        DatasetGraph dsg = fresh() ;
+        load(dsg, maker, DIR + "data-3.trig") ;
+        Txn.executeRead(dsg, ()->{
+            String uri = dsg.getDefaultGraph().getPrefixMapping().getNsPrefixURI("") ;
+            assertEquals("http://example/", uri) ;
+        });
+    }
+    
+    @Test public void isomorphic_1() {
+        DatasetGraph dsg = fresh() ;
+        load(dsg, maker , DIR + "data-1.nq", DIR + "data-2.nt") ;
+        Txn.executeRead(dsg, ()->{
+            assertEquals(1, dsg.getGraph(g).size()) ;
+            assertEquals(2, dsg.getDefaultGraph().size());
+        });
+
+        DatasetGraph dsg1 = RDFDataMgr.loadDatasetGraph(DIR + "data-1.nq");
+        RDFDataMgr.read(dsg1, DIR + "data-2.nt");
+        Txn.executeRead(dsg, ()->{
+            boolean b = IsoMatcher.isomorphic(dsg1, dsg);
+            assertTrue("Not isomorphic", b);
+        });
+    }
+
+    @Test
+    public void load_dataset_indexes() {
+        DatasetGraph dsg = fresh() ;
+        load(dsg, maker, DIR + "data-1.nq", DIR + "data-2.nt") ;
+        Txn.executeRead(dsg, ()->{
+            assertEquals(2, dsg.getDefaultGraph().size()) ;
+            assertEquals(1, dsg.getGraph(g).size()) ;
+            
+            {
+                // Check indexes.
+                Graph g1 = dsg.getDefaultGraph();
+                List<Triple> x = Iter.toList(g1.find(null, null, null)) ;
+                assertEquals(2, x.size()) ;
+                x = Iter.toList(g1.find(s, null, null)) ;
+                assertEquals(2, x.size()) ;
+                x = Iter.toList(g1.find(null, p, null)) ;
+                assertEquals(2, x.size()) ;
+                x = Iter.toList(g1.find(null, null, o1)) ;
+                assertEquals(1, x.size()) ;
+            }
+
+            {
+                Graph g2 = dsg.getGraph(g);
+                List<Triple> x = Iter.toList(g2.find(null, null, null));
+                assertEquals(1, x.size());
+                x = Iter.toList(g2.find(s, null, null));
+                assertEquals(1, x.size());
+                x = Iter.toList(g2.find(null, p, null));
+                assertEquals(1, x.size());
+                x = Iter.toList(g2.find(null, null, o));
+                assertEquals(1, x.size());
+            }
+            
+            {
+                List<Quad> z = Iter.toList(dsg.find(null, null, null, null)) ;
+                assertEquals(3, z.size()) ;
+                z = Iter.toList(dsg.find(Quad.defaultGraphIRI, null, null, null)) ;
+                assertEquals(2, z.size()) ;
+                z = Iter.toList(dsg.find(g, null, null, null)) ;
+                assertEquals(1, z.size()) ;
+                z = Iter.toList(dsg.find(null, s, null, null)) ;
+                assertEquals(3, z.size()) ;
+                z = Iter.toList(dsg.find(null, null, p, null)) ;
+                assertEquals(3, z.size()) ;
+                z = Iter.toList(dsg.find(g, null, p, null)) ;
+                assertEquals(1, z.size()) ;
+                z = Iter.toList(dsg.find(null, null, null, o)) ;
+                assertEquals(1, z.size()) ;
+            }
+        });
+    }
+    
+    @Test
+    public void load_graph_1() {
+        DatasetGraph dsg = fresh() ;
+        load(dsg, gn, maker, DIR + "data-2.nt") ;
+        Txn.executeRead(dsg, ()->{
+            assertEquals(0, dsg.getDefaultGraph().size());
+            assertEquals(2, dsg.getGraph(gn).size());
+        });
+    }
+    
+    // Try to load quads.
 }

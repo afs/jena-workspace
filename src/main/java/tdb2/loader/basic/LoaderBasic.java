@@ -39,7 +39,7 @@ public class LoaderBasic extends LoaderBase {
     public LoaderBasic(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         super(dsg, graphName, output);
         baseDest = LoaderOps.toNamedGraph(StreamRDFLib.dataset(dsg), graphName);
-        dest = new StreamRDFCountingBase(StreamRDFLib.dataset(dsg));
+        dest = new StreamRDFCountingBase(baseDest);
     }
 
     @Override

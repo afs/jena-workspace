@@ -23,10 +23,8 @@ import java.util.List;
 
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.atlas.lib.tuple.TupleFactory;
-import org.apache.jena.dboe.base.file.Location;
 import org.apache.jena.dboe.transaction.txn.Transaction;
 import org.apache.jena.dboe.transaction.txn.TransactionCoordinator;
-import org.apache.jena.dboe.transaction.txn.journal.Journal;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.TxnType;
@@ -39,9 +37,7 @@ import org.apache.jena.tdb2.store.DatasetPrefixesTDB;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetable.NodeTable;
 import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
-import org.apache.jena.tdb2.store.tupletable.TupleIndex;
 import tdb2.loader.BulkLoaderException;
-import tdb2.loader.base.LoaderOps;
 import tdb2.loader.base.MonitorOutput;
 
 /** Triple to chunks of Tuples.  
@@ -86,21 +82,14 @@ public class DataToTuplesInline implements StreamRDFCounting, BulkStartFinish {
     private Transaction transaction; 
     @Override
     public void startBulk() {
-        // Dummy transaction coordinator because TDB2 is transactional only.
-        Journal journal = Journal.create(Location.mem());
-        coordinator = new TransactionCoordinator(journal);
-        coordinator.add(LoaderOps.ntDataFile(nodeTable));
-        coordinator.add(LoaderOps.ntBPTree(nodeTable));
+        coordinator = CoLib.newCoordinator();
+        CoLib.add(coordinator, nodeTable);
         
         // Prefixes
         NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
-        coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
-        coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
-        for ( TupleIndex pIdx : p.getTupleTable().getIndexes() ) {
-            coordinator.add(LoaderOps.idxBTree(pIdx));
-        }
-        
-        coordinator.start();
+        CoLib.add(coordinator, p.getNodeTable());
+        CoLib.add(coordinator, p.getTupleTable().getIndexes());
+        CoLib.start(coordinator);
         transaction = coordinator.begin(TxnType.WRITE);
     }
 
@@ -113,8 +102,7 @@ public class DataToTuplesInline implements StreamRDFCounting, BulkStartFinish {
         dispatchTriples(LoaderConst.END_TUPLES);
         transaction.commit();
         transaction.end();
-        // No - closes TransactionalComponents, preventing use of the dataset.
-        // coordinator.shutdown();
+        CoLib.finish(coordinator);
     }
 
     @Override public void start() {}
@@ -141,6 +129,10 @@ public class DataToTuplesInline implements StreamRDFCounting, BulkStartFinish {
 
     @Override
     public void quad(Quad quad) {
+        if ( quad.isTriple() || quad.isDefaultGraph() ) {
+            triple(quad.asTriple());
+            return;
+        }
         countQuads++;
         if ( quads == null )
             quads = allocChunkQuads();

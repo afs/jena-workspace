@@ -18,11 +18,13 @@
 
 package tdb2.loader.base;
 
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Objects;
 
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.tuple.Tuple;
+import org.apache.jena.atlas.logging.FmtLog;
 import org.apache.jena.dboe.base.file.BinaryDataFile;
 import org.apache.jena.dboe.index.Index;
 import org.apache.jena.dboe.index.RangeIndex;
@@ -134,17 +136,42 @@ public class LoaderOps {
         return new StreamRDFWrapper(stream) {
             @Override
             public void triple(Triple triple) {
-                quad(Quad.create(graphName, triple));
+                super.quad(Quad.create(graphName, triple));
             }
-            // Drop quads.
+            // Only triples can be read into a graph - drop quads from the parser.
             @Override public void quad(Quad quad) {}
         };
     }
     
     private static Logger LOG = TDB2.logLoader;
     
+    /** Output to the nothing. */ 
+    public static MonitorOutput nullOutput() {
+        return (x,y)->{};
+    }
+
     /** Output to the loader logger. */ 
     public static MonitorOutput outputToLog() {
-        return ProgressMonitorFactory.outputToLog(LOG);
+        return LoaderOps.outputToLog(LOG);
+    }
+
+    /** {@link MonitorOutput} to a logger. */ 
+    public static MonitorOutput outputToLog(Logger logger) {
+        Objects.requireNonNull(logger);
+        return (fmt, args) -> {
+            if ( logger.isInfoEnabled() )
+                FmtLog.info(logger, fmt, args);
+        };
+    }
+
+    /** {@link MonitorOutput} to a PrintStream. */ 
+    public static MonitorOutput outputTo(PrintStream output) {
+        Objects.requireNonNull(output);
+        return (fmt, args) -> {
+            if ( fmt.endsWith("\n") || fmt.endsWith("\r") )
+                output.print(String.format(fmt, args));
+            else
+                output.println(String.format(fmt, args));
+        };
     }
 }

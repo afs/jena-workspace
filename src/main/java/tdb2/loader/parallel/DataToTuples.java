@@ -26,22 +26,17 @@ import java.util.function.Function;
 
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.atlas.lib.tuple.TupleFactory;
-import org.apache.jena.dboe.base.file.Location;
 import org.apache.jena.dboe.transaction.txn.Transaction;
 import org.apache.jena.dboe.transaction.txn.TransactionCoordinator;
-import org.apache.jena.dboe.transaction.txn.journal.Journal;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.TxnType;
 import org.apache.jena.sparql.core.DatasetPrefixStorage;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
-import org.apache.jena.tdb2.store.DatasetPrefixesTDB;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetable.NodeTable;
-import org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable;
 import tdb2.loader.BulkLoaderException;
-import tdb2.loader.base.LoaderOps;
 import tdb2.loader.base.MonitorOutput;
 
 /** Batch processing of {@link DataBlock}s (triples or Quads) converting them to two output of
@@ -129,19 +124,9 @@ public class DataToTuples implements BulkStartFinish {
 
     // Triples.
     private void action() {
-        // Dummy transaction coordinator because TDB2 is transactional only.
-        Journal journal = Journal.create(Location.mem());
-        coordinator = new TransactionCoordinator(journal);
-        coordinator.add(LoaderOps.ntDataFile(nodeTable));
-        coordinator.add(LoaderOps.ntBPTree(nodeTable));
-
-        // Clean up coordinator setup.
-        NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
-        coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
-        coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
-        // Only has one index.
-        coordinator.add(LoaderOps.idxBTree(p.getTupleTable().getIndex(0)));
-        coordinator.start();
+        coordinator = CoLib.newCoordinator();
+        CoLib.add(coordinator, nodeTable);
+        CoLib.start(coordinator);
         transaction = coordinator.begin(TxnType.WRITE);
 
         try {
@@ -174,9 +159,8 @@ public class DataToTuples implements BulkStartFinish {
             ex.printStackTrace();
             transaction.abort();
         }
-        
-        //transaction.end();
-        //coordinator.shutdown();
+        transaction.end();
+        CoLib.finish(coordinator);
     }
 
     //@Override

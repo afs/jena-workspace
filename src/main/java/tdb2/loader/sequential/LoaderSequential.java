@@ -92,8 +92,8 @@ public class LoaderSequential extends LoaderBase {
     }
 
     @Override
-    public void finishException() {
-        super.finishException();
+    public void finishException(Exception ex) {
+        super.finishException(ex);
         //dsgtdb.getTxnSystem().getTxnMgr().finishExclusiveMode();
     }
 

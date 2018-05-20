@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 
 import org.apache.jena.tdb2.setup.StoreParams;
 
-public class Check {
+public class StoreParamsOps {
 
     public static void main(String ...args) {
         StoreParams params = StoreParams.getDftStoreParams();
@@ -39,10 +39,10 @@ public class Check {
         params.getQuadIndexes();
         
         tripleIndexes = stream(params.getTripleIndexes())
-            .map(Check::canonical)
+            .map(StoreParamsOps::canonical)
             .collect(Collectors.toSet());
         quadIndexes = stream(params.getQuadIndexes())
-            .map(Check::canonical)
+            .map(StoreParamsOps::canonical)
             .collect(Collectors.toSet());
         
         for ( String idxName : params.getTripleIndexes() ) {

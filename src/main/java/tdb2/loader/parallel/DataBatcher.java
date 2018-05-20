@@ -105,6 +105,11 @@ public class DataBatcher implements StreamRDFCounting, BulkStartFinish {
 
     @Override
     public void quad(Quad quad) {
+        if ( quad.isTriple() || quad.isDefaultGraph() ) {
+            // Shame about the object creation.
+            triple(quad.asTriple());
+            return;
+        }
         if ( quads == null )
             quads = allocChunkQuads();
         quads.add(quad);
@@ -155,17 +160,6 @@ public class DataBatcher implements StreamRDFCounting, BulkStartFinish {
 
     @Override
     public void base(String base) {}
-
-//    // Clean up coordinator setup.
-//    NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
-//    coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
-//    coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
-//    NodeTupleTable p = ((DatasetPrefixesTDB)prefixes).getNodeTupleTable();
-//    coordinator.add(LoaderOps.ntDataFile(p.getNodeTable()));
-//    coordinator.add(LoaderOps.ntBPTree(p.getNodeTable()));
-//    for ( TupleIndex pIdx : p.getTupleTable().getIndexes() ) {
-//        coordinator.add(LoaderOps.idxBTree(pIdx));
-//    }
 
     @Override
     public void prefix(String prefix, String iri) {

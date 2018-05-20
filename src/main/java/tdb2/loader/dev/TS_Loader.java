@@ -16,19 +16,14 @@
  * limitations under the License.
  */
 
-package tdb2.loader.base;
+package tdb2.loader.dev;
 
-public class ProgressMonitorFactory {
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-    /**
-     * Create a progress monitor that sends output via a {@link MonitorOutput}. If this is
-     * null, then return a simple {@link ProgressMonitorBasic} that provides the counts
-     * and times.
-     */
-    public static ProgressMonitor progressMonitor(String label, MonitorOutput output, int dataTickPoint, int dataSuperTick) {
-        if ( output == null )
-            return new ProgressMonitorBasic();
-        ProgressMonitor monitor = ProgressMonitorOutput.create(output, label, dataTickPoint, dataSuperTick);
-        return monitor;
-    }
-}
+@RunWith(Suite.class)
+@Suite.SuiteClasses( {
+    TestLoader.class
+})
+
+public class TS_Loader {}

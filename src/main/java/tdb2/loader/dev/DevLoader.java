@@ -36,9 +36,14 @@ public class DevLoader {
     
     public static void main(String[] args) {
         //String DATA = "/home/afs/Datasets/BSBM/bsbm-200m.nt.gz";
-        //String DATA = "/home/afs/Datasets/BSBM/bsbm-250k.nt.gz";
-        String DATA = "/home/afs/Datasets/BSBM/bsbm-1m.nt.gz";
+        String DATA = "/home/afs/Datasets/BSBM/bsbm-25m.nt.gz";
+        //String DATA = "/home/afs/Datasets/BSBM/bsbm-1m.nt.gz";
+        //String DATA = "/home/afs/tmp/D.trig";
         reset("DB3");
+        
+        tdb2.cmd.load.main("--loc=DB3", "--graph=http://example/graph", "-loader=parallel", DATA);
+        System.exit(0);
+        
         DatasetGraph dsg = DatabaseMgr.connectDatasetGraph("DB3");
         
         List<String> urls = Arrays.asList(DATA);

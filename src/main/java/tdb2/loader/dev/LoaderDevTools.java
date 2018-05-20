@@ -47,7 +47,7 @@ import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.sys.IOX;
 import org.apache.jena.tdb2.sys.TDBInternal;
-import tdb2.loader.Loader;
+import tdb2.loader.DataLoader;
 import tdb2.loader.base.*;
 import tdb2.loader.parallel.*;
 
@@ -63,7 +63,7 @@ public class LoaderDevTools {
         });
     }
 
-    public static final MonitorOutput baseMonitorOutput = ProgressMonitorFactory.outputTo(System.out);
+    public static final MonitorOutput baseMonitorOutput = LoaderOps.outputTo(System.out);
     
     private static final Object outputLock = new Object();
     private static final MonitorOutput output = (fmt, args)-> {
@@ -136,11 +136,11 @@ public class LoaderDevTools {
 
     }
     
-    public static void load(Creator<Loader> creator, List<String> data) {
+    public static void load(Creator<DataLoader> creator, List<String> data) {
         // The core of the command line "load"
         //load.main("--loader=para", "--loc=DB3", DATA);
         // << The core of "tdb2.load" 
-        Loader loader = creator.create();
+        DataLoader loader = creator.create();
         output.print("Loader = "+Lib.className(loader));
         long time = TimerX.time(()->{
           loader.startBulk();

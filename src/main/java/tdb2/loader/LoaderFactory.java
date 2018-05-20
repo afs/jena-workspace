@@ -29,7 +29,7 @@ import tdb2.loader.basic.LoaderBasic;
 import tdb2.loader.parallel.LoaderParallel;
 import tdb2.loader.sequential.LoaderSequential;
 
-/** Obtain a {@link Loader}.
+/** Obtain a {@link DataLoader}.
  * <p>
  * To use a loader,
  * <pre>
@@ -47,7 +47,7 @@ public class LoaderFactory {
      * Supply a {@link MonitorOutput} for the desirabled progress and summary output messages
      * or {@code null} for no output. 
      */
-    public static Loader basicLoader(DatasetGraph dsg, MonitorOutput output) {
+    public static DataLoader basicLoader(DatasetGraph dsg, MonitorOutput output) {
         Objects.requireNonNull(dsg);
         return new LoaderBasic(dsg, null, output);
     }
@@ -62,14 +62,13 @@ public class LoaderFactory {
      * other quad data is discarded.
      * <p>
      * For other behaviours, use {@link #basicLoader(DatasetGraph, MonitorOutput)} 
-     * and wrap the {@linkStreamRDF} from {@link Loader#stream()}) with the required
+     * and wrap the {@linkStreamRDF} from {@link DataLoader#stream()}) with the required
      * transformation.  
      * 
      * @see #basicLoader(DatasetGraph, MonitorOutput)
      */
-    public static Loader basicLoader(DatasetGraph dsg, Node graphName, MonitorOutput output) {
+    public static DataLoader basicLoader(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         Objects.requireNonNull(dsg);
-        Objects.requireNonNull(graphName);
         return new LoaderBasic(dsg, graphName, output);
     }
 
@@ -85,7 +84,7 @@ public class LoaderFactory {
      * Supply a {@link MonitorOutput} for the desirabled progress and summary output messages
      * or {@code null} for no output. 
      */
-    public static Loader sequentialLoader(DatasetGraph dsg, MonitorOutput output) {
+    public static DataLoader sequentialLoader(DatasetGraph dsg, MonitorOutput output) {
         Objects.requireNonNull(dsg);
         return new LoaderSequential(dsg, null, output);
     }
@@ -101,15 +100,14 @@ public class LoaderFactory {
      * other quad data is discarded.
      * <p>
      * For other behaviours, use {@link #basicLoader(DatasetGraph, MonitorOutput)} 
-     * and wrap the {@linkStreamRDF} from {@link Loader#stream()}) with the required
+     * and wrap the {@linkStreamRDF} from {@link DataLoader#stream()}) with the required
      * transformation.
      * 
      * @see #sequentialLoader(DatasetGraph, MonitorOutput)
      */
      
-    public static Loader sequentialLoader(DatasetGraph dsg, Node graphName, MonitorOutput output) {
+    public static DataLoader sequentialLoader(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         Objects.requireNonNull(dsg);
-        Objects.requireNonNull(graphName);
         return new LoaderSequential(dsg, graphName, output);
     }
 
@@ -126,7 +124,7 @@ public class LoaderFactory {
      * Supply a {@link MonitorOutput} for the desirabled progress and summary output messages
      * or {@code null} for no output.
      */
-    public static Loader parallelLoader(DatasetGraph dsg, MonitorOutput output) {
+    public static DataLoader parallelLoader(DatasetGraph dsg, MonitorOutput output) {
         Objects.requireNonNull(dsg);
         return new LoaderParallel(dsg, null, output);
     }
@@ -142,23 +140,22 @@ public class LoaderFactory {
      * other quad data is discarded.
      * <p>
      * For other behaviours, use {@link #parallelLoader(DatasetGraph, MonitorOutput)} 
-     * and wrap the {@link StreamRDF} from {@link Loader#stream()}) with the required
+     * and wrap the {@link StreamRDF} from {@link DataLoader#stream()}) with the required
      * transformation.
      * 
      * @see #parallelLoader(DatasetGraph, MonitorOutput)
      */
 
-    public static Loader parallelLoader(DatasetGraph dsg, Node graphName, MonitorOutput output) {
+    public static DataLoader parallelLoader(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         Objects.requireNonNull(dsg);
-        Objects.requireNonNull(graphName);
         return new LoaderParallel(dsg, graphName, output);
     }
 
     /**
      * Return a general purpose loader to load a dataset.
-     * This default may chnage between versions.
+     * This default may change between versions.
      */  
-    public static Loader createLoader(DatasetGraph dsg, MonitorOutput output) {
+    public static DataLoader createLoader(DatasetGraph dsg, MonitorOutput output) {
         Objects.requireNonNull(dsg);
         return createDft(dsg, null, output);
     }
@@ -173,13 +170,13 @@ public class LoaderFactory {
      * <p>
      * This default may change between versions.
      */
-    public static Loader createLoader(DatasetGraph dsg, Node graphName, MonitorOutput output) {
+    public static DataLoader createLoader(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         Objects.requireNonNull(dsg);
         Objects.requireNonNull(graphName);
         return createDft(dsg, graphName, output);
     }
     
-    private static Loader createDft(DatasetGraph dsg, Node graphName, MonitorOutput output) {
+    private static DataLoader createDft(DatasetGraph dsg, Node graphName, MonitorOutput output) {
         // May be a conservatively tuned LoaderParallel so that it does not
         // swamp the machine and copes with lower spec hardware while still
         // providing a reasonable loading rate.  
