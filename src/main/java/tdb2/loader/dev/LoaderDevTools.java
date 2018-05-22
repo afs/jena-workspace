@@ -25,13 +25,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.apache.jena.atlas.lib.Creator;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.Lib;
 import org.apache.jena.atlas.lib.Timer;
 import org.apache.jena.atlas.lib.tuple.Tuple;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.QueryExecution;
@@ -40,7 +40,6 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.lang.StreamRDFCounting;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.util.QueryExecUtils;
 import org.apache.jena.system.Txn;
 import org.apache.jena.tdb2.loader.DataLoader;
@@ -96,11 +95,11 @@ public class LoaderDevTools {
             if ( x.isEmpty() )
                 sema.release(1);
         };
-        DataToTuples dtt = new DataToTuples(dsgtdb, deliveryEnd, deliveryEnd, output);
-        Destination<Triple> dest3 = dtt.dataTriples();
-        Destination<Quad> dest4 = dtt.dataQuads();
         
-        DataBatcher dataBatcher = new DataBatcher(dest3, dest4, output, prefixHandler);
+        DataToTuples dtt = new DataToTuples(dsgtdb, deliveryEnd, deliveryEnd, output);
+        Consumer<DataBlock> dest = dtt.data();
+        
+        DataBatcher dataBatcher = new DataBatcher(dest, prefixHandler, output);
         dtt.startBulk();
         
         List<BulkStartFinish> processes = Arrays.asList(dtt, dataBatcher);

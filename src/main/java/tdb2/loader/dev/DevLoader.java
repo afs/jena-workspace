@@ -41,7 +41,7 @@ public class DevLoader {
         //String DATA = "/home/afs/tmp/D.trig";
         reset("DB3");
         
-        tdb2.cmd.load.main("--loc=DB3", "--graph=http://example/graph", "-loader=parallel", DATA);
+        tdb2.cmd.load.main("--loc=DB3", "--loader=parallel", DATA);
         System.exit(0);
         
         DatasetGraph dsg = DatabaseMgr.connectDatasetGraph("DB3");

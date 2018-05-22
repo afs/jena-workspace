@@ -21,12 +21,11 @@ package tdb2.loader.dev;
 public class DevNotesLoader {
     // JENA-1550.
 
-    // + DataBatcher : Better DataBlock : triples and quads
-    //     destination is an acceptor of DataBlocks.
+    // Loader.loadOne -- does it all
+    // Loader.loadBasicOne -- does it all, basic loader.
+    
     // + Documentation page
-
     // + Parallel and phased.
-    // + DataLoader specialised to one graph.
     
     // Phase 1 : data (2 threads), primary1, primary2 (2 threads, likely 1 inactive)
     // Phase 2 : 2 indexes : POS, SPO
@@ -44,11 +43,11 @@ public class DevNotesLoader {
     
     5m: parallel:   149,481 TPS
     5m: sequential:  60,851 TPS
-    5m: simple:      61,318 TPS
+    5m: basic:       61,318 TPS
     
     25m: parallel:  169,223 TPS
     25m: sequential: 67,338 TPS
-    25m: simple:     61,529 TPS
+    25m: basic:      61,529 TPS
 
     SATA SSD, 32G RAM: Quad core i7
 
@@ -56,14 +55,22 @@ public class DevNotesLoader {
     Simple/original/disk:
       INFO  Finished: 200,031,975 data.nt.gz 6045.02s (Avg: 33,090)
       
-      
     Parallel:
       Time = 1,180.566 seconds : Triples = 200,031,975 : Rate = 169,437 /s
     Sequential:
       Time = 3,227.839 seconds : Triples = 200,031,975 : Rate = 61,971 /s
-    Simple:
+    Basic:
       Time = 3,507.557 seconds : Triples = 200,031,975 : Rate = 57,029 /s
     
+    Final: 200m: SSD
+      Time = 1,179.543 seconds : Triples = 200,031,975 : Rate = 169,584 /s
+      
+    TDB2/Disk:
+    INFO  Time = 171.863 seconds : Triples = 24,997,044 : Rate = 145,448 /s
+    INFO  Time = 885.078 seconds : Triples = 100,000,748 : Rate = 112,985 /s
+    INFO  Time = 3,515.494 seconds : Triples = 200,031,975 : Rate = 56,900 /s    
+      
+      
     TDB1: loader1/SSD
     INFO  ** Completed: 200,031,975 triples loaded in 3,333.00 seconds [Rate: 60,015.54 per second]
 
