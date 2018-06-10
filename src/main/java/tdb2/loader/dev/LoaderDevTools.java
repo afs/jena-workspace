@@ -44,7 +44,7 @@ import org.apache.jena.sparql.util.QueryExecUtils;
 import org.apache.jena.system.Txn;
 import org.apache.jena.tdb2.loader.DataLoader;
 import org.apache.jena.tdb2.loader.base.*;
-import org.apache.jena.tdb2.loader.parallel.*;
+import org.apache.jena.tdb2.loader.main.*;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.sys.IOX;

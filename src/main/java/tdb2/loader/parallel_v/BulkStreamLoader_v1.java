@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2.loader.parallel_v1;
+package tdb2.loader.parallel_v;
 
 import static java.lang.String.format;
 

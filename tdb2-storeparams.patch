@@ -1,0 +1,57 @@
+diff --git a/jena-db/jena-tdb2/src/main/java/org/apache/jena/tdb2/sys/DatabaseConnection.java b/jena-db/jena-tdb2/src/main/java/org/apache/jena/tdb2/sys/DatabaseConnection.java
+index 4e94a9b..159add4 100644
+--- a/jena-db/jena-tdb2/src/main/java/org/apache/jena/tdb2/sys/DatabaseConnection.java
++++ b/jena-db/jena-tdb2/src/main/java/org/apache/jena/tdb2/sys/DatabaseConnection.java
+@@ -68,7 +68,7 @@
+     private synchronized static DatabaseConnection make(Location location, StoreParams params) {
+         if ( location.isMemUnique() ) {
+             // Uncached, in-memory. 
+-            DatasetGraph dsg = DatabaseOps.create(location);
++            DatasetGraph dsg = DatabaseOps.create(location, params);
+             DatabaseConnection dbConn = new DatabaseConnection(dsg, location, null);
+             return dbConn;
+         }
+@@ -87,7 +87,7 @@
+             // Take the lock.  This is atomic.
+             lock.lockEx();
+         }
+-        DatasetGraph dsg = DatabaseOps.create(location);
++        DatasetGraph dsg = DatabaseOps.create(location, params);
+         return new DatabaseConnection(dsg, location, lock) ;
+     }
+     
+diff --git a/jena-db/jena-tdb2/src/main/java/org/apache/jena/tdb2/sys/DatabaseOps.java b/jena-db/jena-tdb2/src/main/java/org/apache/jena/tdb2/sys/DatabaseOps.java
+index a673e94..1daac18 100644
+--- a/jena-db/jena-tdb2/src/main/java/org/apache/jena/tdb2/sys/DatabaseOps.java
++++ b/jena-db/jena-tdb2/src/main/java/org/apache/jena/tdb2/sys/DatabaseOps.java
+@@ -73,12 +73,12 @@
+      * It is important to go via {@code DatabaseConnection} to avoid
+      * duplicate {@code DatasetGraphSwitchable}s for the same location.
+      */
+-    /*package*/ static DatasetGraph create(Location location) {
++    /*package*/ static DatasetGraph create(Location location, StoreParams params) {
+         // Hide implementation class.
+-        return createSwitchable(location);
++        return createSwitchable(location, params);
+     }
+     
+-    private static DatasetGraphSwitchable createSwitchable(Location location) {
++    private static DatasetGraphSwitchable createSwitchable(Location location, StoreParams params) {
+         if ( location.isMem() ) {
+             DatasetGraph dsg = StoreConnection.connectCreate(location).getDatasetGraph();
+             return new DatasetGraphSwitchable(null, location, dsg);
+@@ -90,13 +90,12 @@
+        // Scan for DBs
+        Path db = findLocation(path, dbPrefix);
+        // XXX [StoreParams]
+-       StoreParams params;
+        if ( db == null ) {
+            db = path.resolve(dbPrefix+SEP+startCount);
+            IOX.createDirectory(db);
+        }
+        Location loc2 = IOX.asLocation(db);
+-       DatasetGraphTDB dsg = StoreConnection.connectCreate(loc2).getDatasetGraphTDB();
++       DatasetGraphTDB dsg = StoreConnection.connectCreate(loc2, params).getDatasetGraphTDB();
+        DatasetGraphSwitchable appDSG = new DatasetGraphSwitchable(path, location, dsg);
+        return appDSG;
+     }

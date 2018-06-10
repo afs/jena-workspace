@@ -18,56 +18,53 @@
 
 package tdb2.loader.dev;
 
-import static tdb2.loader.dev.LoaderDevTools.*;
-
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.system.Txn;
 import org.apache.jena.tdb2.DatabaseMgr;
-import org.apache.jena.tdb2.loader.LoaderFactory;
 
-/** code in support of TDB2 loader development */
-public class DevLoader {
-    
+public class DevPhased {
     static { JenaSystem.init(); }
-    
+
     public static void main(String[] args) {
+        
         //String DATA = "/home/afs/Datasets/BSBM/bsbm-200m.nt.gz";
         //String DATA = "/home/afs/Datasets/BSBM/bsbm-25m.nt.gz";
         //String DATA = "/home/afs/Datasets/BSBM/bsbm-1m.nt.gz";
-        String DATA = "/home/afs/tmp/D.trig";
-        reset("DB3");
+        //String DATA = "/home/afs/tmp/D.trig";
         
-        tdb2.cmd.load.main("--loc=DB3", "--loader=parallel", DATA);
-        System.exit(0);
+        String DATA = "/home/afs/Datasets/BSBM/bsbm-1m.nt.gz";
+        String datafile = args.length > 0 ? args[0] : DATA ;
         
-        DatasetGraph dsg = DatabaseMgr.connectDatasetGraph("DB3");
+        //String DB = "home/afs/disk1/tmp/DB3";
+        String DB = "DB3";
+        LoaderDevTools.reset(DB);
+
+        tdb2.tdbloader.main("--loader=phased", "--loc="+DB, datafile);
+
+//        MonitorOutput output = LoaderOps.outputTo(System.out);  
+//
+//        DataLoader loader = new LoaderPhased(dsg, output);
+//       
+//        long totalElapsed = Timer.time(()->{
+//            loader.startBulk();
+//            loader.load(datafile);
+//            loader.finishBulk();
+//        }); 
+//            
+//        if ( output != null ) {
+//            long count = loader.countTriples();
+//            String label = "Triples";
+//            double seconds = totalElapsed/1000.0;
+//            if ( seconds > 1 )
+//                output.print("Time = %,.3f seconds : %s = %,d : Rate = %,.0f /s", seconds, label, count, count/seconds);  
+//        }
         
-        List<String> urls = Arrays.asList(DATA);
-        
-        if ( false ) {
-            //inputThreaded(dsg, urls);
-            inputInline(dsg, urls);
-            System.exit(0);
-        }
-        
-        
-        load(
-            ()->LoaderFactory.parallelLoader(dsg, baseMonitorOutput),
-            //()->LoaderFactory.sequentialLoader(dsg, baseMonitorOutput),
-            //()->LoaderFactory.simpleLoader(dsg, baseMonitorOutput),
-            urls);
-        
+        DatasetGraph dsg = DatabaseMgr.connectDatasetGraph(DB);
         // Check answers!
         Txn.execute(dsg, ()->{
-            query("SELECT (count(*) AS ?C) { ?s ?p ?o }", dsg) ; 
-            query("SELECT (count(*) AS ?C) { ?s ?p 1 }", dsg) ;
+            LoaderDevTools.query("SELECT (count(*) AS ?C) { ?s ?p ?o }", dsg) ; 
+            LoaderDevTools.query("SELECT (count(*) AS ?C) { ?s ?p 1 }", dsg) ;
         });
-
-        System.exit(0);
     }
-
 }
