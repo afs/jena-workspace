@@ -16,35 +16,15 @@
  * limitations under the License.
  */
 
-package tupledev;
+package tuple.mtuple;
 
-import org.apache.jena.atlas.lib.tuple.Tuple ;
+import java.util.Arrays;
+import java.util.Iterator;
 
-/** Build tuples */
-public class TupleBuilder<X> {
-    public static <X> TupleBuilder<X>  create() { return new TupleBuilder<>() ; } 
+abstract class MTupleBase<X> implements MTuple<X> {
+    protected abstract X[] asArray();
     
-    public static <X> TupleBuilder<X>  create(int n) { return new TupleBuilder<>(n) ; }
-    
-    X x1 = null ;
-    X x2 = null ;
-    X x3 = null ;
-    X x4 = null ;
-    
-    X[] array = null ;
-    
-    private TupleBuilder() {}
-    @SuppressWarnings("unchecked")
-    private TupleBuilder(int n) {
-        if ( n >= 4 )
-            array = (X[])new Object[n] ;
-    }
-    
-    
-    
-    private Tuple<X> build() {
-        return null ;
-    }
+    // TupleList??
+    @Override
+    public Iterator<X> iterator() { return Arrays.asList(asArray()).iterator(); } 
 }
-
-

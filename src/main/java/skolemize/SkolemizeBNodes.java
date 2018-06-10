@@ -16,44 +16,77 @@
  * limitations under the License.
  */
 
-package dev;
+package skolemize;
 
 import java.util.function.Function;
 
+import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.lang.LabelToNode;
 import org.apache.jena.riot.system.*;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.expr.nodevalue.NodeFunctions;
+import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.sse.SSE;
 
-public class Skolemizer {
-
-    private static Node skolemize(Node n) {
-        return NodeFunctions.blankNodeToIri(n); //RiotLib.blankNodeToIri(n);
+public class SkolemizeBNodes {
+    
+    static {
+        //JenaSystem.init();
+        LogCtl.setCmdLogging();
     }
-
+    
     public static void main(String...args) {
-        Graph g = SSE.parseGraph("(graph" + "(:s :p   _:a)" + "(:s1 :p1 _:a)" + ")");
+        LabelToNode mapping = LabelToNode.createScopeByDocumentHash();
+        
+        // Relabel.
+        Function<Node, Node> fRelabel = (n) -> {
+            if ( ! n.isBlank() ) return n;
+            return mapping.get(null, n.getBlankNodeLabel());
+        };
+        // Skolem
+        Function<Node, Node> fSkolemize = (n) -> {
+            if ( ! n.isBlank() ) return n;
+            return RiotLib.blankNodeToIri(n);
+        };
+
+        // De-Skolem
+        Function<Node, Node> fDeSkolemize = (n) -> {
+            if ( ! n.isURI() ) return n;
+            return encodedToBlankNode(n);
+        };
+        
+        Graph g = SSE.parseGraph("(graph" + "(:s1 :p   _:a)" + "(:s1 :p1 <_:a>)" + ")");
         StreamRDF out = StreamRDFLib.writer(System.out);
         out.start();
-        StreamRDF skol = new StreamRDFNodeExec(out, Skolemizer::skolemize);
+        StreamRDF skol = new StreamRDFNodeExec(out, fSkolemize);
         StreamOps.graphToStream(g, skol);
         out.finish();
         System.out.println("DONE");
     }
 
+    
+    // -> NodeFunctions
+    static private Node encodedToBlankNode(Node n) {
+        if ( ! n.isURI() )
+            return n;
+        return RiotLib.createIRIorBNode(n.getURI());
+    }
+    
     /**
      * Execution a function on nodes in triples and quads. 
      * If the function returns null, drop the triple or 
      * quad being processed.
      */
     static class StreamRDFNodeExec extends StreamRDFWrapper {
-        private Function<Node, Node> function;
+        private final Function<Node, Node> function;
 
         public StreamRDFNodeExec(StreamRDF output, Function<Node, Node> function) {
             super(output);
+            this.function = function;
         }
 
         @Override
@@ -101,5 +134,23 @@ public class Skolemizer {
             else
                 super.quad(Quad.create(g1, s1, p1, o1));
         }
+    }
+
+    public static void skolem() throws Exception {
+        
+        //Skolemizer
+        Graph g = GraphFactory.createDefaultGraph();
+        Triple t = SSE.parseTriple("(:s :p _:a)");
+        g.add(t) ;
+        
+        StreamRDF stream0 = StreamRDFWriter.getWriterStream(System.out, Lang.TTL) ;
+        StreamRDF stream = new StreamRDFWrapper(stream0) {
+            @Override
+            public void triple(Triple triple) {
+                Node o = NodeFunctions.blankNodeToIri(triple.getObject());
+                super.triple(Triple.create(triple.getSubject(), triple.getPredicate(), o));
+            }
+        };
+        StreamOps.graphToStream(g, stream);
     }
 }

@@ -16,27 +16,35 @@
  * limitations under the License.
  */
 
-package tupledev;
+package tuple;
 
-import java.util.Objects ;
+import org.apache.jena.atlas.lib.tuple.Tuple ;
 
-import org.apache.jena.atlas.lib.tuple.Tuple4 ;
-import org.apache.jena.graph.Node ;
-
-/** Dummy version of Quad */
-public final class QuadX extends Tuple4<Node> {
+/** Build tuples */
+public class TupleBuilder<X> {
+    public static <X> TupleBuilder<X>  create() { return new TupleBuilder<>() ; } 
     
-    //  Should get(0) always be the subject?
+    public static <X> TupleBuilder<X>  create(int n) { return new TupleBuilder<>(n) ; }
     
-    public QuadX(Node g, Node s, Node p, Node o) {
-        super(Objects.requireNonNull(g),
-              Objects.requireNonNull(s),
-              Objects.requireNonNull(p),
-              Objects.requireNonNull(o)) ;
+    X x1 = null ;
+    X x2 = null ;
+    X x3 = null ;
+    X x4 = null ;
+    
+    X[] array = null ;
+    
+    private TupleBuilder() {}
+    @SuppressWarnings("unchecked")
+    private TupleBuilder(int n) {
+        if ( n >= 4 )
+            array = (X[])new Object[n] ;
     }
-
-    public Node getGraph()      { return super.x1 ; }
-    public Node getSubject()    { return super.x2 ; }
-    public Node getPredicate()  { return super.x3 ; }
-    public Node getObject()     { return super.x4 ; }
+    
+    
+    
+    private Tuple<X> build() {
+        return null ;
+    }
 }
+
+

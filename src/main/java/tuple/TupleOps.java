@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tupledev;
+package tuple;
 
 import java.util.function.Function ;
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tupledev;
+package tuple;
 
 import org.apache.jena.atlas.lib.tuple.Tuple3 ;
 import org.apache.jena.atlas.lib.tuple.TupleFactory ;

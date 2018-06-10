@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package prefixes.utils;
+package prefixes;
 
 public class MainPrefixMappingUtils {}
 //
