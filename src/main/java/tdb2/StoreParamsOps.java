@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package tdb2.loader.dev;
+package tdb2;
 
 import static java.util.Arrays.stream;
 import java.util.HashSet;
@@ -49,6 +49,8 @@ public class StoreParamsOps {
             idxName = canonical(idxName);
             tripleIndexes.add(idxName);
         }
+        
+        System.out.println(params);
     }
 
     static Set<String> tripleIndexes = new HashSet<>();

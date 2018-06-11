@@ -42,7 +42,7 @@ public class ResultSetWriterText implements ResultSetWriter {
 
     @Override
     public void write(OutputStream out, ResultSet resultSet, Context context) {
-        // Need prologue.
+        // ** Need prologue. **
         throw new NotImplemented();
 //        TextOutput tFmt = new TextOutput(prologue) ;
 //        tFmt.format(out, resultSet) ;
