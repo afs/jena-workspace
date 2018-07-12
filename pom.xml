@@ -14,8 +14,8 @@
   <description>AFS workspace</description>
 
   <properties>
-    <ver.jena>3.8.0-SNAPSHOT</ver.jena>
-    <ver.fuseki>3.8.0-SNAPSHOT</ver.fuseki>
+    <ver.jena>3.9.0-SNAPSHOT</ver.jena>
+    <ver.fuseki>3.9.0-SNAPSHOT</ver.fuseki>
     <ver.jena.text>${ver.jena}</ver.jena.text>
 
     <ver.lucene>6.4.1</ver.lucene>
