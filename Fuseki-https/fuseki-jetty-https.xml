@@ -20,9 +20,13 @@
 
 <!--
 Example Jetty - you will need to configure a certificate.
-You wil need to conigure this example.
+
+OUT OF DATE
+
+** You will need to configure this example **
 
 See "sslContextFactory" below.
+
 
 Contributed by: Jason Levitt
 http://mail-archives.apache.org/mod_mbox/jena-users/201509.mbox/%3C55EB4CA2.7040803@apache.org%3E
@@ -35,6 +39,9 @@ External references:
 
 Jetty documentation on SSL:
    https://wiki.eclipse.org/Jetty/Howto/Configure_SSL
+
+Jetty9:
+http://www.eclipse.org/jetty/documentation/current/configuring-ssl.html
 
 Oracle Java keytool
    http://docs.oracle.com/javase/8/docs/technotes/tools/windows/keytool.html

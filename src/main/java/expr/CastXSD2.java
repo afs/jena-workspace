@@ -58,7 +58,6 @@ public class CastXSD2 extends FunctionBase1 implements FunctionFactory {
     {
         return cast(v, castType) ;
     }
-
     
     private static boolean isTemporalDatatype(XSDDatatype datatype) {
         return 

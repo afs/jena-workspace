@@ -18,27 +18,7 @@
 
 package dev;
 
-import org.apache.jena.atlas.logging.LogCtl ;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.sparql.core.DatasetImpl;
-
-public class Dev
-{
-    static { LogCtl.setLog4j(); }
-    
+public class Report {
     public static void main(String... args) {
-        Model model = ModelFactory.createDefaultModel();
-        Dataset result = new DatasetImpl(model);
-        System.out.println(result.getContext());
-        
-        QueryExecution qExec = QueryExecutionFactory.create("SELECT * {}", model);
-        ResultSet rs = qExec.execSelect();
-        
-        System.out.println("DONE");
     }
 }

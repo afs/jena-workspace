@@ -30,6 +30,7 @@ hs_err_pid*
 
 # Development files
 LOG*
+src-xerces
 
 # Databases and Fuseki
 Fuseki-https/run/

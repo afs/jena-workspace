@@ -18,7 +18,7 @@
 
 package datasetdescription;
 
-import java.util.Set ;
+import java.util.Collection;
 
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.Node ;
@@ -42,8 +42,8 @@ public class DSD_Dataset implements DatasetDescriptionProcessor {
         if ( description.isEmpty() )
             return new DatasetGraphReadOnly(dsg) ;
         
-        Set<Node> defaultGraphs = NodeUtils.convertToNodes(description.getDefaultGraphURIs()) ; 
-        Set<Node> namedGraphs = NodeUtils.convertToNodes(description.getNamedGraphURIs()) ;
+        Collection<Node> defaultGraphs = NodeUtils.convertToNodes(description.getDefaultGraphURIs()) ; 
+        Collection<Node> namedGraphs = NodeUtils.convertToNodes(description.getNamedGraphURIs()) ;
         
         // The default graph.
         Graph dft = new GraphUnionRead(dsg, defaultGraphs) ;

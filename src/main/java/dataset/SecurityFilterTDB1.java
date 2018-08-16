@@ -16,29 +16,23 @@
  * limitations under the License.
  */
 
-package dev;
+package dataset;
 
-import org.apache.jena.atlas.logging.LogCtl ;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.sparql.core.DatasetImpl;
+import java.util.Collection;
 
-public class Dev
-{
-    static { LogCtl.setLog4j(); }
-    
-    public static void main(String... args) {
-        Model model = ModelFactory.createDefaultModel();
-        Dataset result = new DatasetImpl(model);
-        System.out.println(result.getContext());
-        
-        QueryExecution qExec = QueryExecutionFactory.create("SELECT * {}", model);
-        ResultSet rs = qExec.execSelect();
-        
-        System.out.println("DONE");
+import org.apache.jena.sparql.util.Context;
+import org.apache.jena.tdb.store.NodeId;
+import org.apache.jena.tdb.sys.SystemTDB;
+
+/** SecurityFilter for TDB1 */ 
+class SecurityFilterTDB1 extends SecurityFilter<NodeId> {
+
+    public SecurityFilterTDB1(Collection<NodeId> allowed, boolean allowDefaultGraph) {
+        super(allowed, allowDefaultGraph);
+    }
+
+    @Override
+    public void apply(Context context) {
+        context.set(SystemTDB.symTupleFilter, this);
     }
 }

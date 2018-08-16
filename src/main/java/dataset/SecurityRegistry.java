@@ -16,29 +16,27 @@
  * limitations under the License.
  */
 
-package dev;
+package dataset;
 
-import org.apache.jena.atlas.logging.LogCtl ;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.sparql.core.DatasetImpl;
+import org.apache.jena.atlas.lib.Registry;
 
-public class Dev
-{
-    static { LogCtl.setLog4j(); }
+/**
+ * A {@link SecurityRegistry} is mapping from a string (typically a user name or role
+ * name) to a {@link SecurityContext}, where the {@link SecurityContext}
+ * is the access control operations for the user/role.
+ */ 
+public class SecurityRegistry extends Registry<String, SecurityContext>{
     
-    public static void main(String... args) {
-        Model model = ModelFactory.createDefaultModel();
-        Dataset result = new DatasetImpl(model);
-        System.out.println(result.getContext());
-        
-        QueryExecution qExec = QueryExecutionFactory.create("SELECT * {}", model);
-        ResultSet rs = qExec.execSelect();
-        
-        System.out.println("DONE");
+    // Singletons eventually get use into trouble! (Multiple server in one JVM)
+    // but they are better than statics.
+    private static SecurityRegistry singleton = new SecurityRegistry();
+
+    public static SecurityRegistry get() {
+        return singleton;
     }
+    
+//    // Key (e.g. user, role) to  
+//    private Map<String, SecurityContext> securityContexts = new ConcurrentHashMap<>();
+    
+    public SecurityRegistry() {}
 }
