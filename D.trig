@@ -1,23 +1,23 @@
 PREFIX : <http://example/>
 
-:s :p 1 .
-:s :p 2 .
+:s0 :p 1 .
+:s0 :p 2 .
 :z :p 3 .
 :s :q 0 .
 
 GRAPH :g1 {
    :s1 :p 1 .
-   :s2 :p 2 .
-   :s3 :p 3 .
-   :s4 :p 4 .
+   :s1 :p 2 .
+   :s1 :p 3 .
+   :s1 :p 4 .
 }
 
 GRAPH :g2 {
-   :t1 :p 2 .
-   :t2 :p 2 .
+   :sg2 :p 1 .
+   :sg2 :p 2 .
 }
 
 GRAPH :g3 {
-   :x1 :p 3 .
+   :sg3 :p 3 .
 }
 

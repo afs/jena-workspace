@@ -16,23 +16,31 @@
  * limitations under the License.
  */
 
-package dataset;
+package fuseki.security;
 
-import java.util.Collection;
-
+import org.apache.jena.fuseki.servlets.HttpAction;
+import org.apache.jena.fuseki.servlets.REST_Quads_R;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphWrapper;
 import org.apache.jena.sparql.util.Context;
-import org.apache.jena.tdb2.sys.SystemTDB;
-import org.apache.jena.tdb2.store.NodeId;
 
-/** SecurityFilter for TDB2 */ 
-class SecurityFilterTDB2 extends SecurityFilter<NodeId> {
-
-    public SecurityFilterTDB2(Collection<NodeId> allowed, boolean allowDefaultGraph) {
-        super(allowed, allowDefaultGraph);
+public class Filtered_REST_Quads_R extends REST_Quads_R {
+    @Override
+    protected void validate(HttpAction action) {
+        super.validate(action);
     }
 
     @Override
-    public void apply(Context context) {
-        context.set(SystemTDB.symTupleFilter, this);
+    protected void doGet(HttpAction action) {
+        
+        DatasetGraph dsg0 = action.getActiveDSG();
+        DatasetGraph dsg = new DatasetGraphWrapper(dsg0) {
+            @Override public Context getContext() { return super.getContext(); }
+        };
+        // Replace datasetGraph
+        
+        HttpAction action2 = action;
+        
+        super.doGet(action2);
     }
 }

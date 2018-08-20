@@ -16,14 +16,19 @@
  * limitations under the License.
  */
 
-package dataset;
+package fuseki;
 
 import static java.lang.String.format;
 
+import java.io.IOException;
 import java.util.function.Function;
 
 import javax.servlet.ServletContext;
 
+import fuseki.security.Filtered_SPARQL_QueryDataset;
+import fuseki.security.SecurityPolicy;
+import fuseki.security.SecurityRegistry;
+import fuseki.security.VocabSecurity;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -31,6 +36,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.fuseki.embedded.FusekiServer;
+import org.apache.jena.fuseki.server.DataService;
 import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.fuseki.servlets.ActionService;
 import org.apache.jena.fuseki.servlets.HttpAction;
@@ -43,85 +49,140 @@ import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.WebContent;
 import org.apache.jena.riot.web.HttpOp;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.core.assembler.AssemblerUtils;
 import org.apache.jena.system.Txn;
 import org.apache.jena.tdb2.TDB2;
 import org.apache.jena.tdb2.TDB2Factory;
-import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.UserStore;
-import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 
 public class DevSecureNG {
     /*
      * No update requirement.
-     * SecurityFilter: 
-     *      Naming the default graph to build filters, not just SecurityFilter(,true)
-     *      Naming the union to build filters (ie see union only)
+     * 
+     * 
+     *   SecurityPolicy 
+     *   -- default graph is Quad.isDefaultGraph(Node) [DONE]
+     *   -- union graph is Quad.isUnionGraph(Node) [Not supported]
+     * 
+     * "allow" security registries and "deny" registries
+     *   registries == realms?
+     * 
+     * Tests
+     *   Assemblers
+     *   Fuseki
      *
-     * Security module.
-     * SecurityContext - names for "all" and "none".
-     * "all but" mode.
-     * Either 
-     *    set of "yes"
-     *    all and set of "no".
-     * user!
+     * Jetty: user:password file. https.
      * 
-     * Check whether NodeId is == across tuples.
+     * ** Have an intercepting query operation.
+     *    How to distinguish access-controlled and non-controlled datasets? VocabSecurity.symControlledAccess
+     * ** Centralize customized DSG.
+
+     * ** TestSecurityAssembler 
+     *    ?user!
+     *    
+     * ** GSP as well.
+     *    ** Filtered_REST_Quads_R
+     *    ** Filtered_SPARQL_GSP_R
+     *      Dataset needs filter!
+     *      But affects everything!
+     *      DevLocal for constrained dataset. Not API which would break for search-update. 
+     * Limitations:
+     *    per dataset execution for GSP and Quads. Where is the context?  Add DS wrapper?  
+     *    per servlet context dispatch.
+     *    
+     * Tests!
+     *   Local and remote
      * 
-     * user:password file.
+     * cmd --args=FILE
+     * 
+     * Invert : Create a config object, command line is a subset, execute from Config object.
      */
-    
-    // HTTPS
-    private static void foo() {
-        Server server = new Server();
-        
-        HttpConfiguration http_config = new HttpConfiguration();
-        http_config.setSecureScheme("https");
-        http_config.setSecurePort(8443);
-        http_config.setOutputBufferSize(32768);
-        http_config.setRequestHeaderSize(8192);
-        http_config.setResponseHeaderSize(8192);
-        http_config.setSendServerVersion(true);
-        http_config.setSendDateHeader(false);
-        
-        // === jetty-https.xml ===
-        // SSL Context Factory
-        
-        String jetty_home = "JETTY_HOME";
-        
-        SslContextFactory sslContextFactory = new SslContextFactory();
-        
-        sslContextFactory.setKeyStorePath(jetty_home + "/etc/keystore");
-        sslContextFactory.setKeyStorePassword("OBF:1vny1zlo1x8e1vnw1vn61x8g1zlu1vn4");
-        sslContextFactory.setKeyManagerPassword("OBF:1u2u1wml1z7s1z7a1wnl1u2g");
 
-        sslContextFactory.setTrustStorePath(jetty_home + "/etc/keystore");
-        sslContextFactory.setTrustStorePassword("OBF:1vny1zlo1x8e1vnw1vn61x8g1zlu1vn4");
-        sslContextFactory.setExcludeCipherSuites("SSL_RSA_WITH_DES_CBC_SHA",
-                "SSL_DHE_RSA_WITH_DES_CBC_SHA", "SSL_DHE_DSS_WITH_DES_CBC_SHA",
-                "SSL_RSA_EXPORT_WITH_RC4_40_MD5",
-                "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA",
-                "SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA",
-                "SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA");
-
-        // SSL HTTP Configuration
-        HttpConfiguration https_config = new HttpConfiguration(http_config);
-        https_config.addCustomizer(new SecureRequestCustomizer());
-
-        // SSL Connector
-        ServerConnector sslConnector = new ServerConnector(server,
-            new SslConnectionFactory(sslContextFactory,HttpVersion.HTTP_1_1.asString()),
-            new HttpConnectionFactory(https_config));
-        sslConnector.setPort(8443);
-        server.addConnector(sslConnector);
+    public static void mainVocab(String...a) {
+        VocabSecurity.init();
+        //SecurityRegistry sr = (SecurityRegistry)AssemblerUtils.build("assem-security.ttl", VocabSecurity.tSecurityRegistry);
+        //System.out.println(sr);
+        
+        Dataset ds = (Dataset)AssemblerUtils.build("assem-security.ttl", VocabSecurity.tAccessControlledDataset);
+        SecurityRegistry sr2 = (SecurityRegistry)ds.getContext().get(VocabSecurity.symSecurityRegistry);
+        System.out.println(sr2);
     }
-    
-    public static void main(String...a) {
+
+    public static void main(String...a) throws IOException {
         LogCtl.setLog4j();
         try { main$(a); } 
         catch (Exception ex) { ex.printStackTrace(); }
         finally { System.exit(0); }
+    }
+    
+    // Multiple Servlet Contexts per server isn't supported by Fuseki currently.
+    // == multiple handlers in Jetty?
+    
+    static void modify() {
+        // ---- Modify
+        Dataset ds = TDB2Factory.createDataset();
+        Operation operation = Operation.register("AltQuery", "Alt Query Service");
+        FusekiServer server = FusekiServer.create().port(1441)
+            .registerOperation(operation, (ActionService)null)
+            .addOperation("/ds", "query", operation)
+            .build();
+
+        server.getDataAccessPointRegistry().forEach((name, sap)->{
+            System.out.println("  "+name);
+            sap.getDataService().getOperations().forEach(op->{
+                System.out.println("    "+op);
+            });
+        });
+        
+        // May need to build server via a DataService.
+        // Replace query handler for this DataService only.
+        DataService dataService = new DataService(ds.asDatasetGraph());
+        // AccessControlledQuery.
+        dataService.addEndpoint(Operation.Query, "query");
+        ServiceDispatchRegistry sdr = new ServiceDispatchRegistry(false);
+        sdr.register(Operation.Query, WebContent.contentTypeSPARQLQuery, (ActionService)null);
+        // Is ServiceDispatchRegistry per servletContext?
+        //ServiceDispatchRegistry.set(cxt, sdr);
+        
+        // If needed, each FusekiServer is a single ServletContext(Handler);
+        // FusekiContext
+        // Prepared jetty server, shared across several "FusekiServers"
+        
+        // statics around:
+        // FusekiServer.Builder.
+        //   Build around a ServletContext
+        // FusekiServer.Builder.buildServletContextHandler() alt to build();
+        
+        // Multiple servlet contexts => ContextHandlerCollection
+        Server jettyServer = server.getJettyServer();
+        ServletContextHandler handler1 = new ServletContextHandler();
+        /*ServletContext*/ handler1.getServletContext(); 
+        handler1.setContextPath("/path1");
+        handler1.addServlet((ServletHolder)null, "/action");
+
+        ServletContextHandler handler2 = new ServletContextHandler();
+        handler2.setContextPath("/path2");
+        handler2.addServlet((ServletHolder)null, "/action");
+        
+        HandlerCollection handlers = new ContextHandlerCollection();
+        handlers.addHandler(handler1);
+        handlers.addHandler(handler2);
+        jettyServer.setHandler(handlers);
+        
+//        ServletContext cxt = handler.getServletContext();
+//        Server jettyServer = server.getJettyServer();
+//        Handler handler = null;
+//        jettyServer.setHandler(handler);
+//        ServerConnector connector = new ServerConnector(jettyServer);
+//        connector.setPort(99);
+//        jettyServer.addConnector(connector);
     }
     
     public static void main$(String...a) {
@@ -137,16 +198,16 @@ public class DevSecureNG {
         String PASSWORD = "pw1";
 
         // ---- Set up the registry.
-        SecurityRegistry reg = SecurityRegistry.get();
-        reg.put("user1", new SecurityContext("http://example/g1"));
-        reg.put("user2", new SecurityContext("http://example/g1", "http://example/g2"));
+        SecurityRegistry reg = new SecurityRegistry();
+        reg.put("user1", new SecurityPolicy("http://example/g1", Quad.defaultGraphIRI.getURI()));
+        reg.put("user2", new SecurityPolicy("http://example/g1", "http://example/g2"));
 
         // ---- Fuseki.
         // With SecurityHandler if USER != null;
         FusekiServer server = fuseki(PORT, dsName, ds, reg, USER, PASSWORD);
+        ServletContext cxt = server.getServletContext();
+        SecurityRegistry.set(cxt, reg);
         server.start();
-        
-        // Security filter?
         
         // ---- Try it.
         // HttpClient with password.
@@ -164,13 +225,14 @@ public class DevSecureNG {
             .build();
             
         try ( RDFConnection conn = connx ) {
-            conn.queryResultSet("SELECT * { GRAPH ?g { ?s ?p ?o } }",
+            conn.queryResultSet("SELECT * { { ?s ?p ?o } UNION { GRAPH ?g { ?s ?p ?o } } }",
                 rs->ResultSetFormatter.out(rs)
                 );
             // TDB1 or TDB2.
             // Set UnionDefaultGraph (UDG) ... in the server.
             ds.getContext().set(TDB2.symUnionDefaultGraph1, true);
-            conn.queryResultSet("SELECT (count(*) AS ?C) { ?s ?p ?o }",
+            //conn.queryResultSet("SELECT (count(*) AS ?C) { ?s ?p ?o }",
+            conn.queryResultSet("SELECT * { ?s ?p ?o }",
                 rs->ResultSetFormatter.out(rs)
                 );
 //            conn.queryResultSet("SELECT * { ?s ?p ?o }",
@@ -187,23 +249,25 @@ public class DevSecureNG {
     private static FusekiServer fuseki(int port, String dsName, Dataset ds, SecurityRegistry reg, UserStore userStore) {
         Function<HttpAction, String> determineUser = (action)->action.request.getRemoteUser();
         // Make dynamic.
-        ActionService queryServlet2 = new SPARQL_QueryDatasetFiltered(reg, determineUser);
+        ActionService queryServlet2 = new Filtered_SPARQL_QueryDataset(determineUser);
 
         SecurityHandler sh = null;
         if ( userStore != null )
-            sh = JettyLib.makeSecurityHandler("/*", "Daatset:"+dsName, userStore);
+            sh = JettyLib.makeSecurityHandler("/*", "Dataset:"+dsName, userStore);
         
-        // Different name/
-        Operation q2 = Operation.register("AltQuery", "Alt Query Service");
-        FusekiServer.Builder builder = FusekiServer.create().setPort(port).registerOperation(q2, queryServlet2);
+        FusekiServer.Builder builder = FusekiServer.create().port(port);
+        
         if ( sh != null )
-            builder.setSecurityHandler(sh);
+            builder.securityHandler(sh);
+//      // Different name
+//        Operation q2 = Operation.register("AltQuery", "Alt Query Service");
+//        builder.registerOperation(q2, queryServlet2);
         
         FusekiServer server = builder 
             // Fails due to check that operations are registered once.
             //.registerOperation(Operation.Query, queryServlet2)
             .add(dsName, ds, false)
-            .addOperation(dsName, "q", q2)
+            //.addOperation(dsName, "q", q2)
             .build();
         
         // Same name - replace.

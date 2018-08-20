@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,12 +16,19 @@
  * limitations under the License.
  */
 
-package tdb2.loader.parallel_v;
+package fuseki.test;
 
-import org.apache.jena.riot.system.StreamRDF ;
+import org.apache.jena.atlas.logging.LogCtl;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public interface BulkStreamRDF extends StreamRDF
-{
-    public void startBulk() ;
-    public void finishBulk() ;
+@RunWith(Suite.class)
+@Suite.SuiteClasses( {
+    TestSecurityFilterLocal.class
+    , TestSecurityFilterFuseki.class
+    , TestSecurityAssembler.class
+})
+
+public class TS_SecurityFiltering {
+    static { LogCtl.setLog4j("log4j-testing.properties"); }
 }

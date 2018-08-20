@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package dataset;
+package fuseki;
 
 import java.util.Objects;
 
@@ -91,7 +91,7 @@ public class JettyLib {
         return propertyUserStore;
     }
 
-    /** Make a {@link UserStore} for a sigle user,password in any role. */
+    /** Make a {@link UserStore} for a single user,password in any role. */
     public static UserStore makeUserStore(String user, String password) {
         return makeUserStore(user, password, "**");
     }

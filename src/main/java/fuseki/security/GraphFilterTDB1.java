@@ -16,46 +16,44 @@
  * limitations under the License.
  */
 
-package dataset;
+package fuseki.security;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 
 import org.apache.jena.atlas.lib.ListUtils;
-import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.util.Context;
+import org.apache.jena.sparql.util.Symbol;
 import org.apache.jena.system.Txn;
-import org.apache.jena.tdb2.store.NodeId;
-import org.apache.jena.tdb2.store.nodetable.NodeTable;
-import org.apache.jena.tdb2.sys.SystemTDB;
-import org.apache.jena.tdb2.sys.TDBInternal;
+import org.apache.jena.tdb.store.NodeId;
+import org.apache.jena.tdb.store.nodetable.NodeTable;
+import org.apache.jena.tdb.sys.SystemTDB;
+import org.apache.jena.tdb.sys.TDBInternal;
 
-/** Library of database retrieval filters for TDB2 datasets */
-public class FiltersTDB2 {
+/** {@link GraphFilter} for TDB1 */ 
+class GraphFilterTDB1 extends GraphFilter<NodeId> {
 
-    /** Modify the context to add/replace with the given filter predicate */ 
-    public static void withFilter(Context context, Predicate<Tuple<NodeId>> filter) {
-        context.set(SystemTDB.symTupleFilter, filter);
+    private GraphFilterTDB1(Collection<NodeId> matches, boolean matchDefaultGraph) {
+        super(matches, matchDefaultGraph);
+    }
+
+    @Override
+    public Symbol getContextKey() {
+        return SystemTDB.symTupleFilter;
     }
     
-    /** Add a security filter a TDB2 {@link DatasetGraph}.
-     * The filter specifies (return true) for Tuples to accept. 
-     */ 
-    public static SecurityFilterTDB2 securityFilter(DatasetGraph dsg, Node... namedGraphs) {
-        return securityFilter(dsg, Arrays.asList(namedGraphs));
-    }
-
-    /** Add a security filter a TDB2 {@link DatasetGraph}.
-     * The filter specifies (return true) for Tuples to accept. 
-     */ 
-    public static SecurityFilterTDB2 securityFilter(DatasetGraph dsg, Collection<Node> namedGraphs) {
-        if ( ! TDBInternal.isTDB2(dsg) )
-            throw new IllegalArgumentException("DatasetGraph is not TDB2-backed");
+    /**
+     * Create a graph filter for a TDB1 {@link DatasetGraph}. The filter matches (returns
+     * true) for Tuples where the graph slot in quad matches or for triples in the default
+     * graph.
+     * 
+     * @see SecurityPolicy#filterTDB1
+     */
+    public static GraphFilterTDB1 graphFilter(DatasetGraph dsg, Collection<Node> namedGraphs, boolean matchDefaultGraph) {
+        if ( ! TDBInternal.isTDB1(dsg) )
+            throw new IllegalArgumentException("DatasetGraph is not TDB1-backed");
         List<NodeId> x =  
             Txn.calculateRead(dsg, ()->{
                 NodeTable nt = TDBInternal.getDatasetGraphTDB(dsg).getQuadTable().getNodeTupleTable().getNodeTable();
@@ -66,7 +64,6 @@ public class FiltersTDB2 {
                         .filter(Objects::nonNull)
                         );
             });
-        
-        return new SecurityFilterTDB2(x, false);
+        return new GraphFilterTDB1(x, matchDefaultGraph);
     }
 }

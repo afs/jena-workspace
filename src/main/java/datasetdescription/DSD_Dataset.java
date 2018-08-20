@@ -18,13 +18,17 @@
 
 package datasetdescription;
 
-import java.util.Collection;
+import java.util.Set;
 
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.ReadWrite ;
 import org.apache.jena.sparql.ARQConstants ;
-import org.apache.jena.sparql.core.* ;
+import org.apache.jena.sparql.core.DatasetDescription;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphMapLink;
+import org.apache.jena.sparql.core.DatasetGraphReadOnly;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.graph.GraphOps ;
 import org.apache.jena.sparql.graph.GraphUnionRead ;
 import org.apache.jena.sparql.util.Context ;
@@ -42,15 +46,15 @@ public class DSD_Dataset implements DatasetDescriptionProcessor {
         if ( description.isEmpty() )
             return new DatasetGraphReadOnly(dsg) ;
         
-        Collection<Node> defaultGraphs = NodeUtils.convertToNodes(description.getDefaultGraphURIs()) ; 
-        Collection<Node> namedGraphs = NodeUtils.convertToNodes(description.getNamedGraphURIs()) ;
+        Set<Node> defaultGraphs = NodeUtils.convertToSetNodes(description.getDefaultGraphURIs()) ; 
+        Set<Node> namedGraphs = NodeUtils.convertToSetNodes(description.getNamedGraphURIs()) ;
         
         // The default graph.
         Graph dft = new GraphUnionRead(dsg, defaultGraphs) ;
         // Set the transactional to be the dsg.
         DatasetGraph dsg2 = new DatasetGraphMapLink(dft) {
             @Override public void begin(ReadWrite mode)         { dsg.begin(mode) ; }
-            @Override public void commit() { dsg.commit(); }
+            @Override public void commit()                      { dsg.commit(); }
             @Override public boolean isInTransaction()          { return dsg.isInTransaction() ; }
             @Override public void end()                         { dsg.end(); }
             @Override public boolean supportsTransactions()     { return dsg.supportsTransactions() ; }

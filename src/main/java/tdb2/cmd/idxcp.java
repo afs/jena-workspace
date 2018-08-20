@@ -156,7 +156,6 @@ public class idxcp extends CmdTDB {
 
     private TupleIndex find(String indexName, TupleIndex[] indexes) {
         for ( TupleIndex idx : indexes ) {
-            // XXX ???
             if ( Objects.equals(indexName, idx.getName()) )
                 return idx;
         }

@@ -16,27 +16,23 @@
  * limitations under the License.
  */
 
-package dataset;
+package fuseki.security;
 
-import org.apache.jena.atlas.lib.Registry;
+import org.apache.jena.sys.JenaSubsystemLifecycle;
+import org.apache.jena.sys.JenaSystem;
 
-/**
- * A {@link SecurityRegistry} is mapping from a string (typically a user name or role
- * name) to a {@link SecurityContext}, where the {@link SecurityContext}
- * is the access control operations for the user/role.
- */ 
-public class SecurityRegistry extends Registry<String, SecurityContext>{
-    
-    // Singletons eventually get use into trouble! (Multiple server in one JVM)
-    // but they are better than statics.
-    private static SecurityRegistry singleton = new SecurityRegistry();
+public class InitSecurity implements JenaSubsystemLifecycle {
 
-    public static SecurityRegistry get() {
-        return singleton;
+    @Override
+    public void start() {
+        JenaSystem.logLifecycle("InitSecurity - start") ;
+        VocabSecurity.init();
+        JenaSystem.logLifecycle("InitSecurity - finish") ;
     }
+
+    @Override
+    public void stop() {}
     
-//    // Key (e.g. user, role) to  
-//    private Map<String, SecurityContext> securityContexts = new ConcurrentHashMap<>();
-    
-    public SecurityRegistry() {}
+    @Override
+    public int level() { return 100; }
 }
