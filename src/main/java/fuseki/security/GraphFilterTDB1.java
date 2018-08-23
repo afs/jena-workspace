@@ -24,6 +24,7 @@ import java.util.Objects;
 
 import org.apache.jena.atlas.lib.ListUtils;
 import org.apache.jena.graph.Node;
+import org.apache.jena.query.QueryExecution;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.util.Symbol;
 import org.apache.jena.system.Txn;
@@ -46,10 +47,10 @@ class GraphFilterTDB1 extends GraphFilter<NodeId> {
     
     /**
      * Create a graph filter for a TDB1 {@link DatasetGraph}. The filter matches (returns
-     * true) for Tuples where the graph slot in quad matches or for triples in the default
-     * graph.
+     * true) for Tuples where the graph slot in quad is in the collection or for triples in the default
+     * graph according the boolean.
      * 
-     * @see SecurityPolicy#filterTDB1
+     * @see SecurityPolicy#filterTDB(DatasetGraph, QueryExecution)
      */
     public static GraphFilterTDB1 graphFilter(DatasetGraph dsg, Collection<Node> namedGraphs, boolean matchDefaultGraph) {
         if ( ! TDBInternal.isTDB1(dsg) )

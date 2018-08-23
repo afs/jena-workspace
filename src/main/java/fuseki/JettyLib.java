@@ -22,6 +22,9 @@ import java.util.Objects;
 
 import org.eclipse.jetty.security.*;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Credential;
 import org.eclipse.jetty.util.security.Password;
@@ -110,4 +113,23 @@ public class JettyLib {
         catch (Exception ex) { throw new RuntimeException("UserStore", ex); }
         return propertyUserStore;
     }
+    
+    /** Add or append a {@link Handler} to a Jetty {@link Server}. */
+    public static void addHandler(Server server, Handler handler) {
+        final Handler currentHandler = server.getHandler();
+        if (currentHandler == null) {
+            server.setHandler(handler);
+        } else {
+            if (currentHandler instanceof HandlerList) {
+                ((HandlerList) currentHandler).addHandler(handler);
+            } else {
+                // Singleton handler. Convert to list.
+                final HandlerList handlerList = new HandlerList();
+                handlerList.addHandler(currentHandler);
+                handlerList.addHandler(handler);
+                server.setHandler(handlerList);
+            }
+        }
+    }
+
 }

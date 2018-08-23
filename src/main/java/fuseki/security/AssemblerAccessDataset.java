@@ -23,8 +23,10 @@ import org.apache.jena.assembler.Mode;
 import org.apache.jena.assembler.assemblers.AssemblerBase;
 import org.apache.jena.assembler.exceptions.AssemblerException;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.util.graph.GraphUtils;
 
 public class AssemblerAccessDataset extends AssemblerBase {
@@ -48,10 +50,13 @@ public class AssemblerAccessDataset extends AssemblerBase {
         SecurityRegistry sr = (SecurityRegistry)a.open(rnRegistry.asResource()) ;
         Dataset ds = (Dataset)a.open(rnDataset.asResource()) ;
         
-        // Add marker
-        ds.getContext().set(VocabSecurity.symControlledAccess, sr);
-        // Add security registry
-        ds.getContext().set(VocabSecurity.symSecurityRegistry, sr);
+        DatasetGraph dsg = new DatasetGraphAccessControl(ds.asDatasetGraph(), sr);
+        ds = DatasetFactory.wrap(dsg);
+        
+//        // Add marker
+//        ds.getContext().set(DataAccessCtl.symControlledAccess, true);
+//        // Add security registry
+//        ds.getContext().set(DataAccessCtl.symSecurityRegistry, sr);
         return ds;
     }
     

@@ -18,34 +18,32 @@
 
 package fuseki.security;
 
-import java.util.function.Function;
+import java.util.Objects;
 
-import org.apache.jena.fuseki.servlets.HttpAction;
-import org.apache.jena.fuseki.servlets.REST_Quads_R;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphWrapper;
-import org.apache.jena.sparql.util.Context;
 
-public class Filtered_REST_Quads_R extends REST_Quads_R {
-    public Filtered_REST_Quads_R(Function<HttpAction, String> determineUser) {}
+/** DatasetGraph layer that carries a SecurityRegistry. */ 
+class DatasetGraphAccessControl extends DatasetGraphWrapper {
+    
+    private SecurityRegistry registry = null; 
 
-    @Override
-    protected void validate(HttpAction action) {
-        super.validate(action);
+    public DatasetGraphAccessControl(DatasetGraph dsg, SecurityRegistry registry) {
+        super(Objects.requireNonNull(dsg));
+        this.registry = Objects.requireNonNull(registry); 
+    }
+    
+    public SecurityRegistry getRegistry() {
+        return registry;
     }
 
-    @Override
-    protected void doGet(HttpAction action) {
-        
-        DatasetGraph dsg0 = action.getActiveDSG();
-        DatasetGraph dsg = new DatasetGraphWrapper(dsg0) {
-            @Override public Context getContext() { return super.getContext(); }
-        };
-        // Replace datasetGraph
-        // XXX Implement access control for REST_Quads_R
-
-        HttpAction action2 = action;
-        
-        super.doGet(action2);
+    /**
+     * Return the underlying {@code DatasetGraph}. If the argument is not a
+     * {@code DatasetGraphAccessControl}, return the argument.
+     */
+    public static DatasetGraph unwrap(DatasetGraph dsg) {
+        if ( ! ( dsg instanceof DatasetGraphAccessControl ) )
+            return dsg;
+        return ((DatasetGraphAccessControl)dsg).getWrapped();
     }
 }

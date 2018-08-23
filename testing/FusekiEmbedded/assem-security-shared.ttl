@@ -4,7 +4,7 @@ PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX tdb2:    <http://jena.apache.org/2016/tdb#>
 PREFIX ja:      <http://jena.hpl.hp.com/2005/11/Assembler#>
-PREFIX access:  <http://jena.hpl.hp.com/access#>
+PREFIX access:  <http://jena.apache.org/access#>
 
 [] rdf:type fuseki:Server ;
    fuseki:services (
@@ -22,14 +22,11 @@ PREFIX access:  <http://jena.hpl.hp.com/access#>
     fuseki:dataset                  <#access_dataset>;
     .
 
+## Dataset 1
+## Access control
 <#access_dataset>  rdf:type access:AccessControlledDataset ;
     access:registry   <#securityRegistry> ;
-    access:dataset    <#tdb_dataset_read> ;
-    .
-
-<#tdb_dataset_read> rdf:type      tdb2:DatasetTDB2 ;
-    tdb2:location "--mem--" ;
-    tdb2:unionDefaultGraph true ;
+    access:dataset    <#tdb_dataset_shared> ;
     .
 
 <#securityRegistry> rdf:type access:SecurityRegistry ;
@@ -40,7 +37,8 @@ PREFIX access:  <http://jena.hpl.hp.com/access#>
     access:entry [ access:user "user3" ; access:graphs <http://host/graphname5> ] ;
     access:entry [ access:user "userZ" ; access:graphs <http://host/graphnameZ> ] ;
     .
-# No data access control.
+## Dataset 2
+## No data access control.
 <#service_plain> rdf:type fuseki:Service ;
     fuseki:name                  "plain";
     fuseki:serviceQuery          "query";
@@ -49,10 +47,12 @@ PREFIX access:  <http://jena.hpl.hp.com/access#>
     fuseki:serviceUpload         "upload" ;
     fuseki:serviceReadGraphStore "data" ;
     fuseki:serviceReadGraphStore "get" ;
-    fuseki:dataset <#tdb_dataset> ;
+    fuseki:dataset <#tdb_dataset_shared> ;
     .
-    
-<#tdb_dataset> rdf:type      tdb2:DatasetTDB2 ;
-    tdb2:location "--mem--" ;
+
+## Shared database.
+<#tdb_dataset_shared> rdf:type      tdb2:DatasetTDB2 ;
+    tdb2:location "--mem--/DB" ;
+    tdb2:unionDefaultGraph true ;
     .
-    
+

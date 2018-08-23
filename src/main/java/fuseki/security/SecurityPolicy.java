@@ -66,21 +66,17 @@ public class SecurityPolicy {
     }
     
     /**
-     * Apply a filter suitable for the DatasetGraph, to the {@link Context} of the
-     * {@link QueryExecution}
+     * Apply a filter suitable for the TDB-backed {@link DatasetGraph}, to the {@link Context} of the
+     * {@link QueryExecution}. This does not modify the {@link DatasetGraph}
      */
     public void filterTDB(DatasetGraph dsg, QueryExecution qExec) {
         GraphFilter<?> predicate = predicate(dsg);
-        if ( predicate == null )
-            throw new IllegalArgumentException("Not a TDB1 or TDB2 database: "+dsg.getClass().getSimpleName());
         qExec.getContext().set(predicate.getContextKey(), predicate);
     }
     
-    /** Modify the {@link Context} of the {@link DatasetGraph}. */
+    /** Modify the {@link Context} of the TDB-backed {@link DatasetGraph}. */
     public void filterTDB(DatasetGraph dsg) {
         GraphFilter<?> predicate = predicate(dsg);
-        if ( predicate == null )
-            throw new IllegalArgumentException("Not a TDB1 or TDB2 database: "+dsg.getClass().getSimpleName());
         dsg.getContext().set(predicate.getContextKey(), predicate);
     }
 
@@ -89,12 +85,23 @@ public class SecurityPolicy {
         return "dft:"+matchDefaultGraph+" / "+graphNames.toString();
     }
 
-    private GraphFilter<?> predicate(DatasetGraph dsg) {
+    /**
+     * Create a GraphFilter for a TDB backed dataset.
+     * 
+     * @return GraphFilter
+     * @throws IllegalArgumentException
+     *             if not a TDB database, or a {@link DatasetGraphAccessControl} wrapped
+     *             TDB database.
+     */
+    public GraphFilter<?> predicate(DatasetGraph dsg) {
+        dsg = DatasetGraphAccessControl.unwrap(dsg);
+        // dsg has to be the database dataset, not wrapped.
+        //  DatasetGraphSwitchable is wrapped but should not be unwrapped. 
         if ( TDBFactory.isTDB1(dsg) )
             return filterTDB1(dsg);
         if ( DatabaseMgr.isTDB2(dsg) )
             return filterTDB2(dsg);
-        return null;
+        throw new IllegalArgumentException("Not a TDB1 or TDB2 database: "+dsg.getClass().getSimpleName());
     }
 
     public GraphFilterTDB2 filterTDB2(DatasetGraph dsg) {

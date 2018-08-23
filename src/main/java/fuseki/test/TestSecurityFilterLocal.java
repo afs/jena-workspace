@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import fuseki.security.DataAccessCtl;
 import fuseki.security.SecurityPolicy;
 import fuseki.security.SecurityRegistry;
 import org.apache.jena.atlas.iterator.Iter;
@@ -68,7 +69,7 @@ public class TestSecurityFilterLocal {
         return Arrays.asList(obj1, obj2);
     }
     
-    private final DatasetGraph testdsg;
+    private DatasetGraph testdsg;
     private SecurityRegistry reg = new SecurityRegistry();
     
     public TestSecurityFilterLocal(String name, Creator<DatasetGraph> source) {
@@ -79,6 +80,8 @@ public class TestSecurityFilterLocal {
         reg.put("user0", new SecurityPolicy(Quad.defaultGraphIRI.getURI()));
         reg.put("user1", new SecurityPolicy("http://test/g1", Quad.defaultGraphIRI.getURI()));
         reg.put("user2", new SecurityPolicy("http://test/g1", "http://test/g2", "http://test/g3"));
+        DataAccessCtl.controlledDataset(testdsg, reg);
+        //testdsg = DataAccessCtl.wrapControlledDataset(testdsg, reg);
     }
     
     private static void assertSeen(Set<Node> visible, Node ... expected) {

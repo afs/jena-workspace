@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import fuseki.security.DataAccessControlledFuseki;
+import fuseki.JettyLib;
+import fuseki.security.DataAccessCtl;
 import fuseki.security.SecurityPolicy;
 import fuseki.security.SecurityRegistry;
-import fuseki.security.VocabSecurity;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.fuseki.FusekiLib;
@@ -48,6 +48,7 @@ import org.apache.jena.sparql.engine.http.QueryExceptionHTTP;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.tdb2.DatabaseMgr;
 import org.eclipse.jetty.security.PropertyUserStore;
+import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.util.security.Credential;
 import org.eclipse.jetty.util.security.Password;
@@ -89,14 +90,18 @@ public class TestSecurityFilterFuseki {
         reg.put("user1", new SecurityPolicy("http://test/g1", Quad.defaultGraphIRI.getURI()));
         reg.put("user2", new SecurityPolicy("http://test/g1", "http://test/g2", "http://test/g3"));
         
-        testdsg1.getContext().set(VocabSecurity.symSecurityRegistry, reg);
-        testdsg2.getContext().set(VocabSecurity.symSecurityRegistry, reg);
+        // XXXX Also need wrapped tests
+        DataAccessCtl.controlledDataset(testdsg1, reg);
+        DataAccessCtl.controlledDataset(testdsg2, reg);
 
         UserStore userStore = userStore();
-        fusekiServer = DataAccessControlledFuseki.fuseki(port, userStore, builder->{
-            builder.add("data1", testdsg1);
-            builder.add("data2", testdsg2);
-        });
+        SecurityHandler sh = JettyLib.makeSecurityHandler("/*", "DatasetRealm", userStore);
+        
+        fusekiServer = DataAccessCtl.fusekiBuilder(sh,  DataAccessCtl.requestUserServlet)
+            .port(port)
+            .add("data1", testdsg1)
+            .add("data2", testdsg2)
+            .build();
         fusekiServer.start();
     }
 

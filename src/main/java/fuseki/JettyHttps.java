@@ -21,7 +21,6 @@ package fuseki;
 import org.eclipse.jetty.http.HttpScheme;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.SecuredRedirectHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
@@ -87,27 +86,10 @@ public class JettyHttps {
         // ????
         // Info -   how to redirect if HTTP
         SecuredRedirectHandler srh = new SecuredRedirectHandler();
-        addHandler(server, srh);
+        JettyLib.addHandler(server, srh);
         return server; 
     }
     
-    // Add, or append.
-    public static void addHandler(Server server, Handler handler) {
-        final Handler currentHandler = server.getHandler();
-        if (currentHandler == null) {
-            server.setHandler(handler);
-        } else {
-            if (currentHandler instanceof HandlerList) {
-                ((HandlerList) currentHandler).addHandler(handler);
-            } else {
-                // Singleton handler. 
-                final HandlerList handlerList = new HandlerList();
-                handlerList.addHandler(currentHandler);
-                handlerList.addHandler(handler);
-                server.setHandler(handlerList);
-            }
-        }
-    }
 
     public class ServerX extends org.eclipse.jetty.server.Server {
 
@@ -125,7 +107,7 @@ public class JettyHttps {
                 final ServerConnector httpsConnector = getHttpsConnector(httpsConfig, httpsPort, keystorePath, keystorePassword, keyManagerPassword);
 
                 setConnectors(httpConnector, httpsConnector);
-                addHandler(this, new SecuredRedirectHandler());
+                JettyLib.addHandler(this, new SecuredRedirectHandler());
             } else {
                 final ServerConnector serverConnector = new ServerConnector(this);
 

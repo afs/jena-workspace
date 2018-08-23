@@ -25,57 +25,66 @@ import org.apache.jena.fuseki.servlets.HttpAction;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryDataset;
 import org.apache.jena.fuseki.servlets.ServletOps;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
+import org.apache.jena.sparql.core.DatasetGraph;
 
 /** A Query {@link ActionService} that inserts a security filter on each query. */
 final
 public class Filtered_SPARQL_QueryDataset extends SPARQL_QueryDataset {
-        private final Function<HttpAction, String> requestUser;
+    private final Function<HttpAction, String> requestUser;
 
-        public Filtered_SPARQL_QueryDataset(Function<HttpAction, String> requestUser) {
-            this.requestUser = requestUser; 
-        }
-        
-        private String determineUser(HttpAction action) {
-            return requestUser.apply(action);
-        }
-
-        // Jena 3.8.0
-//            @SuppressWarnings("deprecation")
-//            @Override
-//            protected QueryExecution createQueryExecution(Query query, Dataset dataset) {
-//                super.log.info("** Intercepted **");
-//                QueryExecution qExec = super.createQueryExecution(query, dataset);
-//                if ( TDB2Factory.isBackedByTDB(dataset) )
-//                    FiltersTDB2.withFilter(qExec.getContext(), sf);
-//                return qExec;
-//            }
-        
-        // Jena 3.9.0 : intercept at createQueryExecution(HttpAction action, Query query, Dataset dataset)
-        @Override
-        protected QueryExecution createQueryExecution(HttpAction action, Query query, Dataset dataset) {
-            if ( dataset.getContext().isFalseOrUndef(VocabSecurity.symControlledAccess) ) 
-                return super.createQueryExecution(action, query, dataset);
-
-            SecurityRegistry registry = dataset.getContext().get(VocabSecurity.symSecurityRegistry);
-            if ( registry == null )
-                    ServletOps.errorOccurred("Internal Server Error");
-            
-            SecurityPolicy sCxt = null;
-            String user = determineUser(action);
-            sCxt = registry.get(user);
-            if ( sCxt == null )
-                sCxt = noSecurityPolicy();
-            QueryExecution qExec = super.createQueryExecution(action, query, dataset);
-            if ( sCxt != null )
-                sCxt.filterTDB(dataset.asDatasetGraph(), qExec);
-            return qExec;
-        }
-
-        private SecurityPolicy noSecurityPolicy() {
-            ServletOps.errorForbidden();
-            // Should not get here.
-            throw new InternalError();
-        }
+    public Filtered_SPARQL_QueryDataset(Function<HttpAction, String> requestUser) {
+        this.requestUser = requestUser; 
     }
+
+    private String determineUser(HttpAction action) {
+        return requestUser.apply(action);
+    }
+
+    @Override
+    protected QueryExecution createQueryExecution(HttpAction action, Query query, Dataset dataset) {
+        // Server database, not the possibly dynamically built "dataset"
+        DatasetGraph dsg = action.getDataset();
+        if ( dsg == null )
+            return super.createQueryExecution(action, query, dataset);
+        if ( ! DataAccessCtl.isAccessControlled(dsg) )
+            return super.createQueryExecution(action, query, dataset);
+        
+        SecurityRegistry registry = getSecurityRegistry(action, query, dataset);
+        if ( registry == null )
+            ServletOps.errorOccurred("Internal Server Error");
+
+        SecurityPolicy sCxt = null;
+        String user = determineUser(action);
+        sCxt = registry.get(user);
+        if ( sCxt == null )
+            sCxt = noSecurityPolicy();
+        
+        if ( dsg instanceof DatasetGraphAccessControl ) {
+            // Take off one layer.
+            dsg = DatasetGraphAccessControl.unwrap(dsg);
+            // Add back the Dataset for the createQueryExecution call.
+            dataset = DatasetFactory.wrap(dsg);
+        }
+        
+        QueryExecution qExec = super.createQueryExecution(action, query, dataset);
+        if ( sCxt != null )
+            sCxt.filterTDB(dsg, qExec);
+        return qExec;
+    }
+
+    private SecurityRegistry getSecurityRegistry(HttpAction action, Query query, Dataset dataset) {
+        DatasetGraph dsg = action.getDataset();
+        if ( dsg instanceof DatasetGraphAccessControl )
+            return ((DatasetGraphAccessControl)dsg).getRegistry();
+        return dsg.getContext().get(DataAccessCtl.symSecurityRegistry);
+    }
+
+    private SecurityPolicy noSecurityPolicy() {
+        ServletOps.errorForbidden();
+        // Should not get here.
+        throw new InternalError();
+    }
+}

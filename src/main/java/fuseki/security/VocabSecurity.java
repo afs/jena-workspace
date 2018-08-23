@@ -21,11 +21,10 @@ package fuseki.security;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.assembler.AssemblerUtils;
-import org.apache.jena.sparql.util.Symbol;
 import org.apache.jena.tdb.assembler.Vocab;
 
 public class VocabSecurity {
-    private static final String NS = "http://jena.hpl.hp.com/access#";
+    private static final String NS = "http://jena.apache.org/access#";
     
     public static String getURI() { return NS ; } 
 
@@ -41,9 +40,6 @@ public class VocabSecurity {
     public static final Property pUser                    = Vocab.property(NS, "user");
     public static final Property pGraphs                  = Vocab.property(NS, "graphs");
 
-    public static final Symbol   symControlledAccess      = Symbol.create(VocabSecurity.getURI() + "controlled");
-    public static final Symbol   symSecurityRegistry      = Symbol.create(VocabSecurity.getURI() + "registry");
-    
     private static boolean initialized = false ; 
     
     static { init() ; }

@@ -18,12 +18,16 @@
 
 package fuseki.security;
 
+import java.util.function.Function;
+
 import org.apache.jena.fuseki.servlets.HttpAction;
 import org.apache.jena.fuseki.servlets.SPARQL_GSP_R;
 import org.apache.jena.sparql.util.Context;
 
 public class Filtered_SPARQL_GSP_R extends SPARQL_GSP_R {
     
+    public Filtered_SPARQL_GSP_R(Function<HttpAction, String> determineUser) {}
+
     @Override
     protected void doGet(HttpAction action) {
         // For this, mask on target.
@@ -37,10 +41,10 @@ public class Filtered_SPARQL_GSP_R extends SPARQL_GSP_R {
         
         Context context = action.getActiveDSG().getContext();
         //action.getContext(); // Is this the DGS? No. copied.
-        action.getContext().set(VocabSecurity.symControlledAccess, true);
-        // XXX
+        action.getContext().set(DataAccessCtl.symControlledAccess, true);
+        // XXX Implement access control for GSP_R
         SecurityRegistry securityRegistry = null;
-        action.getContext().set(VocabSecurity.symSecurityRegistry, securityRegistry); 
+        action.getContext().set(DataAccessCtl.symSecurityRegistry, securityRegistry); 
         super.doGet(action);
     }
 

@@ -27,10 +27,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import fuseki.security.DataAccessControlledFuseki;
+import fuseki.security.DataAccessCtl;
 import fuseki.security.SecurityRegistry;
 import fuseki.security.VocabSecurity;
 import org.apache.jena.atlas.iterator.Iter;
+import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.fuseki.FusekiLib;
 import org.apache.jena.fuseki.embedded.FusekiServer;
@@ -47,80 +48,58 @@ import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.system.Txn;
 import org.junit.Test;
 
+/**
+ * Test on the assembler for data access control.
+ * <ul>
+ * <li>assem-security.ttl - two services "/database" and "/plain" each with their own dataset. 
+ * <li>assem-security-shared.ttl - two services "/database" and "/plain" with a shared dataset.
+ * </ul>
+ */
 public class TestSecurityAssembler {
     // If this set of tests is run on its own ...
     static { LogCtl.setLog4j("log4j-testing.properties"); }
     
     static final String DIR = "testing/FusekiEmbedded/";
     
+    // Check the main test inputs. 
     @Test public void assembler1() { 
         Dataset ds = (Dataset)AssemblerUtils.build(DIR+"assem-security.ttl", VocabSecurity.tAccessControlledDataset);
     }
     
     @Test public void assembler2() { 
-        Dataset ds = (Dataset)AssemblerUtils.build(DIR+"assem-security.ttl", VocabSecurity.tAccessControlledDataset);
-        SecurityRegistry securityRegistry = ds.getContext().get(VocabSecurity.symSecurityRegistry);
-        // XXX check registry
+        Dataset ds = (Dataset)AssemblerUtils.build(DIR+"assem-security-shared.ttl", VocabSecurity.tAccessControlledDataset);
+        SecurityRegistry securityRegistry = ds.getContext().get(DataAccessCtl.symSecurityRegistry);
     }
     
-    @Test public void assembler3() {
-        VocabSecurity.init();
+    private static FusekiServer setup(String assembler, AtomicReference<String> user) {
         int port = FusekiLib.choosePort();
+        FusekiServer server = DataAccessCtl.fusekiBuilder((a)->user.get())
+            .port(port)
+            .parseConfigFile(assembler)
+            .build();
+                
+        return server;
+    }
+    
+    // Two separate datasets  
+    @Test public void assembler3() {
         AtomicReference<String> user = new AtomicReference<>();
-        
-        FusekiServer server = 
-            FusekiServer.create().port(port).parseConfigFile(DIR+"assem-security.ttl").build();
-        // User via access AtomicReference
-        DataAccessControlledFuseki.enable(server, (a)->user.get());
-        
-        //Add data
+        FusekiServer server = setup(DIR+"assem-security.ttl", user);
+        // Add data directly to the datasets.
         DatasetGraph dsg = server.getDataAccessPointRegistry().get("/database").getDataService().getDataset();
+        //System.out.println(dsg.getContext());
         Txn.executeWrite(dsg,  ()->{
             dsg.add(SSE.parseQuad("(<http://host/graphname1> :s1 :p :o)"));
             dsg.add(SSE.parseQuad("(<http://host/graphname3> :s3 :p :o)"));
             dsg.add(SSE.parseQuad("(<http://host/graphname9> :s9 :p :o)"));
         });
         server.start();
-        
         try {
-            String url = "http://localhost:"+port+"/database";
-            
-            Node s1 = SSE.parseNode(":s1"); 
-            Node s3 = SSE.parseNode(":s3");
-            Node s9 = SSE.parseNode(":s9"); 
-            
-            user.set("user1");
-            try(RDFConnection conn = RDFConnectionFactory.connect(url)) {
-                Set<Node> visible = query(conn, "SELECT * { GRAPH ?g { ?s ?p ?o }}");
-                assertSeen(visible, s1, s3);
-            }
-            
-            user.set("userX"); // No such user in the registry
-            try(RDFConnection conn = RDFConnectionFactory.connect(url)) {
-                Set<Node> visible = query(conn, "SELECT * { GRAPH ?g { ?s ?p ?o }}");
-                assertSeen(visible);
-            }
-            user.set(null);
-            try(RDFConnection conn = RDFConnectionFactory.connect(url)) {
-                Set<Node> visible = query(conn, "SELECT * { GRAPH ?g { ?s ?p ?o }}");
-                assertSeen(visible);
-            }
-            
-            user.set("user2");
-            try(RDFConnection conn = RDFConnectionFactory.connect(url)) {
-                Set<Node> visible = query(conn, "SELECT * { GRAPH ?g { ?s ?p ?o }}");
-                assertSeen(visible, s9);
-            }
-            
-            user.set("userZ"); // No graphs with data.
-            try(RDFConnection conn = RDFConnectionFactory.connect(url)) {
-                Set<Node> visible = query(conn, "SELECT * { GRAPH ?g { ?s ?p ?o }}");
-                assertSeen(visible);
-            }
-            
+            testAssembler(server.getPort(), user);
+
             // Access the uncontrolled dataset.
             user.set(null);
-            String plainUrl = "http://localhost:"+port+"/plain";
+            String plainUrl = "http://localhost:"+server.getPort()+"/plain";
             try(RDFConnection conn = RDFConnectionFactory.connect(plainUrl)) {
                 conn.update("INSERT DATA { <x:s> <x:p> 123 , 456 }");
                 conn.queryResultSet("SELECT * { ?s ?p ?o }",
@@ -130,6 +109,75 @@ public class TestSecurityAssembler {
                     });
             }
         } finally { server.stop(); }
+    }
+    
+    // Shared dataset
+    @Test public void assembler4() {
+        AtomicReference<String> user = new AtomicReference<>();
+        FusekiServer server = setup(DIR+"assem-security-shared.ttl", user);
+    
+        String x = StrUtils.strjoinNL
+            ("PREFIX : <http://example/>"
+            ,"INSERT DATA {"
+            ,"   GRAPH <http://host/graphname1> {:s1 :p :o}"
+            ,"   GRAPH <http://host/graphname3> {:s3 :p :o}"
+            ,"   GRAPH <http://host/graphname9> {:s9 :p :o}"
+            ,"}"
+            );
+        
+        server.start();
+        try {
+            user.set(null);
+            String plainUrl = "http://localhost:"+server.getPort()+"/plain";
+            try(RDFConnection conn = RDFConnectionFactory.connect(plainUrl)) {
+                conn.update(x);
+                conn.queryResultSet("SELECT * { GRAPH ?g { ?s ?p ?o } }",
+                    rs->{
+                        int c = ResultSetFormatter.consume(rs);
+                        assertEquals(3, c);
+                    });
+            }
+            testAssembler(server.getPort(), user);
+        } finally { server.stop(); }
+    }
+
+    private void testAssembler(int port, AtomicReference<String> user) {
+        // The access controlled dataset.
+        String url = "http://localhost:"+port+"/database";
+
+        Node s1 = SSE.parseNode(":s1"); 
+        Node s3 = SSE.parseNode(":s3");
+        Node s9 = SSE.parseNode(":s9"); 
+
+        user.set("user1");
+        try(RDFConnection conn = RDFConnectionFactory.connect(url)) {
+            Set<Node> visible = query(conn, "SELECT * { GRAPH ?g { ?s ?p ?o }}");
+            assertSeen(visible, s1, s3);
+        }
+
+        user.set("userX"); // No such user in the registry
+        try(RDFConnection conn = RDFConnectionFactory.connect(url)) {
+            Set<Node> visible = query(conn, "SELECT * { GRAPH ?g { ?s ?p ?o }}");
+            assertSeen(visible);
+        }
+        user.set(null); // No user.
+        try(RDFConnection conn = RDFConnectionFactory.connect(url)) {
+            Set<Node> visible = query(conn, "SELECT * { GRAPH ?g { ?s ?p ?o }}");
+            assertSeen(visible);
+        }
+
+        user.set("user2");
+        try(RDFConnection conn = RDFConnectionFactory.connect(url)) {
+            Set<Node> visible = query(conn, "SELECT * { GRAPH ?g { ?s ?p ?o }}");
+            assertSeen(visible, s9);
+        }
+
+        user.set("userZ"); // No graphs with data.
+        try(RDFConnection conn = RDFConnectionFactory.connect(url)) {
+            Set<Node> visible = query(conn, "SELECT * { GRAPH ?g { ?s ?p ?o }}");
+            assertSeen(visible);
+        }
+
     }
 
     private static void assertSeen(Set<Node> visible, Node ... expected) {
