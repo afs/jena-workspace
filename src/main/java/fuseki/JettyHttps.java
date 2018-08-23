@@ -18,6 +18,7 @@
 
 package fuseki;
 
+import org.apache.jena.fuseki.jetty.JettyLib;
 import org.eclipse.jetty.http.HttpScheme;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;

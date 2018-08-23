@@ -18,10 +18,10 @@
 
 package fuseki;
 
-import fuseki.security.GraphFilter;
-import fuseki.security.SecurityPolicy;
-import fuseki.security.SecurityRegistry;
 import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.fuseki.access.GraphFilter;
+import org.apache.jena.fuseki.access.SecurityPolicy;
+import org.apache.jena.fuseki.access.SecurityRegistry;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.QueryExecution;

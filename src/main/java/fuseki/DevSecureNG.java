@@ -22,17 +22,18 @@ import static java.lang.String.format;
 
 import java.io.IOException;
 
-import fuseki.security.DataAccessCtl;
-import fuseki.security.SecurityPolicy;
-import fuseki.security.SecurityRegistry;
-import fuseki.security.VocabSecurity;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.fuseki.access.DataAccessCtl;
+import org.apache.jena.fuseki.access.SecurityPolicy;
+import org.apache.jena.fuseki.access.SecurityRegistry;
+import org.apache.jena.fuseki.access.VocabSecurity;
 import org.apache.jena.fuseki.embedded.FusekiServer;
+import org.apache.jena.fuseki.jetty.JettyLib;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdfconnection.RDFConnection;
@@ -63,8 +64,12 @@ public class DevSecureNG {
      *       DataAccessCtl.fusekiReadOnly- only read/access services. (FusekiServer.createReadOnly())
      * 2:: GSP
      *
+     * 3:: Init via ServiceLoader.
+     *     Test logging.
+     *
      * 6:: Check wrappers on tdb. 
      *     Filtered_SPARQL_QueryDataset
+     *     "Find with filter" -> a masking find operation.
      * 
      * 8:: Look for X XX.
      * 
@@ -76,6 +81,9 @@ public class DevSecureNG {
      *    Example based on assem-access-shared.
      *    jetty: https, and passwords.
      *    Read-only embeddeding.
+     *    
+     * Z:: jena-fuseki-embedded depending on (optional) log4j via parent.
+     *     Remove from parent.
      */
     /*
      * "allow" security registries and "deny" registries
