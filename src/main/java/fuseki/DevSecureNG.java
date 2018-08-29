@@ -21,58 +21,52 @@ package fuseki;
 import static java.lang.String.format;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.atlas.logging.FmtLog;
+import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.fuseki.access.DataAccessCtl;
-import org.apache.jena.fuseki.access.SecurityPolicy;
+import org.apache.jena.fuseki.access.SecurityContext;
+import org.apache.jena.fuseki.access.AuthorizationService;
 import org.apache.jena.fuseki.access.SecurityRegistry;
-import org.apache.jena.fuseki.access.VocabSecurity;
 import org.apache.jena.fuseki.embedded.FusekiServer;
 import org.apache.jena.fuseki.jetty.JettyLib;
+import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ResultSetFormatter;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.web.HttpOp;
-import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.core.assembler.AssemblerUtils;
 import org.apache.jena.system.Txn;
-import org.apache.jena.tdb2.DatabaseMgr;
 import org.apache.jena.tdb2.TDB2;
 import org.apache.jena.tdb2.TDB2Factory;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.UserStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DevSecureNG {
     /*
-     * DatasetGraphAccess only?
+     * DatasetGraphFilter => jena-arq?
      */
     
     /*
-     * 1:: Assembler => Still std Fuseki, not query ops. 
-     *       [Check]
-     *       DataAccessCtl.fusekiBuilder() with Fuseki+filter actions.
-     *       DataAccessCtl.fuseki - replaces the services 
-     *       DataAccessCtl.fusekiReadOnly- only read/access services. (FusekiServer.createReadOnly())
-     * 2:: GSP
+     * 0:: QueryExecutionBase with DatasetGraph directly.
+     *     Works but creates a Dataset - tidy up.
      *
-     * 3:: Init via ServiceLoader.
-     *     Test logging.
+     * 1:: https wrapper
      *
-     * 6:: Check wrappers on tdb. 
-     *     Filtered_SPARQL_QueryDataset
-     *     "Find with filter" -> a masking find operation.
-     * 
-     * 8:: Look for X XX.
-     * 
      * 9:: FusekiBasicAccessCmd
      * 
      * X:: Documentation
@@ -80,55 +74,70 @@ public class DevSecureNG {
      *    QueryExecution is modified.
      *    Example based on assem-access-shared.
      *    jetty: https, and passwords.
-     *    Read-only embeddeding.
+     *    Read-only embedding.
      *    
-     * Z:: jena-fuseki-embedded depending on (optional) log4j via parent.
-     *     Remove from parent.
+     * Separately.
+     *    RDFConnection
+     *    Remove deprecated RDFConnectionRemote
      */
     /*
      * "allow" security registries and "deny" registries
      * Jetty: user:password file. https.
+     * Shiro
+     * 
+     * Fuseki restructure ; DevRestructure
+     * 
+     * jetty-webapp -> jetty-xml + jetty-servlet
+     *  + jetty-servlets
+     * 9.4.9.v20180320 
      */
     
     public static void main(String...a) throws IOException {
+        try { FusekiServerSecuredCmd.main("--mem", "/ds"); }
+        catch (Throwable ex) { ex.printStackTrace(); }
+        finally { System.exit(0); }
+
+        // -----------------
         //** Replace fuseki() with function calls.
-        LogCtl.setLog4j();
-        try { main$(a); }
-        catch (Exception ex) { ex.printStackTrace(); }
+        FusekiLogging.setLogging();
+        
+        //LogCtl.setLog4j("log4j.properties");
+
+        try { mainFuseki(a); }
+        catch (Throwable ex) { ex.printStackTrace(); }
         finally { System.exit(0); }
     }
 
-    public static void mainSetup(String...a) {
-        
-        Dataset ds = (Dataset)AssemblerUtils.build("assem-security.ttl", VocabSecurity.tAccessControlledDataset);
-        SecurityRegistry sr1 = (SecurityRegistry)ds.getContext().get(DataAccessCtl.symSecurityRegistry);
-        SecurityRegistry sr2 = (SecurityRegistry)AssemblerUtils.build("assem-security.ttl", VocabSecurity.tSecurityRegistry);
-        
-        System.out.println(sr2);
-        
-        SecurityRegistry reg = new SecurityRegistry();
-        reg.put("user1", new SecurityPolicy("http://example/g1", Quad.defaultGraphIRI.getURI()));
-        reg.put("user2", new SecurityPolicy("http://example/g1", "http://example/g2"));
-        
-        // --------------
-        
-        DatasetGraph dsg = DatabaseMgr.createDatasetGraph();
-        /*DataAccessCtl.*/DataAccessCtl.controlledDataset(dsg, reg);
-
-        //or
-//        DatasetGraph dsg0 = DatabaseMgr.createDatasetGraph();
-//        DatasetGraph dsg1 = wrapControlledDataset(dsg0, reg);
-//        dsg = dsg1;
-        
-        FusekiServer server = DataAccessCtl.fusekiBuilder(DataAccessCtl.requestUserServlet)
+    public static void mainFuseki(String...a) {
+        //Not printing datasets.  Extract from FusekiBasicServer 
+        // Map<String, List<String>> mapDatasetEndpoints = description(DataAccessPointRegistry.get(server.getServletContext()));
+        Logger LOG = LoggerFactory.getLogger("main");
+        FusekiServer server = DataAccessCtl.fusekiBuilder(DataAccessCtl.paramUserServlet)
             .port(3434)
-            .add("/ds", dsg)
+            //.verbose(true)
+            .parseConfigFile("/home/afs/ASF/afs-jena/jena-fuseki2/jena-fuseki-access/testing/Access/assem-security-shared.ttl")
             .build();
-
+        //server.logConfiguration(LOG);
+        server.getDataAccessPointRegistry().forEach((n,dap)->{
+            List<String> endpoints = dap.getDataService().getOperations().stream()
+                .flatMap((op)->dap.getDataService().getEndpoints(op).stream())
+                .map(ep->ep.getEndpoint())
+                //.map(s->s.isEmpty()?"_":s)
+                .map(s->format("%s/%s", n, s))
+                .collect(Collectors.toList());
+            
+            //FmtLog.info(LOG, "  %s: %s", n, endpoints);
+            FmtLog.info(LOG, "  %s", endpoints);
+        });
         server.start();
+        server.join();
     }
 
     public static void main$(String...a) {
+        
+    }
+        
+    public static void mainOld(String...a) {
         int PORT = 1234;
         String dsName = "ds";
 
@@ -142,7 +151,7 @@ public class DevSecureNG {
 
         // ---- Set up the registry.
         SecurityRegistry reg = new SecurityRegistry();
-        reg.put("user1", new SecurityPolicy("http://example/g1", Quad.defaultGraphIRI.getURI()));
+        reg.put("user1", new SecurityContext("http://example/g1", Quad.defaultGraphIRI.getURI()));
         
         //reg.put("user1", new SecurityPolicy("http://example/g1"));
         //reg.put("user2", new SecurityPolicy("http://example/g1", "http://example/g2"));
@@ -168,6 +177,60 @@ public class DevSecureNG {
             .httpClient(client)
             .build();
             
+        // Quads
+        if ( false ) {
+            System.out.println("++ Quads");
+            Dataset ds1 = connx.fetchDataset();
+            RDFDataMgr.write(System.out, ds1, RDFFormat.TRIG_FLAT);
+            //return;
+        }
+        
+        // GSP
+        if ( true ) {
+            try {
+                System.out.println("\n++ GSP : g1");
+                Model mg1 = connx.fetch("http://example/g1");
+                //Model m = connx.fetch(Quad.unionGraph.getURI());
+                RDFDataMgr.write(System.out, mg1, RDFFormat.TURTLE_FLAT);
+            } catch (HttpException ex) {
+                System.out.println("EXCEPTION: "+ex.getMessage());
+            }
+            // No!
+            try { 
+                System.out.println("\n++ GSP : g2");
+                Model mg2 = connx.fetch("http://example/g2");
+                RDFDataMgr.write(System.out, mg2, RDFFormat.TURTLE_FLAT);
+            } catch (HttpException ex) {
+                System.out.println("EXCEPTION: "+ex.getMessage());
+            }
+            // No!
+            try { 
+                System.out.println("\n++ GSP : doesNotExist");
+                Model mg2 = connx.fetch("http://example/doesNotExist");
+                RDFDataMgr.write(System.out, mg2, RDFFormat.TURTLE_FLAT);
+            } catch (HttpException ex) {
+                System.out.println("EXCEPTION: "+ex.getMessage());
+            }
+            try {
+                System.out.println("\n++ GSP : gDft");
+                Model mDft = connx.fetch();
+                RDFDataMgr.write(System.out, mDft, RDFFormat.TURTLE_FLAT);
+            } catch (HttpException ex) {
+                System.out.println("EXCEPTION: "+ex.getMessage());
+            }
+            try {
+                System.out.println("\n++ GSP : union");
+                Model mUnion = connx.fetch(Quad.unionGraph.getURI());
+                RDFDataMgr.write(System.out, mUnion, RDFFormat.TURTLE_FLAT);
+                return;
+            } catch (HttpException ex) {
+                System.out.println("EXCEPTION: "+ex.getMessage());
+            }
+            if ( true ) return;
+            System.out.println();
+        }
+        
+        // SPARQL Query.
         try ( RDFConnection conn = connx ) {
             conn.queryResultSet("SELECT * { { ?s ?p ?o } UNION { GRAPH ?g { ?s ?p ?o } } }",
                 rs->ResultSetFormatter.out(rs)
@@ -182,13 +245,13 @@ public class DevSecureNG {
         }
     }
     
-    private static FusekiServer fuseki(int port, String dsName, Dataset ds, SecurityRegistry reg, String user, String password) {
+    private static FusekiServer fuseki(int port, String dsName, Dataset ds, AuthorizationService reg, String user, String password) {
         UserStore userStore = JettyLib.makeUserStore(user, password);
         return fuseki(port, dsName, ds, reg, userStore);
     }
     
-    private static FusekiServer fuseki(int port, String dsName, Dataset ds, SecurityRegistry reg, UserStore userStore) {
-        Dataset dsx = DataAccessCtl.wrapControlledDataset(ds, reg);
+    private static FusekiServer fuseki(int port, String dsName, Dataset ds, AuthorizationService reg, UserStore userStore) {
+        Dataset dsx = DataAccessCtl.controlledDataset(ds, reg);
         FusekiServer.Builder builder = DataAccessCtl.fusekiBuilder(DataAccessCtl.requestUserServlet)
             .port(port)
             .add(dsName, dsx, false);
