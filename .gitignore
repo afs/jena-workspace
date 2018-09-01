@@ -35,6 +35,6 @@ src-xerces
 # Databases and Fuseki
 Fuseki-https/run/
 **/run/system/
-
+certs/
 Files/
 DB*/

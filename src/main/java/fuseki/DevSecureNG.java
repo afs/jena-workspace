@@ -84,12 +84,6 @@ public class DevSecureNG {
      * "allow" security registries and "deny" registries
      * Jetty: user:password file. https.
      * Shiro
-     * 
-     * Fuseki restructure ; DevRestructure
-     * 
-     * jetty-webapp -> jetty-xml + jetty-servlet
-     *  + jetty-servlets
-     * 9.4.9.v20180320 
      */
     
     public static void main(String...a) throws IOException {
