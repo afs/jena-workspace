@@ -18,15 +18,24 @@
 
 package dev;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Paths;
 
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.fuseki.cmd.FusekiCmd;
+import org.apache.jena.fuseki.main.FusekiServer;
+import org.apache.jena.fuseki.servlets.SPARQL_QueryGeneral;
+import org.apache.jena.fuseki.system.FusekiLogging;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.sparql.core.DatasetGraphZero;
 
 public class RunFuseki
 {
-    public static void main(String ... a) throws UnsupportedEncodingException {
+    public static void main(String ... a) {
+        main3();
+    }
+    
+    public static void main1(String ... a) {
         String BASE = "/home/afs/tmp" ;
         //String BASE = "/home/afs/Desktop/JENA-1302";
 
@@ -54,4 +63,29 @@ public class RunFuseki
 
             ) ;
     }
+    
+    
+    public static void main2(String ... a) {
+        FusekiLogging.setLogging(); 
+        DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
+        DatasetGraph dsgRO = new DatasetGraphZero();
+        FusekiServer.create()
+             .port(4040)
+             .add("/ds", dsg)
+             .addServlet("/sparql",  new SPARQL_QueryGeneral())
+             // Instead: /empty
+             //.add("", new DatasetGraphSink())
+             .staticFileBase("/home/afs/ASF/afs-jena/jena-fuseki2/jena-fuseki-basic/sparqler/pages")
+             .build()
+             .start()
+             .join();
+        
+    }
+    public static void main3(String ... a) {
+        // --sparqler pages/ == --empty
+        org.apache.jena.fuseki.main.cmds.FusekiMainCmd.main(
+            "--sparqler=/home/afs/Jena/jena-fuseki2/jena-fuseki-basic/sparqler/pages"
+            );
+    }
+
 }

@@ -19,8 +19,8 @@
 package fuseki;
 
 import org.apache.jena.fuseki.access.DataAccessCtl;
-import org.apache.jena.fuseki.cmds.FusekiBasicMain;
-import org.apache.jena.fuseki.embedded.FusekiServer;
+import org.apache.jena.fuseki.main.cmds.*;
+import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.sys.JenaSystem;
 
@@ -30,7 +30,7 @@ public class FusekiServerSecuredCmd {
 
     /**
      * Build and run, a server based on command line syntax. This operation does not
-     * return. See {@link FusekiBasicMain#build} to build a server using command line
+     * return. See {@link FusekiMain#build} to build a server using command line
      * syntax but not start it.
      */
     static public void main(String... argv) {
@@ -39,7 +39,7 @@ public class FusekiServerSecuredCmd {
         FusekiServerSecuredMain.innerMain(argv);
     }
 
-    static class FusekiServerSecuredMain extends FusekiBasicMain {
+    static class FusekiServerSecuredMain extends FusekiMain {
         
         static void innerMain(String... argv) {
             JenaSystem.init();

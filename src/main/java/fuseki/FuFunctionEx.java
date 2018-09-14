@@ -18,7 +18,7 @@ package fuseki;
 
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.fuseki.FusekiLib;
-import org.apache.jena.fuseki.embedded.FusekiServer;
+import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.ResultSet;
