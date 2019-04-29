@@ -26,12 +26,10 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.jena.atlas.web.HttpException;
-import org.apache.jena.fuseki.FusekiLib;
-import org.apache.jena.fuseki.access.AuthorizationService;
-import org.apache.jena.fuseki.access.DataAccessCtl;
-import org.apache.jena.fuseki.access.SecurityContext;
-import org.apache.jena.fuseki.access.SecurityRegistry;
+import org.apache.jena.atlas.web.WebLib;
+import org.apache.jena.fuseki.access.*;
 import org.apache.jena.fuseki.jetty.JettyLib;
+import org.apache.jena.fuseki.main.FusekiLib;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.query.Dataset;
@@ -46,20 +44,19 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.system.Txn;
 import org.apache.jena.tdb2.DatabaseMgr;
-import org.eclipse.jetty.security.PropertyUserStore;
-import org.eclipse.jetty.security.SecurityHandler;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.util.security.Credential;
 import org.eclipse.jetty.util.security.Password;
 
 /**
- * Example of a Fuseki with data access control.
+ * Example of a Fuseki with per-graph data access control.
  */
-public class Ex1_DataAccessCtl {
+public class Ex_DataAccessCtl {
     
     public static void main(String ... a) {
         FusekiLogging.setLogging();
-        int port = FusekiLib.choosePort();
+        int port = WebLib.choosePort();
         String datasetName = "/ds";
         String URL = format("http://localhost:%d/%s", port, datasetName);
         
@@ -68,21 +65,19 @@ public class Ex1_DataAccessCtl {
         {
             SecurityRegistry reg = new SecurityRegistry();
             // user1 can see the default graph and :g1
-            reg.put("user1", new SecurityContext("http://example/g1", Quad.defaultGraphIRI.getURI()));
+            reg.put("user1", new SecurityContextView("http://example/g1", Quad.defaultGraphIRI.getURI()));
             // user2 can see :g1
-            reg.put("user2", new SecurityContext("http://example/g1"));
+            reg.put("user2", new SecurityContextView("http://example/g1"));
             // user3 can see :g1 and :g2
-            reg.put("user3", new SecurityContext("http://example/g1", "http://example/g2"));
+            reg.put("user3", new SecurityContextView("http://example/g1", "http://example/g2"));
             // Hide implementation.
             authorizeSvc = reg;
         }
         
         // ---- Some data
         DatasetGraph dsg = createData();
-        System.out.println();
-
         // ---- User authentication database (Jetty specific)
-        UserStore userStore = new PropertyUserStore();
+        UserStore userStore = new UserStore();
         addUserPassword(userStore, "user1", "pw1", "**");
         addUserPassword(userStore, "user2", "pw2", "**");
         try { userStore.start(); }
@@ -102,26 +97,18 @@ public class Ex1_DataAccessCtl {
             .build()){
 
             // What can we see of the database? user1 can see g1 and the default graph 
-            System.out.println();
-            System.out.println("++ user1 :: quads");
             Dataset ds1 = conn.fetchDataset();
             RDFDataMgr.write(System.out, ds1, RDFFormat.TRIG_FLAT);
 
             // Get a graph.
-            System.out.println();
-            System.out.println("++ user1 :: http://example/g1");
             Model m1 = conn.fetch("http://example/g1");
             RDFDataMgr.write(System.out, m1, RDFFormat.TURTLE_FLAT);
 
             // Get a graph. user tries to get a graph they have no permission for ==> 404
-            System.out.println();
-            System.out.println("++ user1 :: http://example/g2");
             try {
                 Model m2 = conn.fetch("http://example/g2");
-                System.out.println("BAD: Should not get here");
-            } catch (HttpException ex) {
-                System.out.println(ex.getMessage());
-            }
+                } catch (HttpException ex) {
+                }
         }
         // Need to exit the JVM : there is a background server  
         System.exit(0);
@@ -146,7 +133,6 @@ public class Ex1_DataAccessCtl {
             for ( int i = 0 ; i < 5 ; i++ ) {
                 dsg.add(SSE.parseQuad(format("(:g%d :s%d :p :o)", i, i)));
             }
-            System.out.println("++ Test Data");
             RDFDataMgr.write(System.out, dsg, RDFFormat.TRIG_FLAT);
         });
         return dsg;
@@ -166,16 +152,17 @@ public class Ex1_DataAccessCtl {
      * </ul>
      */
     private static FusekiServer fuseki(int port, UserStore userStore, AuthorizationService authorizeSvc, String dsName, DatasetGraph dsgBase) {
-        // Associate access control infromation with the dataset. 
+        // Associate access control information with the dataset. 
         DatasetGraph dsx = DataAccessCtl.controlledDataset(dsgBase, authorizeSvc);
         // Build a Fuseki server with the access control operations replacing the normal (no control) operations.
-        FusekiServer.Builder builder = DataAccessCtl.fusekiBuilder(DataAccessCtl.requestUserServlet)
+        FusekiServer.Builder builder = FusekiLib.fusekiBuilder(DataAccessCtl.requestUserServlet)
             .port(port)
             .add(dsName, dsx, false);
         // Add service endpoint login for authentication.
-        SecurityHandler sh = null;
+        ConstraintSecurityHandler sh = null;
         if ( userStore != null ) {
-            sh = JettyLib.makeSecurityHandler("/*", "Dataset:"+dsName, userStore);
+            sh = JettyLib.makeSecurityHandler("Dataset:"+dsName, userStore);
+            JettyLib.addPathConstraint(sh, dsName);
             builder.securityHandler(sh);
         }
         return builder.build();

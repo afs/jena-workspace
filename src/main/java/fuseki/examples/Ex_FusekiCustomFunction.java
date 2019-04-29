@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package fuseki;
+package fuseki.examples;
 
 import org.apache.jena.atlas.lib.StrUtils;
-import org.apache.jena.fuseki.FusekiLib;
+import org.apache.jena.atlas.web.WebLib;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.query.QueryExecution;
@@ -37,7 +37,7 @@ import org.apache.jena.sparql.function.FunctionRegistry;
  * Use the function.   
  */
 
-public class FuFunctionEx {
+public class Ex_FusekiCustomFunction {
     
     /** Our function */ 
     public static class MyFunction extends FunctionBase1 {
@@ -52,11 +52,11 @@ public class FuFunctionEx {
     public static void main(String...a) {
         FusekiLogging.setLogging();
         
-        // Register the function 
+        // ---- Register the function 
         FunctionRegistry ref = FunctionRegistry.get();
         ref.put("http://my/num", MyFunction.class);
 
-        int PORT = FusekiLib.choosePort();
+        int PORT = WebLib.choosePort();
         
         // Some empty dataset
         DatasetGraph dsg = DatasetGraphFactory.createTxnMem();

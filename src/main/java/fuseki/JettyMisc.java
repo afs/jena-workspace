@@ -27,7 +27,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 /** A memory of things related to Jetty */
 public class JettyMisc {
     
-    public static void twoHandlers() {
+    public static void x_twoHandlers() {
         Server jettyServer = new Server(); //server.getJettyServer();
         ServletContextHandler handler1 = new ServletContextHandler();
         /*ServletContext*/ handler1.getServletContext(); 
