@@ -33,7 +33,6 @@ public class DevBGP {
         BasicPattern bgp = SSE.parseBGP("(bgp (:s :p ?o) (:s :p ?v) (?o :q ?x))") ;
         
         BasicPattern bgp2 = xform.reorder(bgp);
-        System.out.println(bgp2);
-    }
+        }
 
 }

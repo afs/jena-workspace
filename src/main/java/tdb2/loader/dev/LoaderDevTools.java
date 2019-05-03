@@ -112,13 +112,12 @@ public class LoaderDevTools {
             data.forEach(fn-> {
                 ProgressMonitor monitor = ProgressMonitorOutput.create(output, "data", 100_000, 10);
                 StreamRDF stream2 = new ProgressStreamRDF(stream, monitor); 
-                monitor.startMessage();
+                monitor.startMessage(null);
                 monitor.start();
                 RDFDataMgr.parse(stream2, fn);
                 monitor.finish();
                 monitor.finishMessage("data");
             });
-            System.out.println("Wait for "+taskName);
             BulkProcesses.finish(processes);
             try {
                 sema.acquire(2);
@@ -127,7 +126,6 @@ public class LoaderDevTools {
                 e.printStackTrace();
             }
         });
-        System.out.println("Finished"); 
         long c = stream.count();
         double t = time/1000.0;
         double r = c/t; 
@@ -153,8 +151,7 @@ public class LoaderDevTools {
         //System.out.printf("Total: %d quads\n", stage1.countQuads());
         double rate = loader.countTriples()/(time/1000.0);
         System.out.printf("Rate: %,.0f TPS\n", rate);
-        System.out.println();
-    }
+        }
     
     public static void query(String string, DatasetGraph dsg) {
         long x = Timer.time(()->{
@@ -163,8 +160,7 @@ public class LoaderDevTools {
                 QueryExecUtils.executeQuery(qExec);
             }
         });
-        System.out.println(Timer.timeStr(x)+" seconds");
-    }
+        }
     
     public static void reset(String DIR) {
         Path p = Paths.get(DIR);

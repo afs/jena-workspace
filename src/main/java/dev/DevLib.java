@@ -49,11 +49,9 @@ public class DevLib {
     
     public static void algebra(String DIR, String queryFile) {
         Query query = QueryFactory.read(DIR+queryFile) ;
-        System.out.println(query);
         Op op = Algebra.compile(query) ;
         Op op1 = Algebra.optimize(op) ;
-        System.out.println(op1) ;
-    }
+        }
     
     public static void transform() {
         Query query = QueryFactory.create("PREFIX : <http://example/> SELECT * { ?s ?p ?o . ?x ?q :o. ?s :key :value . }") ;
@@ -65,11 +63,9 @@ public class DevLib {
     
     public static void transformOp(String inputStr) {
         Op op = SSE.parseOp(inputStr) ;
-        System.out.println(op) ;
         //Op op1 = Algebra.optimize(op) ;
         Op op1 = Optimize.apply(new TransformFilterPlacement(), op) ;
-        System.out.println(op1) ;
-    }
+        }
     
     public static long time(Runnable action) {
         Timer t = new Timer() ;
@@ -109,8 +105,7 @@ public class DevLib {
         if ( label != null ) {
             System.out.print(label) ;
             System.out.print(" : ") ;
-            System.out.println() ;
-        }
+            }
         //System.out.printf("  Space=%7.2f MB  Time=%5.2fs\n", report.spaceUsed/(1000*1000.0), report.timeUsed/1000.0) ;
         System.out.printf("  Space=%.2f MB\n", report.spaceUsed/(1000*1000.0)) ;
         System.out.printf("  Time=%.2fs\n",  report.timeUsed/1000.0) ;

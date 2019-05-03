@@ -66,15 +66,11 @@ public class HttpQueryBuilder {
         String target = "http://example/query?x=y" ;
         URIBuilder uriBuilder = new URIBuilder(target);
         List<NameValuePair> x = uriBuilder.getQueryParams();
-        System.out.println(x);
         HttpUriRequest r =
             RequestBuilder
                 .get(target)
                 .addParameter("foo",  "bar")
                 .build();
         String qs = r.getURI().getQuery();
-        System.out.println(qs);
-        System.out.println(r);
-           
-    }
+        }
 }

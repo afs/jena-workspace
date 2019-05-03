@@ -27,12 +27,18 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.riot.resultset.ResultSetLang;
 import org.apache.jena.riot.resultset.ResultSetWriter;
 import org.apache.jena.riot.resultset.ResultSetWriterFactory;
+import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.shared.impl.PrefixMappingImpl;
+import org.apache.jena.sparql.SystemARQ;
+import org.apache.jena.sparql.core.Prologue;
 import org.apache.jena.sparql.resultset.ResultSetException;
+import org.apache.jena.sparql.resultset.TextOutput;
 import org.apache.jena.sparql.util.Context;
+import org.apache.jena.sparql.util.Symbol;
 
 public class ResultSetWriterText implements ResultSetWriter {
 
-    public static ResultSetWriterFactory factory = lang->{
+    public static ResultSetWriterFactory xfactory = lang->{
         if (!Objects.equals(lang, ResultSetLang.SPARQLResultSetJSON ) )
             throw new ResultSetException("ResultSetWriter for JSON asked for a "+lang); 
         return new ResultSetWriterText(); 
@@ -40,12 +46,24 @@ public class ResultSetWriterText implements ResultSetWriter {
     
     private ResultSetWriterText() {}
 
+    private static Symbol symPrologue = SystemARQ.allocSymbol("prologue"); 
+    
     @Override
     public void write(OutputStream out, ResultSet resultSet, Context context) {
-        // ** Need prologue. **
-        throw new NotImplemented();
-//        TextOutput tFmt = new TextOutput(prologue) ;
-//        tFmt.format(out, resultSet) ;
+        TextOutput tFmt;
+        if ( resultSet.getResourceModel() != null ) {
+            PrefixMapping pmap = resultSet.getResourceModel();
+            tFmt = new TextOutput(pmap) ;
+        } else if ( context.isDefined(symPrologue) ) {
+            Prologue prologue = context.get(symPrologue);
+            tFmt = new TextOutput(prologue) ;
+        } else {
+            PrefixMapping pmap = new PrefixMappingImpl();
+            //pmap = ARQConstants.getGlobalPrefixMap();
+            tFmt = new TextOutput(pmap);
+        }
+        
+        tFmt.format(out, resultSet) ;
     }
 
     @Override

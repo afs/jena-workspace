@@ -43,25 +43,19 @@ public class DevAssignSequence {
         Op op = SSE.parseOp(arg);
         System.out.print(op);
         VarFinder vf = VarFinder.process(op);
-        System.out.println(vf);
         if ( op instanceof OpJoin ) {
             OpJoin opj = (OpJoin)op;
             boolean b = JoinClassifier.isLinear(opj);
-            System.out.println("isLinear = "+b);
-        }
+            }
         
-        System.out.println();
-    }
+        }
         
     
     public static void main1(String... args) {
         Query query = QueryFactory.read("/home/afs/TQ/PLAT-1475/Q.rq");
-        System.out.println(query);
         Op op = Algebra.compile(query);
-        System.out.println(op);
         JoinClassifier.print = true;
         Op op1 = Transformer.transform(new TransformJoinStrategy(), op);
-        System.out.println(op1);
         /*
 boolean bad3 = SetUtils.intersectionP(vRightAssign, vLeftFixed) ;
 Add the other way round.

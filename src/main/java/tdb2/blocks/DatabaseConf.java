@@ -16,24 +16,24 @@
  * limitations under the License.
  */
 
-package dev;
+package tdb2.blocks;
 
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QueryFactory;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.sparql.util.QueryExecUtils;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-public class DevAgg {
-
-    public static void main(String[] args) {
-        Query query = QueryFactory.read("Q.rq");
-        System.out.println(query);
-        Model model = RDFDataMgr.loadModel("D.ttl");
-        try ( QueryExecution qExec = QueryExecutionFactory.create(query, model) ) {
-            QueryExecUtils.executeQuery(qExec);
-        }
+/** A single "blob" of bytes on disk that encodes the database configuration.
+ * Immutable once created.
+ */
+public class DatabaseConf {
+    
+    
+    /** Map of index name to BlockMgr */
+    private ConcurrentMap<String, BlockAccessShared> index = new ConcurrentHashMap<>();
+    
+    
+    public DatabaseConf(String filename) {
+        
     }
+    
+    public long indexRoot(String indexName) { return 0 ; }
 }

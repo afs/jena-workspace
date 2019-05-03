@@ -41,7 +41,6 @@ public class DevSubtitute {
         Map<Var, Node> map = new HashMap<>();
         map.put(Var.alloc("s"), s);
         Query q2 = QueryTransformOps.transform(query, map);
-        System.out.println(q2);
         // Q:
         // What do do about "illegal" transformations?
         //    bound(?v)

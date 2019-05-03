@@ -18,74 +18,82 @@
 
 package dev;
 
-import java.nio.file.Paths;
-
-import org.apache.jena.atlas.lib.FileOps;
-import org.apache.jena.fuseki.cmd.FusekiCmd;
+import org.apache.jena.fuseki.ctl.ActionDumpRequest;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryGeneral;
 import org.apache.jena.fuseki.system.FusekiLogging;
-import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphFactory;
-import org.apache.jena.sparql.core.DatasetGraphZero;
+import org.apache.jena.fuseki.validation.DataValidator;
+import org.apache.jena.fuseki.validation.IRIValidator;
+import org.apache.jena.fuseki.validation.QueryValidator;
+import org.apache.jena.fuseki.validation.UpdateValidator;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.sparql.util.QueryExecUtils;
 
 public class RunFuseki
 {
     public static void main(String ... a) {
-        main3();
+        String DIR = "/home/afs/tmp/InfTDB2/";
+        FusekiLogging.setLogging();
+        mainServerClient();
+    }
+
+    public static void mainServer(String ... a) {
+        FusekiLogging.setLogging();
+        FusekiServer server = FusekiServer.create()
+//            .add("/other", DatasetGraphFactory.createTxnMem())
+            .parseConfigFile("/home/afs/tmp/config.ttl")
+            
+            //.passwordFile("/home/afs/tmp/passwd")
+            
+            .port(3030)
+            .verbose(true)
+            .build();
+        try { server.start().join(); }
+        finally { server.stop(); }
     }
     
-    public static void main1(String ... a) {
-        String BASE = "/home/afs/tmp" ;
-        //String BASE = "/home/afs/Desktop/JENA-1302";
-
-        // For the UI files.
-        String fusekiHome = "/home/afs/ASF/afs-jena/jena-fuseki2/jena-fuseki-core" ;
-        String fusekiBase = "/home/afs/tmp/run" ;
-
-        System.setProperty("FUSEKI_HOME", fusekiHome) ;
-        System.setProperty("FUSEKI_BASE", fusekiBase) ;
-
-        String runArea = Paths.get(fusekiBase).toAbsolutePath().toString() ;
-        FileOps.ensureDir(runArea) ;
-        FileOps.clearAll(runArea);
-        FusekiCmd.main(
-            //"-v"
-            //,"--conf=/home/afs/tmp/config-tdb2-model.ttl"
-            //"--conf="+BASE+"/config.ttl"
-            //"--conf=/home/agfs/tmp/conf.ttl"
-            //, "--mem",  "/ds"
-            //"--update", "--file=/home/afs/tmp/D.ttl",  "/ds"
-            //"--update", "--file=/home/afs/tmp/D.trig",  "/ds"
-            //"--mem",  "/ds"
-            //"--memtdb", "--set=tdb:unionDefaultGraph=true", "/ds"
-            //--loc=/home/afs/tmp/DB", "/ds"
-
-            ) ;
-    }
-    
-    
-    public static void main2(String ... a) {
-        FusekiLogging.setLogging(); 
-        DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
-        DatasetGraph dsgRO = new DatasetGraphZero();
-        FusekiServer.create()
-             .port(4040)
-             .add("/ds", dsg)
-             .addServlet("/sparql",  new SPARQL_QueryGeneral())
-             // Instead: /empty
-             //.add("", new DatasetGraphSink())
-             .staticFileBase("/home/afs/ASF/afs-jena/jena-fuseki2/jena-fuseki-basic/sparqler/pages")
-             .build()
-             .start()
-             .join();
+    public static void mainServerClient() {
+        FusekiLogging.setLogging();
+        FusekiServer server = FusekiServer.create()
+            .parseConfigFile("/home/afs/tmp/config.ttl")
+            .port(3030)
+            .build()
+            .start();
+        
+        // Use it.
+        try ( RDFConnection conn = RDFConnectionFactory.connect("http://localhost:3030/ds") ) {
+            QueryExecution qExec = conn.query("ASK{}");
+            QueryExecUtils.executeQuery(qExec);
+        } finally {
+            server.stop();
+        }
         
     }
-    public static void main3(String ... a) {
+    
+    public static void mainWebapp() {
+        RunFusekiFull.mainWebapp();
+    }
+
+    public static void mainSparqler() {
         // --sparqler pages/ == --empty
-        org.apache.jena.fuseki.main.cmds.FusekiMainCmd.main(
-            "--sparqler=/home/afs/Jena/jena-fuseki2/jena-fuseki-basic/sparqler/pages"
-            );
+//        FusekiMainCmd.main(
+//            "--sparqler=/home/afs/ASF/afs-jena/jena-fuseki2/jena-fuseki-main/sparqler/pages"
+//            );
+        
+        FusekiLogging.setLogging();
+        FusekiServer.create()
+            .addServlet("/dump", new ActionDumpRequest())
+            // -- SPARQLer.
+            .addServlet("/sparql",  new SPARQL_QueryGeneral())
+            .staticFileBase("/home/afs/ASF/afs-jena/jena-fuseki2/jena-fuseki-main/sparqler/pages")
+            .addServlet("/validate/query",  new QueryValidator())
+            .addServlet("/validate/update", new UpdateValidator())
+            .addServlet("/validate/iri",    new IRIValidator())
+            .addServlet("/validate/data",   new DataValidator())
+            // -- SPARQLer.
+            .build().start().join();
     }
 
 }

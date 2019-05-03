@@ -38,7 +38,6 @@ public class TestIteratorChained {
         } ;
         
         for ( int i = 0 ; i < 5; i++ ) {
-            System.out.println("i = "+i) ;
             String label = ""+i ;
             Iterator<String> iter = new IteratorChained<>(gen) ;
             Iter.print(iter) ;

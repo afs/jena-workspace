@@ -39,25 +39,16 @@ public class DevMapper {
         Tuple<String> t = TupleFactory.tuple("1", "2", "3") ;
         Tuple<String> t2 = tmap.map(t) ;
         Tuple<String> t3 = tmap2.map(t2) ;
-        System.out.println(t) ;
-        System.out.println(t2) ;
-        System.out.println(t3) ;
-        
         Triple triple = SSE.parseTriple("(':s' ':p' ':o')") ;
-        System.out.println(triple) ;
         execApply(tmap, triple, (x1, x2, x3)->System.out.printf("add(%s, %s, %s)\n", x1, x2, x3)) ;
         Tuple<Node> tuple3 = execFunction(tmap, triple, TupleFactory::create3) ;
         Triple triple2 = execFunction(tmap, tuple3.get(0), tuple3.get(1), tuple3.get(2), Triple::create) ; 
-        System.out.println(triple) ;
-        
-        
-//        Tuple<String> t = TupleFactory.tuple("1", "2", "3") ;
+        //        Tuple<String> t = TupleFactory.tuple("1", "2", "3") ;
 //        Tuple<String> t2 = TupleOps.map(t, elt -> ":"+Integer.parseInt(elt)+":") ;
 //        
 //        //Tuple<String> t3 = t.map(elt -> ":"+Integer.parseInt(elt)+":") ;
 //        
-//        System.out.println(t2) ;
-//        System.exit(0) ;
+//        //        System.exit(0) ;
 //        Node s = SSE.parseNode("'S'") ;
 //        Node p = SSE.parseNode("'P'") ;
 //        Node o = SSE.parseNode("'O'") ;
@@ -120,25 +111,19 @@ public class DevMapper {
     }
 
     public static void dwim(TupleMap tupleMap,  Triple triple) {
-        System.out.println(tupleMap);
         {
             Tuple3<Node> nt3 = TripleOps.map(tupleMap, triple) ;
             Triple t2 = TripleOps.unmap(tupleMap, nt3) ;
-            System.out.println(nt3+" -- "+t2) ;
-        }
+            }
         TripleX tx = new TripleX(triple.getSubject(), triple.getPredicate(), triple.getObject()) ;  
         {
             Tuple3<Node> nt3 = TripleXOps.map_(tupleMap, tx) ;
             TripleX t2 = TripleXOps.unmap_(tupleMap, nt3) ;
-            System.out.println(nt3+" -- "+t2) ;
-        }
+            }
         {
             Tuple3<Node> nt3 = TripleXOps.map__(tupleMap, tx) ;
             TripleX t2 = TripleXOps.unmap__(tupleMap, nt3) ;
-            System.out.println(nt3+" -- "+t2) ;
+            }
         }
-        System.out.println();
-        
-    }
 }
 

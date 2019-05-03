@@ -42,8 +42,7 @@ public class DevTurtleJavacc {
 //        RDFParser.create().forceLang(lang).source(FILE).build()
 //            .parse(StreamRDFLib.writer(System.out));
 //        TurtleJavaccReaderRIOT.unregister();
-//        System.out.println("DONE");
-    }
+//        }
     
 //    public static void main0(String ... a) throws ParseException {
 //        //TS_LangExtra
@@ -52,4 +51,5 @@ public class DevTurtleJavacc {
 //        ts.addTest(FactoryTestRiot.make(manifest1, null, null)) ;
 //        return ts ;
 //    }
+    }
 }

@@ -61,11 +61,8 @@ public class DevPF {
             ,"SELECT * { { ?s :trans :o1 } UNION { :s2 :trans ?o }  UNION { ?X :trans ?Y } }"
             ) ;
         Query query = QueryFactory.create(x) ;
-        System.out.println(query); 
-        
         Op op = Algebra.compile(query) ;
         Op op1 = Algebra.optimize(op) ;
-        System.out.println(op1);
         SSE.write(op1); 
         
         QueryExecution qExec = QueryExecutionFactory.create(query, ds) ;

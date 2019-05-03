@@ -27,7 +27,6 @@ import org.apache.jena.atlas.lib.InternalErrorException;
 import org.apache.jena.atlas.lib.Timer;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.query.ARQ;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.DatasetGraph;
@@ -88,9 +87,7 @@ public class load extends CmdTDBGraph {
     @Override
     protected void exec() {
         if ( isVerbose() ) {
-            System.out.println("Java maximum memory: " + Runtime.getRuntime().maxMemory());
-            System.out.println(ARQ.getContext());
-        }
+            }
         if ( isVerbose() )
             showProgress = true;
         if ( isQuiet() )

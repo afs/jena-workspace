@@ -28,7 +28,6 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.lang.LabelToNode;
 import org.apache.jena.riot.system.*;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.expr.nodevalue.NodeFunctions;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.sse.SSE;
 
@@ -65,8 +64,7 @@ public class SkolemizeBNodes {
         StreamRDF skol = new StreamRDFNodeExec(out, fSkolemize);
         StreamOps.graphToStream(g, skol);
         out.finish();
-        System.out.println("DONE");
-    }
+        }
 
     
     // -> NodeFunctions
@@ -147,7 +145,7 @@ public class SkolemizeBNodes {
         StreamRDF stream = new StreamRDFWrapper(stream0) {
             @Override
             public void triple(Triple triple) {
-                Node o = NodeFunctions.blankNodeToIri(triple.getObject());
+                Node o = RiotLib.blankNodeToIri(triple.getObject());
                 super.triple(Triple.create(triple.getSubject(), triple.getPredicate(), o));
             }
         };

@@ -50,8 +50,7 @@ public class StoreParamsOps {
             tripleIndexes.add(idxName);
         }
         
-        System.out.println(params);
-    }
+        }
 
     static Set<String> tripleIndexes = new HashSet<>();
     static Set<String> quadIndexes = new HashSet<>();

@@ -16,29 +16,16 @@
  * limitations under the License.
  */
 
-package fuseki;
+package fuseki.router;
 
-import org.apache.jena.fuseki.main.FusekiLib;
-import org.apache.jena.fuseki.main.FusekiServer;
-import org.apache.jena.fuseki.system.FusekiLogging;
-import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.fuseki.servlets.HttpAction;
 
-/** Change Fuseki configuration on-the-fly */
-public class DevReconfigure {
+/** Interface for specific service functionality. */ 
+public interface ActionProcessor {
     
-    public static void main(String...a) {
-        FusekiLogging.setLogging();
-        FusekiServer server = FusekiServer.create()
-                .build();
-        server.start();
-        
-        // Dynamic server.
-        DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
-        
-        FusekiLib.addDataset(server, "dsx", dsg, false);
-        //removeDataset(server, "dsx");
-        
-        server.join();
-    }
+    /**
+     * Execute this request. 
+     * @param action HTTP Action
+     */
+    public void process(HttpAction action);
 }

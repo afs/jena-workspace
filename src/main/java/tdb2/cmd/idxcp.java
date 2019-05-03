@@ -112,8 +112,6 @@ public class idxcp extends CmdTDB {
     @Override
     protected void exec() {
         String labelX = srcIndexName+"->"+dstIndexName;
-        System.out.println(labelX);
-        
         DatasetGraph dsg = getDatasetGraph();
         DatasetGraphTDB dsgtdb = TDBInternal.getDatasetGraphTDB(dsg);
 //        StoreParams storeParams = dsgtdb.getStoreParams();

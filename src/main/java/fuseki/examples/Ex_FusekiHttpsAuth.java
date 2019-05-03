@@ -21,13 +21,13 @@ package fuseki.examples;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLContext;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -88,27 +88,13 @@ public class Ex_FusekiHttpsAuth {
         return server;
     }
     
+    // Example HttpClient that trusts any certificates, including self-signed. 
     private static HttpClientBuilder httpClientBuilder() {
-        TrustStrategy trustStrategy = new TrustStrategy() {
-            @Override
-            public boolean isTrusted(X509Certificate[] chain, String authType) {
-                return true;
-            }
-        };
-
-        HostnameVerifier hostnameVerifier = new HostnameVerifier() {
-            @Override
-            public boolean verify(String hostname, SSLSession session) {
-                return true;
-            }
-        };
-
+        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
         try {
-            return HttpClients.custom()
-                .setSSLSocketFactory(new SSLConnectionSocketFactory(
-                                        new SSLContextBuilder().loadTrustMaterial(trustStrategy).build(),
-                                        hostnameVerifier));
-                
+            SSLContext sslCxt = new SSLContextBuilder().loadTrustMaterial(trustStrategy).build();
+            SSLConnectionSocketFactory sslfactory = new SSLConnectionSocketFactory(sslCxt, NoopHostnameVerifier.INSTANCE);
+            return HttpClients.custom().setSSLSocketFactory(sslfactory);
         } catch (GeneralSecurityException ex) {
             ex.printStackTrace();
             System.exit(1);
@@ -141,6 +127,17 @@ public class Ex_FusekiHttpsAuth {
         try ( RDFConnection conn = connSingle ) {
             QueryExecution qExec = conn.query("ASK{}");
             QueryExecUtils.executeQuery(qExec);
+        }
+        
+        HttpClient hc2 = httpClient("user1", "wrong-password");
+        try ( RDFConnection conn = RDFConnectionFuseki.create()
+                                    .httpClient(hc2)
+                                    .destination("https://localhost:3443/ds")
+                                    .build(); ) {
+            QueryExecution qExec = conn.query("ASK{}");
+            QueryExecUtils.executeQuery(qExec);
+        } catch (Exception ex) {
+            System.out.println(ex);
         }
     }
 }

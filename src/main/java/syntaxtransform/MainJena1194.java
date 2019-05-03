@@ -56,16 +56,14 @@ the variable $minCount would not be substituted.
         x.put(Var.alloc("Y"), SSE.parseNode("'abc'")) ;
         //x.put(Var.alloc("C"), SSE.parseNode("<abc>")) ;
         Query query2 = QueryTransformOps.transform(query, x) ;
-        System.out.println(query2) ;
-    }
+        }
     
     private static void printQuery(Query q) {
         IndentedWriter out = new IndentedWriter(System.out) ;
         out.setFlatMode(true);
         q.serialize(out);
         out.flush();
-        System.out.println();
-    }
+        }
     
     private static ResultSet wrapExecution(ResultSet rs, Map<Var, Node> values) {
         ResultSet rs2 = new ResultSetWrapper(rs) {

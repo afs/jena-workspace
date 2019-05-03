@@ -36,7 +36,8 @@ import org.apache.jena.sparql.function.*;
 public class Xop {
     
     public static void main(String ... a) {
-        arq.qexpr.main("op:numeric-add(1,2)");
+        // "fn:" == "op:"
+        arq.qexpr.main("fn:numeric-add(1,2)");
         arq.qexpr.main("<https://www.w3.org/ns/sparql#str>(123)");
         
         //registry.keys().forEachRemaining(System.out::println);
@@ -50,8 +51,7 @@ public class Xop {
     /// "op:"
     private static  String xfn = ARQConstants.fnPrefix;
     private static  String sfn = "https://www.w3.org/ns/sparql#"; //ARQConstants.sparqlFunctionsPrefix;
-    
-    
+
     private static void addOp(FunctionRegistry registry, String name, Supplier<NodeValue> f) {
         FunctionBase0 function = new FunctionBase0() {
             @Override
@@ -209,8 +209,8 @@ public class Xop {
         addXSDOp(registry, "numeric-subtract", XSDFuncOp::numSubtract);
         addXSDOp(registry, "numeric-multiply", XSDFuncOp::numMultiply);
         addXSDOp(registry, "numeric-divide", XSDFuncOp::numDivide);
-        //addOp(registry, "numeric-integer-divide", XSDFuncOp::num
-        //addOp(registry, "numeric-mod", XSDFuncOp::num
+//        addXSDOp(registry, "numeric-integer-divide", XSDFuncOp::numIntDivide);
+//        addXSDOp(registry, "numeric-mod", XSDFuncOp::numMod);
         
         addOpComp(registry, xfn+"yearMonthDuration-less-than", (x,y)->XSDFuncOp.compareDuration(x,y)<0);
     }

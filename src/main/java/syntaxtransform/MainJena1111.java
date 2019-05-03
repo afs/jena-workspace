@@ -119,7 +119,6 @@ MAYBE_NOT_NFKC : int
             }
             
             
-            System.out.println(q2) ;
             System.exit(0) ;
         }
         // Next : test cases.
@@ -127,8 +126,6 @@ MAYBE_NOT_NFKC : int
         // BNodes -> <_:label> first?
         
         String x[] = { sel0 , sel1 , sel2 } ;
-        System.out.println("==== v1") ;
-
         BiFunction<String, Map<Var, Node>, Query> producer = (qs, map) -> {
             Query q = QueryFactory.create(qs, Syntax.syntaxARQ) ;
             //Query q2 = ParameterizedQuery.parameterize(q, map) ;
@@ -141,19 +138,15 @@ MAYBE_NOT_NFKC : int
             Map<Var, Node> map = new LinkedHashMap<Var, Node>() ;
             map.put(Var.alloc("x"), NodeFactory.createURI("http://example/X")) ; 
             map.put(Var.alloc("b"), NodeFactory.createBlankNode()) ;
-            System.out.println(map);
             Query q2 = producer.apply(qs, map) ;
             printQuery(q) ;
-            System.out.println("-------------");
             printQuery(q2) ;
 
             try {
                 SyntaxVarScope.check(q2) ;
             } catch (Exception ex) {
-                System.out.println(ex.getMessage()) ;
+                }
             }
-            System.out.println("-=-=-=-=-=-=-=-=-=-");
-        }
     }
     
     private static void printQuery(Query q) {
@@ -161,8 +154,7 @@ MAYBE_NOT_NFKC : int
         out.setFlatMode(true);
         q.serialize(out);
         out.flush();
-        System.out.println();
-    }
+        }
     
     private static ResultSet wrapExecution(ResultSet rs, Map<Var, Node> values) {
         ResultSet rs2 = new ResultSetWrapper(rs) {

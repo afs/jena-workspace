@@ -16,10 +16,16 @@
  * limitations under the License.
  */
 
-package dev;
+package fuseki.router;
 
-public class PROJECT {
-    /*
-     See package dsg for dataset cleanup.
-     */
+public class HttpMethods {
+    // Adds PATCH
+    public static final String METHOD_DELETE    = "DELETE" ;
+    public static final String METHOD_HEAD      = "HEAD" ;
+    public static final String METHOD_GET       = "GET" ;
+    public static final String METHOD_OPTIONS   = "OPTIONS" ;
+    public static final String METHOD_POST      = "POST" ;
+    public static final String METHOD_PUT       = "PUT" ;
+    public static final String METHOD_TRACE     = "TRACE" ;
+    public static final String METHOD_PATCH     = "PATCH" ;
 }

@@ -21,10 +21,10 @@ package fuseki.examples;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLContext;
 
 import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -79,25 +79,11 @@ public class Ex_FusekiHttps {
     
     // Example HttpClient that trusts any certificates, including self-signed. 
     private static HttpClientBuilder httpClientBuilder() {
-        TrustStrategy trustStrategy = new TrustStrategy() {
-            @Override
-            public boolean isTrusted(X509Certificate[] chain, String authType) {
-                return true;
-            }
-        };
-
-        HostnameVerifier hostnameVerifier = new HostnameVerifier() {
-            @Override
-            public boolean verify(String hostname, SSLSession session) {
-                return true;
-            }
-        };
-
+        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
         try {
-            return HttpClients.custom()
-                .setSSLSocketFactory(new SSLConnectionSocketFactory(
-                                        new SSLContextBuilder().loadTrustMaterial(trustStrategy).build(),
-                                        hostnameVerifier));
+            SSLContext sslCxt = new SSLContextBuilder().loadTrustMaterial(trustStrategy).build();
+            SSLConnectionSocketFactory sslfactory = new SSLConnectionSocketFactory(sslCxt, NoopHostnameVerifier.INSTANCE);
+            return HttpClients.custom().setSSLSocketFactory(sslfactory);
         } catch (GeneralSecurityException ex) {
             ex.printStackTrace();
             System.exit(1);
@@ -106,6 +92,7 @@ public class Ex_FusekiHttps {
     }
     
     private static void client() {
+        // Need to provide a suitable HttpClient that can handle https. 
         //RDFConnection connSingle = RDFConnectionFactory.connect("https://localhost:3443/ds");
         
         // Allow self-signed

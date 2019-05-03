@@ -48,23 +48,14 @@ public class DevReorder {
         DatasetGraph dsg = DatasetGraphFactory.create() ;
         Quad quad = Quad.create(g, s, p, o) ;
         
-        System.out.println(quad) ;
-        System.out.println("Input:") ;
         execApply(tmap, quad, (x1, x2, x3, x4)->System.out.printf("add(%s, %s, %s, %s)\n", x1, x2, x3, x4)) ;
         
         // Reorder as if in an index.
         Tuple<Node> indexedQuad = execFunction(tmap, quad, TupleFactory::create4) ;
-        System.out.println(indexedQuad) ;
-        
-        System.out.println("Output:") ;
         Quad quad2 = execFunction(tmap2, indexedQuad.get(0), indexedQuad.get(1), indexedQuad.get(2), indexedQuad.get(3), Quad::create) ; 
-        System.out.println(quad2) ;
-
         // map in, unmap put.
         // Skew add.  Demo purposes index.
         execApply(tmap, quad, dsg::add) ;
-        System.out.println("Find:") ;
-        
         // Map in, find, unmap out.
         Iterator<Quad> iter = execFunction(tmap, g, s, null, null, dsg::find) ;
         // ideally, the unmap would be as nodes come out of the index. 

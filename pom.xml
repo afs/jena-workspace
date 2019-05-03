@@ -14,16 +14,37 @@
   <description>AFS workspace</description>
 
   <properties>
-    <ver.jena>3.9.0-SNAPSHOT</ver.jena>
-    <ver.fuseki>3.9.0-SNAPSHOT</ver.fuseki>
-    <ver.jena.text>${ver.jena}</ver.jena.text>
-
-    <ver.lucene>6.4.1</ver.lucene>
-    <ver.solr>${ver.lucene}</ver.solr>
-
+    <ver.jena>3.12.0-SNAPSHOT</ver.jena>
+    <ver.fuseki>${ver.jena}</ver.fuseki>
+    <ver.jetty>9.4.12.v20180830</ver.jetty>
   </properties>
 
   <dependencies>
+
+    <dependency>
+      <groupId>javax.websocket</groupId>
+      <artifactId>javax.websocket-api</artifactId>
+      <version>1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.websocket</groupId>
+      <artifactId>javax.websocket-client-api</artifactId>
+      <version>1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.jetty.websocket</groupId>
+      <artifactId>websocket-api</artifactId>
+      <version>${ver.jetty}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.jetty.websocket</groupId>
+      <artifactId>websocket-server</artifactId>
+      <version>${ver.jetty}</version>
+    </dependency>
+
     <!--
     <dependency>
       <groupId>org.seaborne</groupId>
@@ -36,8 +57,8 @@
       <artifactId>apache-jena-libs</artifactId>
       <version>${ver.jena}</version>
       <type>pom</type>
-    </dependency>
-    
+    </dependency> 
+
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-base</artifactId>
@@ -69,7 +90,6 @@
       <classifier>tests</classifier> 
     </dependency>
 
-    
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-cmds</artifactId>
@@ -87,7 +107,7 @@
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-text</artifactId>
-      <version>${ver.jena.text}</version>
+      <version>${ver.jena}</version>
       <!-- JUL
       <exclusions>
          <exclusion>
@@ -115,12 +135,6 @@
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-fuseki-main</artifactId>
-      <version>${ver.fuseki}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>jena-fuseki-access</artifactId>
       <version>${ver.fuseki}</version>
     </dependency>
 
@@ -158,8 +172,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-	      <version>2.3.2</version> <!-- OLD -->
+	      <version>3.8.0</version>
         <configuration>
+          <release>11</release>
+        </configuration>
+<!--
           <encoding>UTF-8</encoding>
           <debug>true</debug>
           <debuglevel>source,lines,vars</debuglevel>
@@ -167,6 +184,7 @@
           <source>1.8</source>
           <target>1.8</target>
         </configuration>
+-->
       </plugin>
 
       <plugin>
