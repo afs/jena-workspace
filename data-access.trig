@@ -1,0 +1,49 @@
+PREFIX : <http://example/>
+PREFIX gn: <http://host/graphname>
+
+:s0 :p "dft" .
+
+GRAPH gn:1 {
+   :s1 :p "g1" .
+}
+
+GRAPH gn:2 {
+   :sg2 :p "g2" .
+   :sg2 :p 2 .
+}
+
+GRAPH gn:3 {
+   :sg3 :p "g3" .
+   :sg3 :p 2 .
+   :sg3 :p 3 .
+}
+
+GRAPH gn:4 {
+   :sg4 :p "g4" .
+   :sg4 :p 2 .
+   :sg4 :p 3 .
+   :sg4 :p 4 .
+}
+
+GRAPH gn:5 {
+   :sg3 :p "g5" .
+   :sg3 :p 2 .
+   :sg3 :p 3 .
+   :sg3 :p 4 .
+   :sg3 :p 5 .
+}
+
+
+GRAPH gn:9 {
+   :sg9 :p "g9" .
+}
+
+
+## <#securityRegistry> rdf:type access:SecurityRegistry ;
+##     access:entry ("user1" <http://host/graphname1>  <http://host/graphname2> ) ;
+##     access:entry ("user1" <http://host/graphname3> ) ;
+##     access:entry ("user2" <http://host/graphname9> ) ;
+##     access:entry [ access:user "user3" ; access:graphs (<http://host/graphname3> <http://host/graphname4> ) ] ;
+##     access:entry [ access:user "user3" ; access:graphs <http://host/graphname5> ] ;
+##     access:entry [ access:user "userZ" ; access:graphs <http://host/graphnameZ> ] ;
+##     .

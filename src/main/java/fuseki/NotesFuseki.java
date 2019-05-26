@@ -18,101 +18,122 @@
 
 package fuseki;
 
-import javax.servlet.ServletContext;
-
-import org.apache.jena.fuseki.server.DataAccessPoint;
-import org.apache.jena.fuseki.server.DataAccessPointRegistry;
-import org.apache.jena.fuseki.server.DataService;
-import org.apache.jena.fuseki.server.Operation;
-import org.apache.jena.fuseki.servlets.HttpAction;
-import org.apache.jena.fuseki.servlets.ServiceDispatchRegistry;
-
 public class NotesFuseki {
+    // Other
+    //   To archive: fuseki1, ... 
+    
+    // MUST
+    
+    // SHOULD
+    //   ActionLib.doOptionsGet etc.
+    //   Check use of ActionLib2.setCommonHeaders
+    
+    // PR Text:
+/* 
+This PR rewrites dispatch in Fuseki. Previously some cases were inelegant
+bolt-ons (such as operations directly on the dataset). This breaks down when
+we try to have detailed configuration of service/endpoint, especially for
+access control. And it is ugly.
 
-    // WIP: SPARQL Query/update only routing.
+With this PR:
+      
+There is one dispatch mechanism applied in all case (before, there were hardcoded variations).
 
-    // Actions are functions.
-    // ActionBase2 is concreate and takes a function to call at "executeAction" (inheritance -> function injection) 
-    // OR ActionBase2.execAxction is static and take a function.
+Multiple endpoints can be attached to the same service point (a name) whether on the datasets ("/dataset") or services (e.g. "/dataset/sparql").
+      
+Operations on "/dataset" and operations on services can dispatch by request type (query, update, GSP).
+This makes "/dataset/sparql" work for all SPARQL operations.
+Previously that only worked on "/dataset". 
+      
+Quads and GSP (Graph Store Protocol) operations are combined into "Extended GSP" operations, not a hardcoded dispatch special case.
+      
+A lot of clearing up - the changes touched many classes due to renaming and
+simplifying implementation so it was a good time to do clean-up.
+      
+There should be no changes to applications using Fuseki configuration files. The
+existing vocabulary is used to create new style backwards compatible configurations.
+Direct use in Fuseki main java builder, will show differences in cases that were
+not supposed to work in the first place (accidental features dicivered during the work for thisPR)!
+Normal usage should be the same.
+      
+It will now be possible, eventually, to have a new, more powerful configuration:
+  
+Sketch, not implemented, of a query operation on the dataset (there is no "name" given),
+with access control, timeout, union setting and query result limit: 
+```
+    fuseki:endpoint [ 
+        fuseki:operation     fuseki:Query ;
+        fuseki:allowedUsers  (....) ;
+        fuseki:timeout       "1000,10000" ;
+        fuseki:queryLimit    1000;
+        arq:unionGraph       true;
+   ] ;
+```
+*/ 
     
-    // ActionCtl - share HttpAction creation
-    //   Auto servler?
-    //   ServletCtl = Servlet and Actionbase 
-    
-    // Class ActionBaseServlet = new ServletBase2(ActionCtl)
-    
-    // Need ActionCtl to be a servlet.
-    
-    // org.apache.jena.fuseki.mgt.ActionDatasets must work as a servlet 
-    
-    // ActionBase2 -- both service and admin processor.
-    // ServletBase(ActionProcessor) to convert to a plain servlet
-    
-    /* Two dispatchers: 
-     * (1) for stand alone services - basic setup of the HttpAction.
-     * (2) for general dispatch. 
+    // New builder:
+    //     fuseki:endpoint [ fuseki:operation fuseki:Query ; fuseki:name "" ; fuseki:allowedUsers (....) ] ; 
+    /*     fuseki:endpoint [ 
+                     fuseki:operation fuseki:Query ;
+                     fuseki:allowedUsers (....) ;
+                     fuseki:timeout "1000,1000" ;
+                     fuseki:queryLimit 1000;
+                     arq:unionGraph true;
+                     ja:context [ ja:cxtName "arq:queryTimeout" ;  ja:cxtValue "1000" ] ;
+                     ] ;
+    */
+    /*
+                  [ fuseki:operation my:op ; fuseki:opImlementation <java:org.me.MyActionProcessor> ]; 
      */
+    //     fuseki:serviceQuery [ fuseki:allowedUsers ]
 
-    // Rename ServiceDispatchRegistry as OperationDispatchRegistry?
-
-    // Admin uses ActionBase > ActionCtl
-
-    // Check that /ds/sparql does go through ServiceRouter.
-
-    static { HttpAction httpAction; }
-
-    static { 
-        ServiceDispatchRegistry sdr = ServiceDispatchRegistry.get(null);
-        sdr.findHandler((Operation)null);
-    }
-
-    static {
-        DataAccessPointRegistry dapr = DataAccessPointRegistry.get((ServletContext)null);
-        DataAccessPoint dap = dapr.get("dataset");
-        DataService dataService = dap.getDataService();
-        dataService.getDataset();
-        dataService.getOperations();
-        dataService.getEndpoint("epName");
-        dataService.getOperations();
-    }
+    // --- Other
     
-    //
-    // Then all ActionService have a "router" function.
-    // But some routers have no action ==>> separate thing.
-    // Injectable.
+    // Shiro filter?
+    // keycloak: SAML, OAuth2
+    // New UI, port UI, use RDF4J
     
-    // Fuseki examples. [done]
+    // Full test coverage in "main"
+    
+    // [DISPATCH LEGACY] - only in Dispatcher. If miss a dispatch lookup, look more widely.
 
-    // Need to attach FusekiFilter ServiceRouter to a 
-    // FusekiFilter : registry.get(datasetUri).getDataService().getRouter()
-    // Could/should routers be separate from Action service?
-    // Router calls service(request,response), no HttpAction. 
-    //    Misses logging in ActionBase.
-    //    Misses try-catch protection.
-    // protected void doCommon(HttpServletRequest request, HttpServletResponse response)
-    //   ==> 
-    // new "protected void doCommon(HttpAction)"
-    // and a router < ActionBase not ActionService.
+    // ++ OTHER
+    // XXX
     
-    // Handlers with a "already dispatched" function?
+    // ++ Sort out / maybe
+    // ActionProcessor, ActionLifecycle
+    //    ActionProcessor.process - splits by method.
+    //    ActionLifecycle -- validate, execute
     
+    //    ActionBase.process
+    //        Enforce splitting to be "exec" for each HTTP method.
+    //        ActionProcessor.super.process(action);
     
+    //   Better before, after calls in the lifecycle to add counters.
+    //     executeLifecycle
+
+    // ActionBase         implements ActionProcessor, ActionLifecycle
+    // ActionCtl          extends ServletProcessor implements ActionLifecycle
+    // ServletProcessor   extends HttpServlet implements ActionProcessor
+    //   -> Combine ActionProcessor and ActionLifecycle?
+
+    // ActionProcessor : process(HttpAction action) default split into HTTP calls
+    //   But ActionService hopes back to ActionLifecycle
+    // --> need better way to say "I support"
+
+    // -------------
     
 
-    // Register Endpoints with no service name 
-    //   But does "" means quads?
-    //     Endpoint.serviceName
-    //     Endpoint.displayName
-    //     Endpoint.isNamedService.
+    // ----------------------------------------
 
     /*
      * -- TIM not shared in assemblers -> Fuseki assembler problem.
      * FusekiConfig.getDataset only works for top level. TIM - named datasets?
-     * 
+     *
      * -- RDFConnection and ping. (ASK{}) RDFConnectionFuseki : ActionDatasetPing,
      * ActionServerPing.
      *
-     * -- Fuseki/HTTPS documentation. 
+     * -- Fuseki/HTTPS documentation.
      */
 
     // TODO https port only.
@@ -120,6 +141,6 @@ public class NotesFuseki {
 
     /*
      * passwords:: java -cp ../lib/jetty-util-9.4.7.v20170914.jar
-     * org.eclipse.jetty.util.security.Password username 
+     * org.eclipse.jetty.util.security.Password username
      */
 }

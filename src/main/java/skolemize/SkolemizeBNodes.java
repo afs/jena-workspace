@@ -62,7 +62,7 @@ public class SkolemizeBNodes {
         StreamRDF out = StreamRDFLib.writer(System.out);
         out.start();
         StreamRDF skol = new StreamRDFNodeExec(out, fSkolemize);
-        StreamOps.graphToStream(g, skol);
+        StreamRDFOps.graphToStream(g, skol);
         out.finish();
         }
 
@@ -149,6 +149,6 @@ public class SkolemizeBNodes {
                 super.triple(Triple.create(triple.getSubject(), triple.getPredicate(), o));
             }
         };
-        StreamOps.graphToStream(g, stream);
+        StreamRDFOps.graphToStream(g, stream);
     }
 }

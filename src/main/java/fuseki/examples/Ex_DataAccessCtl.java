@@ -53,13 +53,13 @@ import org.eclipse.jetty.util.security.Password;
  * Example of a Fuseki with per-graph data access control.
  */
 public class Ex_DataAccessCtl {
-    
+
     public static void main(String ... a) {
         FusekiLogging.setLogging();
         int port = WebLib.choosePort();
         String datasetName = "/ds";
         String URL = format("http://localhost:%d/%s", port, datasetName);
-        
+
         // ---- Set up the registry.
         AuthorizationService authorizeSvc;
         {
@@ -73,7 +73,7 @@ public class Ex_DataAccessCtl {
             // Hide implementation.
             authorizeSvc = reg;
         }
-        
+
         // ---- Some data
         DatasetGraph dsg = createData();
         // ---- User authentication database (Jetty specific)
@@ -82,21 +82,21 @@ public class Ex_DataAccessCtl {
         addUserPassword(userStore, "user2", "pw2", "**");
         try { userStore.start(); }
         catch (Exception ex) { throw new RuntimeException("UserStore", ex); }
-        
+
         // ---- Build server, start server.
         FusekiServer server = fuseki(port, userStore, authorizeSvc, datasetName, dsg);
         server.start();
-        
+
         // ---- HttpClient connection with user and password basic authentication.
         HttpClient client = httpClient("user1", "pw1");
-        
+
         // ---- Use it.
         try (RDFConnection conn = RDFConnectionRemote.create()
             .destination(URL)
             .httpClient(client)
             .build()){
 
-            // What can we see of the database? user1 can see g1 and the default graph 
+            // What can we see of the database? user1 can see g1 and the default graph
             Dataset ds1 = conn.fetchDataset();
             RDFDataMgr.write(System.out, ds1, RDFFormat.TRIG_FLAT);
 
@@ -110,7 +110,7 @@ public class Ex_DataAccessCtl {
                 } catch (HttpException ex) {
                 }
         }
-        // Need to exit the JVM : there is a background server  
+        // Need to exit the JVM : there is a background server
         System.exit(0);
     }
 
@@ -120,7 +120,7 @@ public class Ex_DataAccessCtl {
         Credentials credentials = new UsernamePasswordCredentials(user, password);
         credsProvider.setCredentials(AuthScope.ANY, credentials);
         HttpClient client = HttpOp.createPoolingHttpClientBuilder().setDefaultCredentialsProvider(credsProvider).build();
-        return client; 
+        return client;
     }
 
     /** Create data : the subject indicates whic it comes from */
@@ -143,7 +143,7 @@ public class Ex_DataAccessCtl {
         Credential cred  = new Password(password);
         userStore.addUser(user, cred, roles);
     }
-    
+
     /** Create a Fuseki server with:
      * <ul>
      * <li>port, dataset and name
@@ -152,9 +152,13 @@ public class Ex_DataAccessCtl {
      * </ul>
      */
     private static FusekiServer fuseki(int port, UserStore userStore, AuthorizationService authorizeSvc, String dsName, DatasetGraph dsgBase) {
-        // Associate access control information with the dataset. 
+        // Associate access control information with the dataset.
         DatasetGraph dsx = DataAccessCtl.controlledDataset(dsgBase, authorizeSvc);
         // Build a Fuseki server with the access control operations replacing the normal (no control) operations.
+        
+        // NEW
+        //FusekiServer.Builder builder = FusekiLib.fusekiBuilderAccessCtl(DataAccessCtl.requestUserServlet)
+        // OLD
         FusekiServer.Builder builder = FusekiLib.fusekiBuilder(DataAccessCtl.requestUserServlet)
             .port(port)
             .add(dsName, dsx, false);

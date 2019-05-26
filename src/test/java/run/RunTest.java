@@ -16,16 +16,16 @@
  * limitations under the License.
  */
 
-package fuseki.router;
+package run;
 
-public class HttpMethods {
-    // Adds PATCH
-    public static final String METHOD_DELETE    = "DELETE" ;
-    public static final String METHOD_HEAD      = "HEAD" ;
-    public static final String METHOD_GET       = "GET" ;
-    public static final String METHOD_OPTIONS   = "OPTIONS" ;
-    public static final String METHOD_POST      = "POST" ;
-    public static final String METHOD_PUT       = "PUT" ;
-    public static final String METHOD_TRACE     = "TRACE" ;
-    public static final String METHOD_PATCH     = "PATCH" ;
+import arq.qtest;
+import org.apache.jena.query.ARQ;
+
+public class RunTest {
+
+    public static void main(String[] argv) {
+        ARQ.setStrictMode();
+        qtest.main("/home/afs/ASF/rdf-tests/sparql11/data-sparql11/functions/manifest.ttl");
+    }
+
 }

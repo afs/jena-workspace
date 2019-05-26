@@ -1,0 +1,3 @@
+{ "keystore" : "certs/mykey.jks" ,
+  "passwd"   : "cert-pw"
+}

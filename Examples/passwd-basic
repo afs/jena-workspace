@@ -5,5 +5,9 @@
 ##
 ## See Jetty PropertyUserStore for details.
 
-user2: pw2
+## Basic
+# user1: OBF:1l1a20731kxs
+
 user1: pw1
+user2: pw2
+user3: pw3

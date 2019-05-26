@@ -18,13 +18,59 @@
 
 package dev;
 
-import org.apache.jena.atlas.logging.LogCtl ;
+import java.io.StringReader;
 
-public class Dev
-{
-    static { LogCtl.setLog4j(); }
+import org.apache.jena.atlas.lib.StrUtils;
+import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 
-    public static void main(String...argv) {
+public class Dev {
+    static {
+        LogCtl.setLog4j();
     }
-    
+
+    public static void main(String[] argv) {
+    }
+
+    public static void mainJena1710(String[] argv) {
+        String data = StrUtils.strjoinNL("PREFIX : <http://example/>", "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>", "",
+            ":a :p _:b0 .", "_:b0 rdf:first 1 .", "_:b0 rdf:rest _:b1 .", "_:b1 rdf:first ( _:b0 ) .", "_:b1 rdf:rest rdf:nil .");
+
+        Model m = ModelFactory.createDefaultModel();
+
+        if ( false ) {
+            RDFDataMgr.read(m, new StringReader(data), null, Lang.TTL);
+        } else {
+            m.setNsPrefix("rdf", RDF.getURI());
+            m.setNsPrefix("owl", OWL.getURI());
+            m.setNsPrefix("rdfs", RDFS.getURI());
+
+            Resource b0 = m.createResource();
+            Resource b1 = m.createResource();
+
+            // add 4 statements:
+
+            b0.addProperty(OWL.unionOf, b1).addProperty(RDF.type, OWL.Class);
+            // b0.addProperty(RDFS.label, "B0");
+            b1.addProperty(RDF.first, b0).addProperty(RDF.rest, RDF.nil);
+            // b1.addProperty(RDFS.label, "B1");
+        }
+
+        RDFDataMgr.write(System.out, m, Lang.TTL);
+        System.out.println("# --------");
+        RDFDataMgr.write(System.out, m, RDFFormat.TURTLE_FLAT);
+// System.out.println("# --------");
+// RDFDataMgr.write(System.out, m, RDFFormat.TURTLE_BLOCKS);
+// System.out.println("# --------");
+// RDFDataMgr.write(System.out, m, RDFFormat.NT);
+    }
+
 }

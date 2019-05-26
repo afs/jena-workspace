@@ -25,8 +25,8 @@ import java.util.Arrays;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.Lib;
+import org.apache.jena.atlas.lib.ThreadLib;
 import org.apache.jena.atlas.web.HttpException;
-import org.apache.jena.dboe.migrate.L;
 import org.apache.jena.fuseki.cmd.FusekiCmd;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
@@ -45,7 +45,7 @@ public class DevFuseki
     }
     
     public static void main1(String ... a) throws UnsupportedEncodingException {
-        L.async(()-> {
+        ThreadLib.async(()-> {
             runFuseki();
         });
         Lib.sleep(500);

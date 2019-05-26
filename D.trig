@@ -4,19 +4,18 @@ PREFIX : <http://example/>
 
 GRAPH :g1 {
    :s1 :p "g1" .
-   :s1 :p 2 .
-   :s1 :p 3 .
-   :s1 :p 4 .
+##    :s1 :p 2 .
+##    :s1 :p 3 .
+##    :s1 :p 4 .
 }
 
 GRAPH :g2 {
    :sg2 :p "g2" .
-   :sg2 :p 2 .
+##    :sg2 :p 2 .
 }
 
-GRAPH :g3 {
-   :sg3 :p "g3" .
-   :sg3 :p 2 .
-   :sg3 :p 3 .
-}
-
+## GRAPH :g3 {
+##    :sg3 :p "g3" .
+##    :sg3 :p 2 .
+##    :sg3 :p 3 .
+## }

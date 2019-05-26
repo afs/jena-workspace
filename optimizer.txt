@@ -1,0 +1,71 @@
+-- Required
+op = TransformScopeRename.transform(op) ;
+        // Prepare expressions.
+        OpWalker.walk(op, new OpVisitorExprPrepare(context)) ;
+        
+        // Convert paths to triple patterns if possible.
+        if ( context.isTrueOrUndef(ARQ.optPathFlatten) ) {
+            op = apply("Path flattening", new TransformPathFlattern(), op) ;
+            // and merge adjacent BGPs (part 1)
+            if ( context.isTrueOrUndef(ARQ.optMergeBGPs) )
+                op = apply("Merge BGPs", new TransformMergeBGPs(), op) ;
+        }
+
+        // Expression constant folding
+	transformExprConstantFolding :: ExprTransformConstantFold
+        
+	// Property functions
+	transformPropertyFunctions :: TransformPropertyFunction
+
+        // Expand (A&&B) to two filter (A), (B) so that they can be placed independently.
+	transformFilterConjunction :: TransformFilterConjunction
+
+        // Expand IN and NOT IN which then allows other optimizations to be applied.
+	transformFilterExpandOneOf :: TransformExpandOneOf
+        
+        // Eliminate/Inline assignments where possible
+        transformInlineAssignments :: TransformEliminateAssignments
+
+        // Apply some general purpose filter transformations
+        transformFilterImplicitJoin :: TransformFilterImplicitJoin
+        
+        transformFilterImplicitLeftJoin :: TransformImplicitLeftJoin
+
+        // (filter (|| (= ?x <x>) (!= ?x <y>)) (bgp ( ?s ?p ?x)) )",
+        // (disjunction  (assign ((?x <x>)) (bgp ( ?s ?p <x>)))
+        //               (filter (!= ?x <y>) (bgp ( ?s ?p ?x))) )
+        transformFilterDisjunction :: TransformFilterDisjunction
+        
+	// TopN
+        transformTopNSorting :: TransformTopN
+        
+        // ORDER BY+DISTINCT optimizations
+        transformOrderByDistinctApplication
+
+        // Transform some DISTINCT to REDUCED, slightly more liberal transform that ORDER BY+DISTINCT application
+        transformDistinctToReduced :: TransformDistinctToReduced
+        
+	// Join strategy
+        transformJoinStrategy :: TransformJoinStrategy
+                
+        // Place filters
+        transformFilterPlacement :: TransformFilterPlacement
+        
+        // Apply (possibly a second time) after FILTER placement
+        transformFilterEquality :: TransformFilterEquality
+                
+        // Replace suitable FILTER(?x != TERM) with (minus (original) (table))
+        // Off by default due to minimal performance difference
+        transformFilterInequality :: TransformFilterInequality
+        
+        // Promote table empty as late as possible since this will only be produced by other 
+        // optimizations and never directly from algebra generation
+        transformPromoteTableEmpty :: TransformPromoteTableEmpty
+
+        transformMergeBGPs :: TransformMergeBGPs
+
+        // Normally, leave to the specific engines.
+        transformReorder :: TransformReorder BGPs
+        
+        // Merge (extend) and (assign) stacks
+        transformExtendCombine :: TransformExtendCombine
