@@ -19,14 +19,29 @@
 package dsg.buffering;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.query.ReadWrite;
+import org.apache.jena.query.TxnType;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphWrapper;
+import org.apache.jena.sparql.core.DatasetGraphBase;
 import org.apache.jena.sparql.core.Quad;
 
-public class BufferingDatasetGraph extends DatasetGraphWrapper {
+
+//See BufferingDSG_Q -- good enough for now.
+
+// DatasetGraphTriplesQuads
+// See BufferingDSG
+
+public class BufferingDatasetGraph extends DatasetGraphBase {
+
+    private DatasetGraph other;
+    protected DatasetGraph get() { return other; }
+
 
     // Implementation : BufferingDSG_Q
     
@@ -38,8 +53,85 @@ public class BufferingDatasetGraph extends DatasetGraphWrapper {
     private Set<Triple> deletedTriples = new HashSet<>();    
     
     public BufferingDatasetGraph(DatasetGraph dsg) {
-        super(dsg);
+        other = dsg;
     }
+    
+    @Override
+    public void add(Quad quad) { throw new UnsupportedOperationException("DatasetGraph.add(Quad)") ; } 
+    
+    @Override
+    public void delete(Quad quad) { throw new UnsupportedOperationException("DatasetGraph.delete(Quad)") ; }
+
+    @Override
+    public Iterator<Node> listGraphNodes() {
+        return null;
+    }
+
+    @Override
+    public Iterator<Quad> find(Node g, Node s, Node p, Node o) {
+        return null;
+    }
+
+    @Override
+    public Iterator<Quad> findNG(Node g, Node s, Node p, Node o) {
+        return null;
+    }
+
+    @Override
+    public boolean supportsTransactions() {
+        return false;
+    }
+
+    @Override
+    public void begin(TxnType type) {}
+
+    @Override
+    public void begin(ReadWrite readWrite) {}
+
+    @Override
+    public boolean promote(Promote mode) {
+        return false;
+    }
+
+    @Override
+    public void commit() {}
+
+    @Override
+    public void abort() {}
+
+    @Override
+    public void end() {}
+
+    @Override
+    public ReadWrite transactionMode() {
+        return null;
+    }
+
+    @Override
+    public TxnType transactionType() {
+        return null;
+    }
+
+    @Override
+    public boolean isInTransaction() {
+        return false;
+    }
+
+    @Override
+    public Graph getDefaultGraph() {
+        return null;
+    }
+
+    @Override
+    public Graph getGraph(Node graphNode) {
+        return null;
+    }
+
+    @Override
+    public void addGraph(Node graphName, Graph graph) {}
+
+    @Override
+    public void removeGraph(Node graphName) {}
     
 //    containsGraph(Node)
     

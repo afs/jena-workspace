@@ -22,18 +22,13 @@ import java.util.Objects;
 
 import jena.cmd.CmdException;
 import org.apache.jena.atlas.lib.InternalErrorException;
-import org.apache.jena.atlas.lib.tuple.TupleMap;
-import org.apache.jena.dboe.base.record.RecordFactory;
-import org.apache.jena.dboe.index.RangeIndex;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.tdb2.loader.base.LoaderOps;
 import org.apache.jena.tdb2.loader.base.MonitorOutput;
 import org.apache.jena.tdb2.loader.base.ProgressMonitor;
 import org.apache.jena.tdb2.loader.base.ProgressMonitorOutput;
-import org.apache.jena.tdb2.setup.TDBBuilder;
 import org.apache.jena.tdb2.store.DatasetGraphTDB;
 import org.apache.jena.tdb2.store.tupletable.TupleIndex;
-import org.apache.jena.tdb2.store.tupletable.TupleIndexRecord;
 import org.apache.jena.tdb2.sys.TDBInternal;
 import tdb2.cmdline.CmdTDB;
 
@@ -130,15 +125,16 @@ public class idxcp extends CmdTDB {
         TupleIndex[] dstIndexes = { dstIdx };
         String label = srcIndexName+"->"+dstIndexName;
         
-        
-        TDBBuilder builder = TDBBuilder.create(dsgtdb.getLocation());
-        RecordFactory recordFactory = new RecordFactory(dstIndexName.length(),0);
-        RangeIndex index = builder.buildRangeIndex(recordFactory, dstIndexName);
-        
-        dstIdx = new TupleIndexRecord(dstIndexName.length(),
-                                      TupleMap.create(srcIndexName, dstIndexName),
-                                      dstIndexName, recordFactory,
-                                      index);
+        System.err.println("Not upgraded to new TDB2");
+//        TDB2StorageBuilder        
+//        //TDBBuilder builder = TDBBuilder.create(dsgtdb.getLocation());
+//        RecordFactory recordFactory = new RecordFactory(dstIndexName.length(),0);
+//        RangeIndex index = builder.buildRangeIndex(recordFactory, dstIndexName);
+//        
+//        dstIdx = new TupleIndexRecord(dstIndexName.length(),
+//                                      TupleMap.create(srcIndexName, dstIndexName),
+//                                      dstIndexName, recordFactory,
+//                                      index);
         
         ProgressMonitor monitor = ProgressMonitorOutput.create(output, label, IndexTickPoint, IndexSuperTick);
         LoaderOps.copyIndex(srcIdx.all(), dstIndexes, monitor);  

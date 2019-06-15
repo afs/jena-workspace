@@ -18,20 +18,33 @@
 
 package dev;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.jena.atlas.io.IndentedWriter ;
 import org.apache.jena.atlas.lib.ProgressMonitor ;
+import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.atlas.lib.Timer ;
 import org.apache.jena.atlas.lib.cache.CacheInfo ;
+import org.apache.jena.graph.Node;
 import org.apache.jena.query.* ;
 import org.apache.jena.riot.RDFDataMgr ;
 import org.apache.jena.sparql.algebra.Algebra ;
 import org.apache.jena.sparql.algebra.Op ;
 import org.apache.jena.sparql.algebra.Transformer ;
+import org.apache.jena.sparql.algebra.op.OpJoin;
+import org.apache.jena.sparql.algebra.op.OpLeftJoin;
 import org.apache.jena.sparql.algebra.optimize.Optimize ;
 import org.apache.jena.sparql.algebra.optimize.TransformFilterPlacement ;
+import org.apache.jena.sparql.algebra.optimize.TransformJoinStrategy;
 import org.apache.jena.sparql.algebra.optimize.TransformReorder ;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.main.JoinClassifier;
+import org.apache.jena.sparql.engine.main.LeftJoinClassifier;
+import org.apache.jena.sparql.engine.main.VarFinder;
 import org.apache.jena.sparql.sse.SSE ;
 import org.apache.jena.sparql.sse.writers.WriterOp ;
+import org.apache.jena.sparql.syntax.syntaxtransform.QueryTransformOps;
 import org.apache.jena.sparql.util.QueryExecUtils ;
 
 /** Fragment used in development */
@@ -46,12 +59,6 @@ public class DevLib {
       QueryExecUtils.executeQuery(qExec);
       System.exit(0);
     }
-    
-    public static void algebra(String DIR, String queryFile) {
-        Query query = QueryFactory.read(DIR+queryFile) ;
-        Op op = Algebra.compile(query) ;
-        Op op1 = Algebra.optimize(op) ;
-        }
     
     public static void transform() {
         Query query = QueryFactory.create("PREFIX : <http://example/> SELECT * { ?s ?p ?o . ?x ?q :o. ?s :key :value . }") ;
@@ -136,6 +143,90 @@ public class DevLib {
         }
     }
 
+
+    public static void run(String queryFile, String dataFile) {
+        Query q = QueryFactory.read(queryFile) ;
+        Dataset ds = RDFDataMgr.loadDataset(dataFile) ;
+        QueryExecution qExec = QueryExecutionFactory.create(q, ds) ;
+        QueryExecUtils.executeQuery(q, qExec);
+    }
+    
+    public static String filename(String dir, String file) {
+        if ( dir.endsWith("/") ) 
+            return dir+file ;
+        else
+            return dir+"/"+file ; 
+    }
+    
+    public static void algebra(String DIR, String queryFile) {
+        algebra(filename(DIR, queryFile));
+    }
+    
+    public static void varfind(String z) {
+        Op op = SSE.parseOp(z);
+        System.out.println(op);
+        VarFinder vf = VarFinder.process(op);
+        System.out.println(vf);
+    }
+    
+    public static Op algebra(String queryFile) {
+        Query query = QueryFactory.read(queryFile) ;
+        System.out.println(query);
+        Op op = Algebra.compile(query) ;
+        Op op1 = Algebra.optimize(op) ;
+        System.out.println(op1) ;
+        return op1 ;
+    }
+    
+    public static void joinClassification(String... args) {
+        String qs = StrUtils.strjoinNL("");
+        Query query = QueryFactory.create(qs);
+        Op op = Algebra.compile(query);
+        
+        System.out.println(op);
+        if ( op instanceof OpJoin ) {
+            JoinClassifier.print = true ;
+            boolean b = JoinClassifier.isLinear((OpJoin)op);
+            System.out.println("Join linear: "+b);
+        } else if (op instanceof OpLeftJoin ) {
+            LeftJoinClassifier.print = true ;
+            boolean b2 = LeftJoinClassifier.isLinear((OpLeftJoin)op);
+            System.out.println("LeftJoin linear: "+b2);
+        } else
+            System.out.println("Not a join Join");
+        System.exit(0);
+    }
+    
+    public static void joinClassification(Query query) {
+        Op op = Algebra.compile(query);
+        System.out.println(op);
+        boolean b = JoinClassifier.print ;
+        JoinClassifier.print = true;
+        Op op1 = Transformer.transform(new TransformJoinStrategy(), op);
+        JoinClassifier.print = b;
+        System.out.println(op1);
+    }
+
+    public static Query transform(Query query, QuerySolutionMap qsm) {
+        Map<Var, Node> map = new HashMap<>();
+        qsm.asMap().forEach((vstr, rdfnode) -> map.put(Var.alloc(vstr), rdfnode.asNode()));
+        return QueryTransformOps.transform(query, map);
+    }
+    
+    public static void spacePrint(Runnable action) {
+        spacePrint(null, action) ;
+    }
+    
+    public static void spacePrint(String label, Runnable action) {
+        long z = space(action) ;
+        if ( label != null ) {
+            System.out.print(label) ;
+            System.out.print(" : ") ;
+            System.out.flush() ;
+        }
+        System.out.printf("Space=%.2f MB\n", z/(1000*1000.0)) ;
+    }
+    
     public static void gc() {
         Runtime.getRuntime().gc() ;
     }

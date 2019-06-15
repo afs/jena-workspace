@@ -32,7 +32,7 @@ import org.apache.jena.sparql.core.Quad;
 
 /**
  * A {@link DatasetGraph} that provides buffering of changes. 
- * It keeps two collections of added and removed triples/quads, and only passes chnages down to the base DatasetGraph
+ * It keeps two collections, of added and removed triples/quads, and only passes changes down to the base DatasetGraph
  * when asked to (e.g. in transaction commit).
  * <p> 
  * This implementation is designed for small amounts of buffering, in order to capture
@@ -115,44 +115,57 @@ public class BufferingDSG_Q extends DatasetGraphQuads2 {
     }
 
     // Leave to DatasetGraphBase.contains/4.
+
+    @Override
+    public void begin() { base.begin(); }
+
     
     @Override
-    public void begin(TxnType type) {}
+    public void begin(TxnType type) { base.begin(type); }
 
     @Override
-    public void begin(ReadWrite readWrite) {}
+    public void begin(ReadWrite readWrite) { base.begin(readWrite); }
 
     @Override
-    public boolean promote(Promote mode) {
-        return false;
+    public boolean promote() { return base.promote(); } 
+    
+    @Override
+    public boolean promote(Promote mode) { return base.promote(mode); } 
+
+    @Override
+    public void commit() {
+        // XXX Work neeed
+        base.commit();
     }
 
     @Override
-    public void commit() {}
+    public void abort() {
+        // XXX Work neededs
+        base.abort();
+        addedQuads.clear();
+        deletedQuads.clear();
+    }
 
     @Override
-    public void abort() {}
-
-    @Override
-    public void end() {}
+    public void end() { base.end(); }
 
     @Override
     public boolean supportsTransactions() {
-        return false;
+        return base.supportsTransactions();
     }
 
     @Override
     public ReadWrite transactionMode() {
-        return null;
+        return base.transactionMode();
     }
 
     @Override
     public TxnType transactionType() {
-        return null;
+        return base.transactionType();
     }
 
     @Override
     public boolean isInTransaction() {
-        return false;
+        return base.isInTransaction();
     }
 }

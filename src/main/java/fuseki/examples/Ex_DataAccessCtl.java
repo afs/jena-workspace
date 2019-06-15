@@ -156,10 +156,7 @@ public class Ex_DataAccessCtl {
         DatasetGraph dsx = DataAccessCtl.controlledDataset(dsgBase, authorizeSvc);
         // Build a Fuseki server with the access control operations replacing the normal (no control) operations.
         
-        // NEW
-        //FusekiServer.Builder builder = FusekiLib.fusekiBuilderAccessCtl(DataAccessCtl.requestUserServlet)
-        // OLD
-        FusekiServer.Builder builder = FusekiLib.fusekiBuilder(DataAccessCtl.requestUserServlet)
+        FusekiServer.Builder builder = FusekiLib.fusekiBuilderAccessCtl(DataAccessCtl.requestUserServlet)
             .port(port)
             .add(dsName, dsx, false);
         // Add service endpoint login for authentication.

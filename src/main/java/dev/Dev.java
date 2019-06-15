@@ -22,6 +22,7 @@ import java.io.StringReader;
 
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.fuseki.main.cmds.FusekiMainCmd;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -37,12 +38,21 @@ public class Dev {
         LogCtl.setLog4j();
     }
 
-    public static void main(String[] argv) {
+    public static void main(String[] argv) throws Exception {
+        FusekiMainCmd.main("--config=/home/afs/DIR/example.ttl");
     }
 
     public static void mainJena1710(String[] argv) {
-        String data = StrUtils.strjoinNL("PREFIX : <http://example/>", "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>", "",
-            ":a :p _:b0 .", "_:b0 rdf:first 1 .", "_:b0 rdf:rest _:b1 .", "_:b1 rdf:first ( _:b0 ) .", "_:b1 rdf:rest rdf:nil .");
+        String data = StrUtils.strjoinNL
+            ("PREFIX : <http://example/>"
+            , "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
+            , ""
+            ,":a :p _:b0 ."
+            , "_:b0 rdf:first 1 ."
+            , "_:b0 rdf:rest _:b1 ."
+            , "_:b1 rdf:first ( _:b0 ) ."
+            , "_:b1 rdf:rest rdf:nil ."
+            );
 
         Model m = ModelFactory.createDefaultModel();
 

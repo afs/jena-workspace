@@ -26,10 +26,9 @@ import org.apache.jena.fuseki.validation.DataValidator;
 import org.apache.jena.fuseki.validation.IRIValidator;
 import org.apache.jena.fuseki.validation.QueryValidator;
 import org.apache.jena.fuseki.validation.UpdateValidator;
-import org.apache.jena.query.QueryExecution;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
-import org.apache.jena.sparql.util.QueryExecUtils;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
 
 public class RunFuseki
 {
@@ -40,13 +39,8 @@ public class RunFuseki
     }
 
     public static void mainServer(String ... a) {
-        FusekiLogging.setLogging();
         FusekiServer server = FusekiServer.create()
-//            .add("/other", DatasetGraphFactory.createTxnMem())
-            .parseConfigFile("/home/afs/tmp/config.ttl")
-            
-            //.passwordFile("/home/afs/tmp/passwd")
-            
+            .add("/ds", DatasetGraphFactory.createTxnMem())
             .port(3030)
             .verbose(true)
             .build();
@@ -55,21 +49,19 @@ public class RunFuseki
     }
     
     public static void mainServerClient() {
-        FusekiLogging.setLogging();
         FusekiServer server = FusekiServer.create()
-            .parseConfigFile("/home/afs/tmp/config.ttl")
+            //.add("/ds", DatasetGraphFactory.createTxnMem())
+            .parseConfigFile("/home/afs/tmp/union/config2.ttl")
             .port(3030)
             .build()
             .start();
         
         // Use it.
-        try ( RDFConnection conn = RDFConnectionFactory.connect("http://localhost:3030/ds") ) {
-            QueryExecution qExec = conn.query("ASK{}");
-            QueryExecUtils.executeQuery(qExec);
-        } finally {
-            server.stop();
-        }
-        
+        try ( RDFConnection conn = RDFConnectionFactory.connectFuseki("http://localhost:3030/ds") ) {
+            conn.querySelect("SELECT * { ?s ?p ?o }", qs->System.out.println(qs));
+        } 
+        finally { server.stop(); }
+        System.out.println("DONE");
     }
     
     public static void mainWebapp() {

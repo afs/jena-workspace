@@ -23,7 +23,7 @@ import org.apache.jena.sparql.core.Quad;
 
 /** Ways to match triples. quads */
 public class M {
-
+    //org.apache.jena.sparql.core
 //    public static Stream<Triple> match(Collection<Triple> triples, Node s, Node p, Node o) {
 //        return triples.stream()
 //            .filter(t-> match(t, s,p,o));

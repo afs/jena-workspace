@@ -24,7 +24,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.apache.jena.atlas.lib.Creator;
@@ -85,7 +84,7 @@ public class LoaderDevTools {
     
     public static void inputThreaded(DatasetGraph dsg, List<String> data) {
         DatasetGraphTDB dsgtdb = TDBInternal.getDatasetGraphTDB(dsg);
-        BiConsumer<String, String> prefixHandler = (prefix, uristr) -> {
+        PrefixHandler prefixHandler = (prefix, uristr) -> {
             // Transactions
             output.print("PREFIX %s: %s\n", prefix, uristr); 
         };

@@ -22,54 +22,14 @@ public class NotesFuseki {
     // Other
     //   To archive: fuseki1, ... 
     
+    // Wrapper - same endpoints and configuration, different dadasets 
+    
     // MUST
     
     // SHOULD
     //   ActionLib.doOptionsGet etc.
     //   Check use of ActionLib2.setCommonHeaders
     
-    // PR Text:
-/* 
-This PR rewrites dispatch in Fuseki. Previously some cases were inelegant
-bolt-ons (such as operations directly on the dataset). This breaks down when
-we try to have detailed configuration of service/endpoint, especially for
-access control. And it is ugly.
-
-With this PR:
-      
-There is one dispatch mechanism applied in all case (before, there were hardcoded variations).
-
-Multiple endpoints can be attached to the same service point (a name) whether on the datasets ("/dataset") or services (e.g. "/dataset/sparql").
-      
-Operations on "/dataset" and operations on services can dispatch by request type (query, update, GSP).
-This makes "/dataset/sparql" work for all SPARQL operations.
-Previously that only worked on "/dataset". 
-      
-Quads and GSP (Graph Store Protocol) operations are combined into "Extended GSP" operations, not a hardcoded dispatch special case.
-      
-A lot of clearing up - the changes touched many classes due to renaming and
-simplifying implementation so it was a good time to do clean-up.
-      
-There should be no changes to applications using Fuseki configuration files. The
-existing vocabulary is used to create new style backwards compatible configurations.
-Direct use in Fuseki main java builder, will show differences in cases that were
-not supposed to work in the first place (accidental features dicivered during the work for thisPR)!
-Normal usage should be the same.
-      
-It will now be possible, eventually, to have a new, more powerful configuration:
-  
-Sketch, not implemented, of a query operation on the dataset (there is no "name" given),
-with access control, timeout, union setting and query result limit: 
-```
-    fuseki:endpoint [ 
-        fuseki:operation     fuseki:Query ;
-        fuseki:allowedUsers  (....) ;
-        fuseki:timeout       "1000,10000" ;
-        fuseki:queryLimit    1000;
-        arq:unionGraph       true;
-   ] ;
-```
-*/ 
     
     // New builder:
     //     fuseki:endpoint [ fuseki:operation fuseki:Query ; fuseki:name "" ; fuseki:allowedUsers (....) ] ; 

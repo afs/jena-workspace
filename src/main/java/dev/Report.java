@@ -18,112 +18,37 @@
 
 package dev;
 
-import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transformer;
 import org.apache.jena.sparql.algebra.op.OpJoin;
 import org.apache.jena.sparql.algebra.optimize.TransformJoinStrategy;
-import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.engine.main.JoinClassifier;
 import org.apache.jena.sparql.sse.SSE;
-import org.apache.jena.system.Txn;
-import org.apache.jena.tdb.TDBFactory;
-import org.apache.jena.tdb2.DatabaseMgr;
 
 public class Report {
 
+    // AbstractStoreConnections store_1 and store_4.
+    
+    // In GraphView/TransactionHandlersView?
+    
+    // And also JENA-1667
+    // and also GraphUnionRead
+    // and shared internal datasets
+    
+    // Problem : two graphs sharing the same dataset/TDB2.
+    // Nested transactions.
+    
+    // 1 - nested transactions
+    // 2 - two DatasetGraphTransactions
+    // 3 - Polyadic
+    // 4 - GraphView graph Txn nesting.
 
     public static void main(String[] args) {
-        mainTDB2();
     }
-
-    // Test TDB2 with faked exception
-    public static void mainTDB2() {
-        String DIR = "/home/afs/tmp/DB2";
-        FileOps.ensureDir(DIR);
-        FileOps.clearAll(DIR);
-        DatasetGraph dsg = DatabaseMgr.connectDatasetGraph(DIR);
-//        System.out.println("Before");
-//        Txn.executeRead(dsg, ()->RDFDataMgr.write(System.out, dsg, Lang.NQ));
-//        System.out.println("Init");
-
-        Quad q = SSE.parseQuad("(:g :s :p :o)");
-        System.out.println("START");
-        try {
-            Txn.executeWrite(dsg,  ()->{
-                dsg.add(q);
-                //throw new RuntimeException();
-                //dsg.abort();
-            });
-        } catch (Exception ex) {
-
-            System.out.println("isInTransaction = "+dsg.isInTransaction());
-
-            System.out.println("------------");
-            ex.printStackTrace(System.out);
-            System.out.println("------------");
-        }
-
-        if ( dsg.isInTransaction() ) {
-            System.out.println("************");
-            dsg.isInTransaction();
-        }
-
-        // Look for "// [HACK]"
-        // Fails to truly abort.
-
-        // But now  TarsnactionCoordinator.rollback calls Trasnaction.end.
-
-        // txn.isInTransaction() remains true.
-        // TransactionalBase.commitExec calls _end, clears transaction.
-        // TransactionalBase.abort calls _end
-        // TransactionalBase.end calls _end
-        // TarsnactionCoordinator has count > 0
-        // TarsnactionCoordinator.executeAbort?
-
-        // HACK: executeAbort
-
-        System.out.println("Outcome");
-        Txn.executeRead(dsg, ()->RDFDataMgr.write(System.out, dsg, Lang.NQ));
-        System.out.println("END");
-
-    }
-
-    // Need JIRA
-    public static void mainTDB1() {
-        String DIR = "/home/afs/tmp/DB";
-        FileOps.ensureDir(DIR);
-        FileOps.clearAll(DIR);
-        DatasetGraph dsg = TDBFactory.createDatasetGraph(DIR);
-        System.out.println("Before");
-        Txn.executeRead(dsg, ()->RDFDataMgr.write(System.out, dsg, Lang.NQ));
-        System.out.println("Init");
-
-        Quad q = SSE.parseQuad("(:g :s :p :o)");
-        System.out.println("START");
-        try {
-            Txn.executeWrite(dsg,  ()->{
-                dsg.add(q);
-                //dsg.abort();
-            });
-        } catch (Exception ex) {
-            System.out.println("------------");
-            ex.printStackTrace(System.out);
-            System.out.println("------------");
-        }
-        System.out.println("Outcome");
-        Txn.executeRead(dsg, ()->RDFDataMgr.write(System.out, dsg, Lang.NQ));
-        System.out.println("END");
-    }
-
-
 
     public static void mainJoin(String[] args) {
         if ( true ) {

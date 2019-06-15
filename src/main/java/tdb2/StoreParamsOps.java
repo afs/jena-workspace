@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.jena.tdb2.setup.StoreParams;
+import org.apache.jena.tdb2.params.StoreParams;
 
 public class StoreParamsOps {
 
