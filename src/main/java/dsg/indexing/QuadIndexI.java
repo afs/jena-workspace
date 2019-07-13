@@ -16,23 +16,24 @@
  * limitations under the License.
  */
 
-package dev;
+package dsg.indexing;
 
-import org.apache.jena.sparql.algebra.optimize.TransformEliminateAssignments;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
-public class DevInlineAssignment {
-    // What does this optimization do?
-    // arq:optInlineAssignmentsAggressive"
-    // TransformEliminateAssignments
+import org.apache.jena.atlas.iterator.Iter;
+import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.core.Quad;
+
+public interface QuadIndexI {
     
-    Object x = TransformEliminateAssignments.eliminate(null);
+    public void add(Node g, Node s, Node p, Node o);
     
-    // Activator org.tb.sparql.Activator
-    //ARQ.extensionValueTypes,
-    //ARQ.optFilterPlacement,
-    //ARQ.generateToList,
-    //ARQ.hideNonDistiguishedVariables,
-    //ARQ.stageGenerator,
-    //ARQ.strictGraph,
-    //ARQ.strictSPARQL
+    public void delete(Node g, Node s, Node p, Node o);
+    
+    public Iterator<Quad> find(Node g, Node s, Node p, Node o);
+    
+    public default Stream<Quad> stream(Node g, Node s, Node p, Node o) {
+        return Iter.asStream(find(g, s, p, o));
+    }
 }

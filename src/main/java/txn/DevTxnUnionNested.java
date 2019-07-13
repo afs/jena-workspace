@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package dev;
+package txn;
 
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.fuseki.main.FusekiServer;
@@ -49,37 +49,21 @@ import org.apache.jena.tdb2.DatabaseMgr;
 
 public class DevTxnUnionNested {
 
-    // AbstractStoreConnections store_1 and store_4.
-    
-    // In GraphView/TransactionHandlersView?
-    
-    // And also JENA-1667
-    // and also GraphUnionRead
-    // and shared internal datasets
-    
-    // Problem : two graphs sharing the same dataset/TDB2.
-    // Nested transactions.
-    
-    // 1 - nested transactions
-    // 2 - two DatasetGraphTransactions
-    // 3 - Polyadic
-    // 4 - GraphView graph Txn nesting.
-
     public static void main(String[] args) {
-        tdb1();
+        tdb();
     }
     
     // New/inner less than existing/outer.
     // READ < PROMOTE < WRITE ; PROMOTES must match (READ_COMMITTED_PROMOTE could be < READ_PROMOTE)
     // Could try to promote outer - See checkCompatible.
     
-    public static void tdb1() {
+    public static void tdb() {
         
         Quad quad = SSE.parseQuad("(:g :s :p :o)");
         
         DatasetGraph dsg1;
         DatasetGraph dsg2;
-        if ( true ) {
+        if ( false ) {
             dsg1 = TDBFactory.createDatasetGraph(org.apache.jena.tdb.base.file.Location.mem("NAME")); 
             dsg2 = TDBFactory.createDatasetGraph(org.apache.jena.tdb.base.file.Location.mem("NAME"));
         } else {
@@ -88,9 +72,9 @@ public class DevTxnUnionNested {
         }
 
         System.out.println("[1] "+dsg1.isInTransaction()+"/"+dsg2.isInTransaction());
-        dsg1.begin(TxnType.READ);
+        dsg1.begin(TxnType.WRITE);
         System.out.println("[2] "+dsg1.isInTransaction()+"/"+dsg2.isInTransaction());
-        dsg2.begin(TxnType.WRITE);
+        dsg2.begin(TxnType.READ);
         System.out.println("[3] "+dsg1.isInTransaction()+"/"+dsg2.isInTransaction());
 
         dsg2.add(quad);

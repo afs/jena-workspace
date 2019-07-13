@@ -19,8 +19,10 @@
 package dev;
 
 import org.apache.jena.atlas.lib.StrUtils;
+import org.apache.jena.iri.IRI;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
+import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transformer;
@@ -30,24 +32,12 @@ import org.apache.jena.sparql.engine.main.JoinClassifier;
 import org.apache.jena.sparql.sse.SSE;
 
 public class Report {
-
-    // AbstractStoreConnections store_1 and store_4.
     
-    // In GraphView/TransactionHandlersView?
-    
-    // And also JENA-1667
-    // and also GraphUnionRead
-    // and shared internal datasets
-    
-    // Problem : two graphs sharing the same dataset/TDB2.
-    // Nested transactions.
-    
-    // 1 - nested transactions
-    // 2 - two DatasetGraphTransactions
-    // 3 - Polyadic
-    // 4 - GraphView graph Txn nesting.
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        IRI iri = IRIResolver.parseIRI("http://example.com");
+        System.out.println(iri);
+        IRI iri2 = iri.normalize(false);
+        System.out.println(iri2);
     }
 
     public static void mainJoin(String[] args) {
@@ -83,7 +73,6 @@ public class Report {
         System.out.println(op);
         System.out.println(op1);
         System.out.println("DONE");
-
     }
 
     public static void mainPLAT1500(String[] args) {

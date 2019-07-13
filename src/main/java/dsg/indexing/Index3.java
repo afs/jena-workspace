@@ -16,23 +16,8 @@
  * limitations under the License.
  */
 
-package dev;
+package dsg.indexing;
 
-import org.apache.jena.sparql.algebra.optimize.TransformEliminateAssignments;
+import java.util.HashMap;
 
-public class DevInlineAssignment {
-    // What does this optimization do?
-    // arq:optInlineAssignmentsAggressive"
-    // TransformEliminateAssignments
-    
-    Object x = TransformEliminateAssignments.eliminate(null);
-    
-    // Activator org.tb.sparql.Activator
-    //ARQ.extensionValueTypes,
-    //ARQ.optFilterPlacement,
-    //ARQ.generateToList,
-    //ARQ.hideNonDistiguishedVariables,
-    //ARQ.stageGenerator,
-    //ARQ.strictGraph,
-    //ARQ.strictSPARQL
-}
+public class Index3<X> extends HashMap<X, Index2<X>> {}

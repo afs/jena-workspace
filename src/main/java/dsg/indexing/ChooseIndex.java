@@ -16,23 +16,18 @@
  * limitations under the License.
  */
 
-package dev;
+package dsg.indexing;
 
-import org.apache.jena.sparql.algebra.optimize.TransformEliminateAssignments;
+import static dsg.indexing.ChooseIndex.IndexOrder.*;
 
-public class DevInlineAssignment {
-    // What does this optimization do?
-    // arq:optInlineAssignmentsAggressive"
-    // TransformEliminateAssignments
+import java.util.EnumSet;
+
+public class ChooseIndex {
+    public static void main(String ...a) {
+        
+    }
     
-    Object x = TransformEliminateAssignments.eliminate(null);
+    static enum IndexOrder { G, S, P, O }; 
     
-    // Activator org.tb.sparql.Activator
-    //ARQ.extensionValueTypes,
-    //ARQ.optFilterPlacement,
-    //ARQ.generateToList,
-    //ARQ.hideNonDistiguishedVariables,
-    //ARQ.stageGenerator,
-    //ARQ.strictGraph,
-    //ARQ.strictSPARQL
+    static EnumSet<IndexOrder> setGSPO = EnumSet.of(G, S, P, O);
 }

@@ -16,23 +16,17 @@
  * limitations under the License.
  */
 
-package dev;
+package dsg.indexing;
 
-import org.apache.jena.sparql.algebra.optimize.TransformEliminateAssignments;
+import java.util.Iterator;
 
-public class DevInlineAssignment {
-    // What does this optimization do?
-    // arq:optInlineAssignmentsAggressive"
-    // TransformEliminateAssignments
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+
+public interface TripleIndexI {
+    public void add(Node s, Node p, Node o);
     
-    Object x = TransformEliminateAssignments.eliminate(null);
+    public void delete(Node s, Node p, Node o);
     
-    // Activator org.tb.sparql.Activator
-    //ARQ.extensionValueTypes,
-    //ARQ.optFilterPlacement,
-    //ARQ.generateToList,
-    //ARQ.hideNonDistiguishedVariables,
-    //ARQ.stageGenerator,
-    //ARQ.strictGraph,
-    //ARQ.strictSPARQL
+    public Iterator<Triple> find(Node x1, Node x2, Node x3);
 }

@@ -40,7 +40,7 @@ import org.apache.jena.sparql.core.Quad;
  * where the underlying dataset does not have "supportsTransactionAbort". 
  * <p>
  * See also
- * RDFPatch, {@code DatasetGraphChanges} for a stream of changes.
+ * {@code RDFPatch}, {@code DatasetGraphChanges} for a stream of changes.
  */
 public class BufferingDSG_Q extends DatasetGraphQuads2 {
     
@@ -71,17 +71,19 @@ public class BufferingDSG_Q extends DatasetGraphQuads2 {
     
     @Override
     public void add(Quad quad) {
+        // Whether UNIQUE or not, we to ensure we can commit by adding then deleting new quads.
+        // That means added we need keep addedQuads and deletedQuads misjoint. 
+        deletedQuads.remove(quad);
         if ( UNIQUE && base.contains(quad) )
             return ;
         addedQuads.add(quad);
-        deletedQuads.remove(quad);
     }
 
     @Override
     public void delete(Quad quad) {
+        addedQuads.remove(quad);
         if ( UNIQUE && ! base.contains(quad) )
             return ;
-        addedQuads.remove(quad);
         deletedQuads.add(quad);
     }
 
@@ -118,7 +120,6 @@ public class BufferingDSG_Q extends DatasetGraphQuads2 {
 
     @Override
     public void begin() { base.begin(); }
-
     
     @Override
     public void begin(TxnType type) { base.begin(type); }
@@ -134,13 +135,28 @@ public class BufferingDSG_Q extends DatasetGraphQuads2 {
 
     @Override
     public void commit() {
-        // XXX Work neeed
+        // The added and deleted sets are correct
+        flush();
         base.commit();
     }
 
+    public Collection<Quad> addedQuads() {
+        return addedQuads;
+    }
+
+    public Collection<Quad> deletedQuads() {
+        return deletedQuads;
+    }
+
+    public void flush() {
+        addedQuads.forEach(base::add);
+        deletedQuads.forEach(base::delete);
+        addedQuads.clear();
+        deletedQuads.clear();
+    }
+    
     @Override
     public void abort() {
-        // XXX Work neededs
         base.abort();
         addedQuads.clear();
         deletedQuads.clear();

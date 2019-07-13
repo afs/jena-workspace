@@ -22,7 +22,11 @@ public class NotesFuseki {
     // Other
     //   To archive: fuseki1, ... 
     
-    // Wrapper - same endpoints and configuration, different dadasets 
+
+    // -----------------------
+    // Global configuration from init:
+    // :: DataServiceBuilder / jena-workspace
+    // -----------------------
     
     // MUST
     
@@ -33,7 +37,7 @@ public class NotesFuseki {
     
     // New builder:
     //     fuseki:endpoint [ fuseki:operation fuseki:Query ; fuseki:name "" ; fuseki:allowedUsers (....) ] ; 
-    /*     fuseki:endpoint [ 
+    /*     fuseki:endpoint [
                      fuseki:operation fuseki:Query ;
                      fuseki:allowedUsers (....) ;
                      fuseki:timeout "1000,1000" ;

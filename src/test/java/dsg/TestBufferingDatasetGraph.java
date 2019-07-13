@@ -18,8 +18,75 @@
 
 package dsg;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import dsg.buffering.BufferingDSG_Q;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.sse.SSE;
 import org.junit.Test;
 
 public class TestBufferingDatasetGraph {
-    @Test public void test() {}
+    
+
+    private DatasetGraph base = DatasetGraphFactory.createTxnMem();
+    private BufferingDSG_Q buffered = new BufferingDSG_Q(base);
+    
+    @Test public void basic_1() {
+        BufferingDSG_Q dsg = buffered;
+        assertTrue(dsg.isEmpty());
+    }
+    
+    @Test public void basic_2() {
+        BufferingDSG_Q dsg = buffered;
+        Quad q = SSE.parseQuad("(:g :s :p :o)");
+        dsg.add(q);
+        assertTrue(base.isEmpty());
+        assertFalse(dsg.isEmpty());
+    }
+    
+    @Test public void basic_3() {
+        BufferingDSG_Q dsg = buffered;
+        Quad q = SSE.parseQuad("(:g :s :p :o)");
+        dsg.add(q);
+        assertTrue(base.isEmpty());
+        assertFalse(dsg.isEmpty());
+        dsg.flush();
+        assertFalse(base.isEmpty());
+        assertFalse(dsg.isEmpty());
+    }
+
+    @Test public void basic_4() {
+        Quad q1 = SSE.parseQuad("(:g :s :p 1)");
+        base.add(q1);
+        BufferingDSG_Q dsg = new BufferingDSG_Q(base);
+        assertFalse(base.isEmpty());
+        assertFalse(dsg.isEmpty());
+    }
+
+    @Test public void basic_5() {
+        Quad q1 = SSE.parseQuad("(:g :s :p 1)");
+        base.add(q1);
+        BufferingDSG_Q dsg = new BufferingDSG_Q(base);
+        dsg.delete(q1);
+        
+        assertFalse(base.isEmpty());
+        assertTrue(dsg.isEmpty());
+        
+        dsg.flush();
+        
+        assertTrue(base.isEmpty());
+        assertTrue(dsg.isEmpty());
+        
+        dsg.add(q1);
+        dsg.delete(q1);
+        dsg.flush();
+        
+        assertTrue(base.isEmpty());
+        assertTrue(dsg.isEmpty());
+    }
+
+    
 }
