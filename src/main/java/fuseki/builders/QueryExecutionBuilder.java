@@ -79,6 +79,4 @@ public class QueryExecutionBuilder {
         // QueryExecutionBase a context merge as well. Don't!
         return new QueryExecutionBase(query, dataset, context, f) ;
     }
-
-
 }
