@@ -37,27 +37,29 @@ import org.apache.jena.sys.JenaSystem;
 public class Ex_FusekiCustomOperation {
 
     static {
+        // Imitate Service loader behaviour.
         JenaSystem.init();
-        // Imitate Service loader behaviour
         new InitFusekiCustomOperation().start();
     }
-    
+
     // Example usage.
     public static void main(String...args) {
         FusekiLogging.setLogging();
-        
-        // Also get the operation from the registry to add under a different name.
-        Operation op = Operation.register("ExtraService", "Test");
-        
+
+        // Also get the operation from the registry (by URI) to add under a different endpoint name.
+        System.err.println("**** Fuseki extension ****");
+        //Operation op = Operation.alloc("http://example/extra-service", "extra-service", "Test");
+        Operation op = null;
+
         FusekiServer server = FusekiServer.create()
             .add("/ds", DatasetGraphFactory.createTxnMem())
 
             // No need to do this. It is added as a standard endpoint service by FusekiConfig.addDefaultEndpoint.
             //.addEndpoint("/ds", "extra", op)
-            
+
             // Also put the operation in under a unregistered name.
             .addEndpoint("/ds", "abc", op)
-            
+
             .port(3030)
             //.verbose(true)
             .build();
@@ -70,7 +72,7 @@ public class Ex_FusekiCustomOperation {
             server.stop();
         }
     }
-    
+
     private static void callOperation(String name) {
         String x = HttpOp.execHttpGetString("http://localhost:3030/ds/"+name);
         if ( x == null ) {

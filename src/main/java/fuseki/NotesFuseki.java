@@ -20,73 +20,60 @@ package fuseki;
 
 public class NotesFuseki {
     // Other
-    //   To archive: fuseki1, ... 
-    
+    //   To archive: fuseki1, ...
+
+    // DataServiceBuilder
 
     // -----------------------
     // Global configuration from init:
     // :: DataServiceBuilder / jena-workspace
     // -----------------------
-    
+
     // MUST
-    
+    // [*] Context on endpoints.
+    //     FusekiConfig.buildEndpoint - ?? per DatasetService context settings.
+    //     Tests.
+
+    // Next:
+    // QueryExecutionBuilder
+    //   Clean up QueryExecutionBase.
+    // EndpointBuilder.
+    //   Use!
+    // DataServiceBuilder.
+
+    // QueryExecutionBuilder
+    //  QueryExecution
+    // public static QueryExecutionBuilder create() { return QueryExecutionBuilder.create(); }
+
     // SHOULD
     //   ActionLib.doOptionsGet etc.
     //   Check use of ActionLib2.setCommonHeaders
-    
-    
-    // New builder:
-    //     fuseki:endpoint [ fuseki:operation fuseki:Query ; fuseki:name "" ; fuseki:allowedUsers (....) ] ; 
-    /*     fuseki:endpoint [
-                     fuseki:operation fuseki:Query ;
-                     fuseki:allowedUsers (....) ;
-                     fuseki:timeout "1000,1000" ;
-                     fuseki:queryLimit 1000;
-                     arq:unionGraph true;
-                     ja:context [ ja:cxtName "arq:queryTimeout" ;  ja:cxtValue "1000" ] ;
-                     ] ;
-    */
-    /*
-                  [ fuseki:operation my:op ; fuseki:opImlementation <java:org.me.MyActionProcessor> ]; 
-     */
-    //     fuseki:serviceQuery [ fuseki:allowedUsers ]
 
-    // --- Other
-    
+    // -----------------------
+    // [] Check : "XXX"
+    // [] Check : Default setting of Endpoints. ==> FusekiConfig.buildDataAccessPoint
+    // [] :: Tests
+    //   fuseki:endpoint.
+    //   FusekiExt
+
+    // [DISPATCH LEGACY] - only in Dispatcher. If miss a dispatch lookup, look more widely.
+    //   3 occurrences. Line 221. Relevant. Have service* register twice. (Slight change in auth)
+    //   Use chooseEndpointNoLegacy, service* registers twice.
+
+    // [] Check stats.
+    // [] Examples
+    // [] Documentation
+
+    // --- Later
+    // [] Use DataServiceBuilder
+    // [] Use EnspointBuilder ??
+    // [] :: Endpoint Context
+    //   Certain predicates are known and config sets context.
+    // [] Admin!
+
     // Shiro filter?
     // keycloak: SAML, OAuth2
     // New UI, port UI, use RDF4J
-    
-    // Full test coverage in "main"
-    
-    // [DISPATCH LEGACY] - only in Dispatcher. If miss a dispatch lookup, look more widely.
-
-    // ++ OTHER
-    // XXX
-    
-    // ++ Sort out / maybe
-    // ActionProcessor, ActionLifecycle
-    //    ActionProcessor.process - splits by method.
-    //    ActionLifecycle -- validate, execute
-    
-    //    ActionBase.process
-    //        Enforce splitting to be "exec" for each HTTP method.
-    //        ActionProcessor.super.process(action);
-    
-    //   Better before, after calls in the lifecycle to add counters.
-    //     executeLifecycle
-
-    // ActionBase         implements ActionProcessor, ActionLifecycle
-    // ActionCtl          extends ServletProcessor implements ActionLifecycle
-    // ServletProcessor   extends HttpServlet implements ActionProcessor
-    //   -> Combine ActionProcessor and ActionLifecycle?
-
-    // ActionProcessor : process(HttpAction action) default split into HTTP calls
-    //   But ActionService hopes back to ActionLifecycle
-    // --> need better way to say "I support"
-
-    // -------------
-    
 
     // ----------------------------------------
 

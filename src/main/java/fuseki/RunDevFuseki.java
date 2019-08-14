@@ -19,54 +19,62 @@
 package fuseki;
 
 import org.apache.jena.fuseki.main.FusekiServer;
-import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.fuseki.system.FusekiLogging;
-import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.sparql.util.QueryExecUtils;
 
 public class RunDevFuseki
 {
     public static void main(String ... a) {
         FusekiLogging.setLogging();
-        try { 
-            plain();
-            //mainQueryUpdate();
+        try {
+            run();
         } catch (Throwable th) {
             th.printStackTrace();
         } finally {
             System.exit(0);
         }
     }
-    
-    public static void plain() {
+
+    public static void run() {
         FusekiServer server = FusekiServer.create()
-            .add("/ds", DatasetGraphFactory.createTxnMem())
+            .parseConfigFile("config.ttl")
+            //.add("/ds", DatasetGraphFactory.createTxnMem())
+            //.addEndpoint("/ds", "extra", op)
             //.enableStats(true)
             .port(3030)
-            .verbose(true)
-            .passwordFile("passwd")
+            //.verbose(true)
             .build();
-        try { server.start().join(); }
-        finally { server.stop(); }
-    }
+        try {
+            server.start();
+            try ( RDFConnection conn = RDFConnectionFactory.connect("http://localhost:3030/ds") ) {
+                // Because of Dispatch.findEndpointForOperation #
+                System.out.println("dataset");
+                QueryExecution qExec = conn.query("ASK{}");
+                QueryExecUtils.executeQuery(qExec);
+            } catch (Exception ex) {
+                System.out.println(ex.getMessage());
+            }
+//            try ( RDFConnection conn = RDFConnectionFactory.connect("http://localhost:3030/ds/query") ) {
+//                System.out.println("ds/query");
+//                QueryExecution qExec = conn.query("ASK{}");
+//                QueryExecUtils.executeQuery(qExec);
+//            } catch (Exception ex) {
+//                System.out.println(ex.getMessage());
+//            }
+            try ( RDFConnection conn = RDFConnectionFactory.connect("http://localhost:3030/ds/sparql") ) {
+                System.out.println("ds/sparql");
+                QueryExecution qExec = conn.query("ASK{}");
+                QueryExecUtils.executeQuery(qExec);
+            } catch (Exception ex) {
+                System.out.println(ex.getMessage());
+            }
 
-    // Routing for Q+U only.
-    public static void mainQueryUpdate(String ... a) {
-        Operation oper = Operation.register("q&u", "");
-        
-        FusekiServer server = FusekiServer.create()
-            .verbose(false)
-//            .add("/ds", DatasetGraphFactory.createTxnMem())
-//            .add("/other", DatasetGraphFactory.createTxnMem())
-//            .parseConfigFile("/home/afs/tmp/config.ttl")
-//            .registerOperation(oper, new ServiceRouterQueryUpdate())
-//            .addOperation("/ds", "sparql", oper)
-
-            .enableStats(true)
-            .port(3030)
-            .verbose(true)
-            //.addServlet("/$/metrics/*", new org.apache.jena.fuseki.ctl.ActionMetrics())
-            .build();
-        try { server.start().join(); }
-        finally { server.stop(); }
+        }
+        finally {
+            server.stop();
+        }
     }
 }

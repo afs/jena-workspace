@@ -35,11 +35,13 @@ public class RunFuseki
     public static void main(String ... a) {
         String DIR = "/home/afs/tmp/InfTDB2/";
         FusekiLogging.setLogging();
-        mainServerClient();
+        //mainServerClient();
+        mainServer();
     }
 
     public static void mainServer(String ... a) {
         FusekiServer server = FusekiServer.create()
+            //.parseConfigFile("/home/afs/tmp/config.ttl")
             .add("/ds", DatasetGraphFactory.createTxnMem())
             .port(3030)
             .verbose(true)
@@ -47,7 +49,7 @@ public class RunFuseki
         try { server.start().join(); }
         finally { server.stop(); }
     }
-    
+
     public static void mainServerClient() {
         FusekiServer server = FusekiServer.create()
             //.add("/ds", DatasetGraphFactory.createTxnMem())
@@ -55,15 +57,15 @@ public class RunFuseki
             .port(3030)
             .build()
             .start();
-        
+
         // Use it.
         try ( RDFConnection conn = RDFConnectionFactory.connectFuseki("http://localhost:3030/ds") ) {
             conn.querySelect("SELECT * { ?s ?p ?o }", qs->System.out.println(qs));
-        } 
+        }
         finally { server.stop(); }
         System.out.println("DONE");
     }
-    
+
     public static void mainWebapp() {
         RunFusekiFull.mainWebapp();
     }
@@ -73,7 +75,7 @@ public class RunFuseki
 //        FusekiMainCmd.main(
 //            "--sparqler=/home/afs/ASF/afs-jena/jena-fuseki2/jena-fuseki-main/sparqler/pages"
 //            );
-        
+
         FusekiLogging.setLogging();
         FusekiServer.create()
             .addServlet("/dump", new ActionDumpRequest())

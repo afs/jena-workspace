@@ -22,7 +22,6 @@ import java.io.StringReader;
 
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.atlas.logging.LogCtl;
-import org.apache.jena.fuseki.main.cmds.FusekiMainCmd;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -39,7 +38,7 @@ public class Dev {
     }
 
     public static void main(String[] argv) throws Exception {
-        FusekiMainCmd.main("--config=/home/afs/DIR/example.ttl");
+        tdb2.tdbupdate.main("--loc=DB2", "--dump", "INSERT DATA {<s> <p> <o>}");
     }
 
     public static void mainJena1710(String[] argv) {

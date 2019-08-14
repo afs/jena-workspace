@@ -6,37 +6,33 @@
 @prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
 
 [] rdf:type fuseki:Server ;
-   ja:context [ ja:cxtName "CONTEXT:SERVER" ; ja:cxtValue "server" ];
-   ja:context [ ja:cxtName "CONTEXT:ABC"    ; ja:cxtValue "server-789" ];
    .
 ## Read-only TDB dataset (only read services enabled).
 
-<#service_tdb_read_only> rdf:type fuseki:Service ;
+<http://example/svc> rdf:type fuseki:Service ;
     rdfs:label                      "TDB Service (R)" ;
-    fuseki:name                     "ds" ;
-##    fuseki:serviceQuery             "query" ;
+##     fuseki:name                     "ds" ;
+##     fuseki:serviceQuery             "query" ;
 ##     fuseki:serviceQuery             "sparql" ;
 ##     fuseki:serviceReadGraphStore    "data" ;
 ##     fuseki:serviceReadGraphStore    "get" ;
+    fuseki:dataset           <#tdb_dataset_read> ;
 
     fuseki:endpoint [
         fuseki:operation fuseki:query;
         fuseki:name "sparql" ;
-        ja:context [ ja:cxtName "CONTEXT:ABC" ; ja:cxtValue "ep-456" ];
-        ja:context [ ja:cxtName "CONTEXT:EP" ; ja:cxtValue "endpoint" ];
     ] ;
-    
-##     fuseki:endpoint [
-##         fuseki:operation fuseki:query;
-##         fuseki:name "" ;
-##     ] ;   
-
-    fuseki:dataset           <#tdb_dataset_read> ;
+    fuseki:endpoint [
+        fuseki:operation fuseki:query;
+        fuseki:name "query" ;
+    ] ;
+     fuseki:endpoint [
+        fuseki:operation fuseki:query;
+        fuseki:name "" ;
+    ] ;
     .
 
 <#tdb_dataset_read> rdf:type      tdb:DatasetTDB ;
-    ja:context [ ja:cxtName "CONTEXT:ABC" ; ja:cxtValue "ds-123" ];
-    ja:context [ ja:cxtName "CONTEXT:DSG" ; ja:cxtValue "dataset" ];
     tdb:location "DB1" ;
     tdb:unionDefaultGraph true ;
     .

@@ -37,6 +37,8 @@ import org.apache.jena.sparql.core.Quad;
 // DatasetGraphTriplesQuads
 // See BufferingDSG
 
+// See DatasetGraphBuffering in rdf-patch
+
 public class BufferingDatasetGraph extends DatasetGraphBase {
 
     private DatasetGraph other;
@@ -44,21 +46,21 @@ public class BufferingDatasetGraph extends DatasetGraphBase {
 
 
     // Implementation : BufferingDSG_Q
-    
+
     // DatasetGraphChanges +  support? + prefixes?
-    
+
     private Set<Quad>   addedQuads     = new HashSet<>();
     private Set<Quad>   deletedQuads   = new HashSet<>();
     private Set<Triple> addedTriples   = new HashSet<>();
-    private Set<Triple> deletedTriples = new HashSet<>();    
-    
+    private Set<Triple> deletedTriples = new HashSet<>();
+
     public BufferingDatasetGraph(DatasetGraph dsg) {
         other = dsg;
     }
-    
+
     @Override
-    public void add(Quad quad) { throw new UnsupportedOperationException("DatasetGraph.add(Quad)") ; } 
-    
+    public void add(Quad quad) { throw new UnsupportedOperationException("DatasetGraph.add(Quad)") ; }
+
     @Override
     public void delete(Quad quad) { throw new UnsupportedOperationException("DatasetGraph.delete(Quad)") ; }
 
@@ -132,9 +134,9 @@ public class BufferingDatasetGraph extends DatasetGraphBase {
 
     @Override
     public void removeGraph(Node graphName) {}
-    
+
 //    containsGraph(Node)
-    
+
 //    getDefaultGraph()
 //    getUnionGraph()
 //    getGraph(Node)
@@ -143,7 +145,7 @@ public class BufferingDatasetGraph extends DatasetGraphBase {
 //    setDefaultGraph(Graph)
 //    ** getLock()
 //    listGraphNodes()
-    
+
 //    add(Quad)
 //    delete(Quad)
 //    add(Node, Node, Node, Node)
@@ -151,20 +153,20 @@ public class BufferingDatasetGraph extends DatasetGraphBase {
 //    deleteAny(Node, Node, Node, Node)
 //    clear()
 //    isEmpty()
-    
+
 //    find()
 //    find(Quad)
 //    find(Node, Node, Node, Node)
 //    findNG(Node, Node, Node, Node)
 //    contains(Quad)
 //    contains(Node, Node, Node, Node)
-    
+
 //    getContext()
 //    size()
 //    close()
 //    toString()
 //    sync()
-    
+
 //    begin()
 //    transactionMode()
 //    transactionType()
