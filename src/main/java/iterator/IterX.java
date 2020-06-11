@@ -20,6 +20,7 @@ package iterator;
 
 import java.util.Iterator;
 
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.util.iterator.ExtendedIterator;
@@ -34,30 +35,30 @@ public class IterX
     // compare (dst,src) : One src is "small", other side unknown size.
     private static final int CMP_SRC_SMALL = -3;
 
-    // Iter.step
-    public static int step(Iterator<?> iter, int steps) {
-        for ( int i = 0 ; i < steps; i++) {
-            if ( ! iter.hasNext() ) 
-                return i;
-            iter.next();
-        }
-        return steps;
-    }
+//    // Iter.step
+//    public static int step(Iterator<?> iter, int steps) {
+//        for ( int i = 0 ; i < steps; i++) {
+//            if ( ! iter.hasNext() )
+//                return i;
+//            iter.next();
+//        }
+//        return steps;
+//    }
 
     /** Compare the size of a graph to {@code size}, without calling Graph.size
      *  by iterating on {@code graph.find()} as necessary.
      *  <p>
-     *  Return -1 , 0, 1 for the comparison.  
+     *  Return -1 , 0, 1 for the comparison.
      */
     /*package*/ static int compareSizeTo(Graph graph, int size) {
         ExtendedIterator<Triple> it = graph.find();
         try {
-            int stepsTake = IterX.step(it, size);
+            int stepsTake = Iter.step(it, size);
             if ( stepsTake < size )
                 // Iterator ran out.
                 return CMP_LESS;
             if ( !it.hasNext())
-                // Finsiehd at the same timne. 
+                // Finsiehd at the same timne.
                 return CMP_EQUAL;
             // Still more to go
             return CMP_GREATER;
@@ -71,32 +72,32 @@ public class IterX
     /*package*/ static int compareSizeByFind(Graph dstGraph, Graph srcGraph, int minSize, int ratio, int maxCompare) {
         if ( dstGraph == srcGraph )
             return CMP_EQUAL;
-        
+
         // Phase 1:
         //    iteration on srcGraph if less than MIN_SIZE
         // Phase 2:
         //    step dst the scaled number of steps
         //    compare by scaled length
-            
+
         ExtendedIterator<Triple> srcIter = srcGraph.find();
         ExtendedIterator<Triple> dstIter = dstGraph.find();
         try {
-            if ( minSize >= 0 ) { 
-                
+            if ( minSize >= 0 ) {
+
                 //  |find(src)| <= MIN_SRC_SIZE
-                int x1 = IterX.step(srcIter, minSize);
+                int x1 = Iter.step(srcIter, minSize);
                 if ( ! srcIter.hasNext() )
                     return CMP_SRC_SMALL;
-                
+
                 // Now move the dstIter the same amount, in proportion to the ratio.
-                int x2 = IterX.step(dstIter, ratio*minSize);
-                if ( x2 < x1 ) 
+                int x2 = Iter.step(dstIter, ratio*minSize);
+                if ( x2 < x1 )
                     // dst was short after all.
                     return CMP_LESS;
                 maxCompare -= minSize;
             }
-            int compareLimit = ( minSize < 0 ) ? maxCompare : maxCompare-minSize; 
-            
+            int compareLimit = ( minSize < 0 ) ? maxCompare : maxCompare-minSize;
+
             // Test remainder of the iterators.
             //   |find(src)| * DST_SRC_RATIO  <=  |find(dst)|
             // Step srcIter by "ratio" steps each time.
@@ -106,7 +107,7 @@ public class IterX
             srcIter.close();
         }
     }
-    
+
 //    /** Compare the length of two iterators.
 //     *  <b>This operation is destructive on the iterators<b>.
 //     */
@@ -114,7 +115,7 @@ public class IterX
 //        return compareByLength(iter1, iter2, 1, 1, Integer.MAX_VALUE);
 //    }
 
-    /** Compare the length of two iterators. 
+    /** Compare the length of two iterators.
      * By using the "scale" arguments, the caller can compare ratios of sizes.
      * <p>
      * <b>This operation is destructive on the iterators<b>.
@@ -124,8 +125,8 @@ public class IterX
             throw new IllegalArgumentException("step size 'step1' is not positive: "+scale1);
         if ( scale2 <= 0 )
             throw new IllegalArgumentException("step size 'step2' is not positive: "+scale2);
-        
-        int x = 0; 
+
+        int x = 0;
         int scaledSize1 = 0 ;
         int scaledSize2 = 0 ;
         // At nearly equal (the length are within one ratio unit), the stepping algothm isn't precise.
@@ -136,7 +137,7 @@ public class IterX
             boolean ended2 = ! iter2.hasNext();
 
             //System.out.printf("x=%d scaledSize1=%d scaledSize2=%d  ended1=%s ended2=%s\n", x, scaledSize1, scaledSize2, ended1, ended2);
-            
+
             if ( ended1 )
                 return ended2 ? CMP_EQUAL : CMP_LESS ;
             if ( ended2 )
@@ -144,8 +145,8 @@ public class IterX
             if ( x > maxSteps )
                 return CMP_UNKNOWN;
             // Yes, opposite scales : iter1 moves scale2 steps.
-            int x1 = IterX.step(iter1, scale2);
-            int x2 = IterX.step(iter2, scale1);
+            int x1 = Iter.step(iter1, scale2);
+            int x2 = Iter.step(iter2, scale1);
             scaledSize1 += x1;
             scaledSize2 += x2;
         }

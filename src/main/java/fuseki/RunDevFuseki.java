@@ -18,11 +18,17 @@
 
 package fuseki;
 
+import fuseki.builders.DataServiceBuilder;
 import org.apache.jena.fuseki.main.FusekiServer;
+import org.apache.jena.fuseki.server.DataService;
+import org.apache.jena.fuseki.server.Endpoint;
+import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.riot.web.HttpOp;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.util.QueryExecUtils;
 
 public class RunDevFuseki
@@ -39,38 +45,41 @@ public class RunDevFuseki
     }
 
     public static void run() {
+        // New
+        DataServiceBuilder builder = new DataServiceBuilder();
+
+        Endpoint ep = Endpoint.create().endpointName("QUERY").operation(Operation.Query).build();
+
+        // Remove .addEndpoint(* AuthPolicy)
+        DataService dSrc = builder
+            .dataset(DatasetGraphFactory.createTxnMem())
+            .addEndpoint(ep)
+            .addEndpoint(Operation.Query)          // check dispatchable. Do this on any overloaded EP.
+            .addEndpoint(Operation.Shacl, "shacl") // Inaccessible.
+            .build();
+
         FusekiServer server = FusekiServer.create()
-            .parseConfigFile("config.ttl")
+            //.parseConfigFile("config.ttl")
             //.add("/ds", DatasetGraphFactory.createTxnMem())
             //.addEndpoint("/ds", "extra", op)
+            //.enableCors(true)
             //.enableStats(true)
+            .add("/ds", dSrc)
             .port(3030)
             //.verbose(true)
             .build();
         try {
             server.start();
+
             try ( RDFConnection conn = RDFConnectionFactory.connect("http://localhost:3030/ds") ) {
-                // Because of Dispatch.findEndpointForOperation #
-                System.out.println("dataset");
                 QueryExecution qExec = conn.query("ASK{}");
                 QueryExecUtils.executeQuery(qExec);
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
             }
-//            try ( RDFConnection conn = RDFConnectionFactory.connect("http://localhost:3030/ds/query") ) {
-//                System.out.println("ds/query");
-//                QueryExecution qExec = conn.query("ASK{}");
-//                QueryExecUtils.executeQuery(qExec);
-//            } catch (Exception ex) {
-//                System.out.println(ex.getMessage());
-//            }
-            try ( RDFConnection conn = RDFConnectionFactory.connect("http://localhost:3030/ds/sparql") ) {
-                System.out.println("ds/sparql");
-                QueryExecution qExec = conn.query("ASK{}");
-                QueryExecUtils.executeQuery(qExec);
-            } catch (Exception ex) {
-                System.out.println(ex.getMessage());
-            }
+
+            String x = HttpOp.execHttpGetString("http://localhost:3030/$/stats");
+            System.out.println(x);
 
         }
         finally {

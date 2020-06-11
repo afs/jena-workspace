@@ -18,8 +18,6 @@
 
 package fuseki.builders;
 
-//public class DataServiceBuilder {}
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -35,7 +33,9 @@ import org.apache.jena.sparql.core.DatasetGraph;
 
 /** {@link DataService} builder */
 public class DataServiceBuilder {
+    // Endpoints by configuration.
     private List<EndpointConfig> endpointConfs = new ArrayList<>();
+    // Endpoints created elsewhere.
     private List<Endpoint>       endpoints     = new ArrayList<>();
     private DatasetGraph         dataset;
     private AuthPolicy           authPolicy;
@@ -73,8 +73,8 @@ public class DataServiceBuilder {
         return this;
     }
 
-    public DataServiceBuilder addEndpoint(Operation operation, String name, AuthPolicy autPolicy) {
-        addEndpointCfg(operation, name, autPolicy);
+    public DataServiceBuilder addEndpoint(Operation operation, String name, AuthPolicy authPolicy) {
+        addEndpointCfg(operation, name, authPolicy);
         return this;
     }
 
@@ -116,6 +116,7 @@ public class DataServiceBuilder {
             dSrv.setAuthPolicy(authPolicy);
 
         OperationRegistry registry = (operationRegistry == null) ? OperationRegistry.get() : operationRegistry;
+        // Endpoint configurations. Create and add endpoint.
         for (EndpointConfig epc : endpointConfs ) {
             ActionService proc = registry.findHandler(epc.operation);
             if ( proc == null )
@@ -128,9 +129,10 @@ public class DataServiceBuilder {
                 .build();
             dSrv.addEndpoint(ep);
         }
+        // Directly added endpoints - ensure each has a processor.
         endpoints.stream().forEach(ep->{
             if ( ep.getProcessor() == null ) {
-                ActionService proc = operationRegistry.findHandler(ep.getOperation());
+                ActionService proc = registry.findHandler(ep.getOperation());
                 if ( proc == null )
                     throw new FusekiConfigException("No implementation for endpoint "+ep.getOperation()+" at '"+ep.getName()+"'");
                 ep.setProcessor(proc);

@@ -19,7 +19,6 @@
 package assembler1;
 
 import assembler1.assemblers.AssemblerGroup;
-import assembler1.Mode;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 

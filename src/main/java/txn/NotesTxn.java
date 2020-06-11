@@ -19,17 +19,19 @@
 package txn;
 
 public class NotesTxn {
-    
+
+    // AutoTxn -- autocommit.
+
     // Plan:
     //   "Counting transactions" begin-commit.
-    //   DatasetGraph.exec, DatasetGraph.calc  
+    //   DatasetGraph.exec, DatasetGraph.calc
     //   TDB1: DatasetGraphTransaction
     //   TDB2: TransactionalBase
     //
     // problem - end-end-end.
     // TDB1: DatasetGraphTransaction : does finish()->dsg.end
     // TDB2: TransactionalBase.end : does finish()->dsg.end
-    
+
     // Can we do it as a lightweight wrapper?
 
     // TIM
@@ -38,13 +40,13 @@ public class NotesTxn {
 
     // Level and end();
     //   end() and READ != end() and WRITE
-    
+
     // Tests!
     // Multiple calls of end()
     // Abort means aborts
 
     // **** OTHER
-    
+
     // Consumer avoids the need for final outer dsg.
     // DatasetGraph.txn(TxnType, Consumer(dsg)->{})
     // DatasetGraph.txnCalc(TxnType, Consumer(dsg)->{}) -> X
@@ -59,20 +61,20 @@ public class NotesTxn {
 
     // And also JENA-1667
     // and also GraphUnionRead
-    
-    
+
+
     // **** OTHER
 //    DatasetGraph.genin default
 //    @Override
 //    public void begin(final ReadWrite readWrite) {
 //        begin(TxnType.convert(readWrite));
 //    }
-    
+
 //    // Decide promotion mode before passing on with mode.
 //    public default boolean promote() {
-//        // Safe choice for READ and WRITE. 
+//        // Safe choice for READ and WRITE.
 //        Promote promoteMode = Promote.ISOLATED;
-//        
+//
 //        TxnType txnType = transactionType();
 //        if ( txnType == TxnType.READ_COMMITTED_PROMOTE )
 //            promoteMode = Promote.READ_COMMITTED;

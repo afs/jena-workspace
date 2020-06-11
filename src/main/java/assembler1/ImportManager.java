@@ -20,10 +20,7 @@ package assembler1;
 
 import java.util.*;
 
-import assembler1.AssemblerHelp;
-import assembler1.BadObjectException;
 import assembler1.ImportManager;
-import assembler1.JA;
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.compose.MultiUnion ;
 import org.apache.jena.rdf.model.* ;

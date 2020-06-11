@@ -20,43 +20,10 @@ package dsg;
 
 
 public class DevDSG {
-    // From TDB2.2
-    // Require transaction checks .. in StorageTDB.find 
-    
-    // Jena-1695.
-    // << MUST
-    // >> MUST
+    // Prefixes:
+    // See DevPrefixes
 
-    // << Tasks
-    
-    // Check
-    //   Backwards and forwards compatibility.
-    
-    // Task: 
-    // (necessary? or can it wait?)
-    // PrefixMapI is a replacement for PrefixMap
-    // PrefixMapOverPrefixMapI
-    //
-    // PrefixMap
-    //   PrefixMapBase (A)
-    //     FastAbbreviatingPrefixMap
-    //     PrefixMapExtended
-    //     PrefixMapStd
-    //   PrefixMapNull
-    //   PrefixMapWrapper
-    //     PrefixMapUnmodifiable
-    
-    // Task: union prefixes.
-    //   GraphViewSwitchable -- union prefix copy.  [Later]
 
-    // >> Tasks
-
-    // StorageLib.removeTriples, removeQuads -- used? without node materialization.
-
-    // -----
-
-    // Check performance.
-    // Check DB compatibility.
 
     // Revisit TDB2 POM.
     // TDBInternal.isBackedByTDB - test switchable thing
@@ -71,22 +38,22 @@ public class DevDSG {
      *
      * + TestStorageDatasetGraphTests
      */
-    
+
     // **** LoaderNotes
-    
+
     // MULTI: executeData uses DataBatcher uses PrefixHandler
     // PARSE_NODE: executeDataParseId -> Directly in DataToTuplesInline. prefixes.add
     // PARSE_NODE_INDEX: executeDataOneThread -> DataToTuplesInlineSingle prefixes.add
 
     // InputStage.MULTI
-    //   loaderPlanPhased 
+    //   loaderPlanPhased
     //   loaderPlanParallel
 
     // InputStage.PARSE_NODE
     //   loaderPlanLight
 
     // InputStage.PARSE_NODE_INDEX
-    //   loaderPlanMinimal 
+    //   loaderPlanMinimal
     //   loaderPlanSimple
 
     // LoaderMain issue, prefixes.

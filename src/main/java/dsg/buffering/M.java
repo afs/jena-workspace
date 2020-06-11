@@ -53,6 +53,10 @@ public class M {
         return pattern == null || pattern == Node.ANY || pattern.equals(node);
     }
 
+    public static boolean matchValue(Node node, Node pattern) {
+        return pattern == null || pattern == Node.ANY || pattern.sameValueAs(node);
+    }
+
 //    public static void checkConcrete(Node...nodes) {
 //        for ( Node n : nodes )
 //            checkConcrete(n);

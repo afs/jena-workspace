@@ -25,6 +25,20 @@
         ja:context [ ja:cxtName "CONTEXT:ABC" ; ja:cxtValue "ep-456" ];
         ja:context [ ja:cxtName "CONTEXT:EP" ; ja:cxtValue "endpoint" ];
     ] ;
+
+    fuseki:endpoint [
+        fuseki:operation fuseki:no-op;
+        fuseki:name "" ;
+        ja:context [ ja:cxtName "CONTEXT:ABC" ; ja:cxtValue "ep-789" ];
+        ja:context [ ja:cxtName "CONTEXT:EP" ; ja:cxtValue "endpoint" ];
+    ] ;
+
+##     fuseki:endpoint [
+##         fuseki:operation fuseki:query;
+##         fuseki:name "" ;
+##         ja:context [ ja:cxtName "CONTEXT:ABC" ; ja:cxtValue "ep-789" ];
+##         ja:context [ ja:cxtName "CONTEXT:EP" ; ja:cxtValue "endpoint" ];
+##     ] ;
     
 ##     fuseki:endpoint [
 ##         fuseki:operation fuseki:query;

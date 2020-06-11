@@ -28,21 +28,86 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Quad;
 
 public class NotesBuffering {
+
+    // BufferingDatasetGraph vs BufferingDatasetGraphQuads. Is it worth it? just Quads version?
+
+    // What about BufferingGraph and a DSG of BufferingGraphs?
+    // BufferingPrefixes.
+
+    // BufferingGraphView needed? Prefixes?
+
+    //test for a graph.
+
+    // StorageRDF, StoragePrefixes ??
+
     /* DatasetGraphTriplesQuads
-     * 
+     *
      */
-    
+
+    // Yes - having the default graph kept as triples is useful.
+
+    // XXX GraphView to take a PrefixMapping object.
+
+
     // G S P O
-    // Algorithmically determime index.
-    // Ask each index to weight a choice, choose best. 
-    
-    
-    // BufferingDatasetGraph/ _Q for now (pure quads) tests test working.
-    
+    // Algorithmically determine index.
+    // Ask each index to weight a choice, choose best.
+
+
+    // BufferingDatasetGraph/_Q for now (pure quads) tests test working.
+
     // StorageRDF?
     // StoragePrefixes
-    
-    static class BufferingStoragePrefixes implements StoragePrefixes {
+
+    static class BufferingStorage implements StorageRDF {
+
+        @Override
+        public void add(Triple triple) {}
+
+        @Override
+        public void add(Node s, Node p, Node o) {}
+
+        @Override
+        public void add(Quad quad) {}
+
+        @Override
+        public void add(Node g, Node s, Node p, Node o) {}
+
+        @Override
+        public void delete(Triple triple) {}
+
+        @Override
+        public void delete(Node s, Node p, Node o) {}
+
+        @Override
+        public void delete(Quad quad) {}
+
+        @Override
+        public void delete(Node g, Node s, Node p, Node o) {}
+
+
+        @Override
+        public Iterator<Quad> find(Node g, Node s, Node p, Node o) {
+            return null;
+        }
+
+        @Override
+        public Iterator<Triple> find(Node s, Node p, Node o) {
+            return null;
+        }
+
+        @Override
+        public boolean contains(Node s, Node p, Node o) {
+            return false;
+        }
+
+        @Override
+        public boolean contains(Node g, Node s, Node p, Node o) {
+            return false;
+        }
+    }
+
+    static class BufferingPrefixes implements StoragePrefixes {
 
         @Override
         public String get(Node graphNode, String prefix) {
@@ -76,42 +141,5 @@ public class NotesBuffering {
         @Override
         public int size() {
             return 0;
-        }
-    }
-    
-    static class BufferingStorage implements StorageRDF {
-
-        @Override
-        public void add(Node s, Node p, Node o) {}
-
-        @Override
-        public void add(Node g, Node s, Node p, Node o) {}
-
-        @Override
-        public void delete(Node s, Node p, Node o) {}
-
-        @Override
-        public void delete(Node g, Node s, Node p, Node o) {}
-
-        @Override
-        public Iterator<Quad> find(Node g, Node s, Node p, Node o) {
-            return null;
-        }
-
-        @Override
-        public Iterator<Triple> find(Node s, Node p, Node o) {
-            return null;
-        }
-
-        @Override
-        public boolean contains(Node s, Node p, Node o) {
-            return false;
-        }
-
-        @Override
-        public boolean contains(Node g, Node s, Node p, Node o) {
-            return false;
-        }
-        
-    }
+        }}
 }

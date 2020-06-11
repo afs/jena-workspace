@@ -33,13 +33,13 @@ import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.expr.* ;
 import org.apache.jena.tdb.store.NodeId ;
 
-/** This transform is like {@linkplain TransformFilterEquality} but it is 
+/** This transform is like {@linkplain TransformFilterEquality} but it is
  * value based and more aggressive.
- * It only work on BGPs+Filters.
+ * It only works on BGPs+Filters.
  * It works for TDB where terms have been canonicalized (integers, decimals, date, dateTimes).
  */
 public class TransformFilterSameValue extends TransformCopy {
-    
+
     public static void main(String ...a) {
         String qs = "SELECT * { ?s ?p ?o . "
             + "FILTER(?o1 = 'foo')"
@@ -49,14 +49,14 @@ public class TransformFilterSameValue extends TransformCopy {
             + "}" ;
         Query query = QueryFactory.create(qs) ;
         Op op  = Algebra.compile(query) ;
-        
+
         Op op1 = Transformer.transform(new TransformFilterSameValue(), op) ;
-        
-        
+
+
 //        Op op1 = Algebra.optimize(op) ;
 //        System.out.println(op1) ;
     }
-    
+
     public TransformFilterSameValue() {}
 
     @Override
@@ -75,7 +75,7 @@ public class TransformFilterSameValue extends TransformCopy {
         }
         return null ;
     }
-    
+
     // From TransformFilterEquality
     private static Pair<Var, NodeValue> preprocess(Expr e) {
         if (!(e instanceof E_Equals) && !(e instanceof E_SameTerm))
@@ -104,15 +104,15 @@ public class TransformFilterSameValue extends TransformCopy {
         if ( ! n.isLiteral() )
             // URI or blank node
             return Pair.create(var, constant);
-        
+
         // General
-        
+
         if ( Util.isLangString(n) || Util.isSimpleString(n) ) {
             return Pair.create(var, constant);
         }
-        
+
         // TDB.  Nodes that are inline are canonical constants.
-        
+
         if ( NodeId.inline(constant.getNode()) != null ) {
             return Pair.create(var, constant);
         }

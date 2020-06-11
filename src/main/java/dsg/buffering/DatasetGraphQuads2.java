@@ -24,7 +24,6 @@ import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.DatasetGraphBase;
-import org.apache.jena.sparql.core.GraphView;
 import org.apache.jena.sparql.core.Quad;
 
 /**
@@ -44,21 +43,21 @@ public abstract class DatasetGraphQuads2 extends DatasetGraphBase {
 
     // See DatasetGraphViewGraphs
     // If that is merged to DatasetGraphBase, these are unnecessary.
-    
+
     @Override
     public void addGraph(Node graphName, Graph graph) {
         graph.find().forEachRemaining(t -> add(Quad.create(graphName, t)));
     }
-    
-    @Override
-    public Graph getDefaultGraph() {
-        return GraphView.createDefaultGraph(this);
-    }
 
-    @Override
-    public Graph getGraph(Node graphNode) {
-        return GraphView.createNamedGraph(this, graphNode);
-    }
+//    @Override
+//    public Graph getDefaultGraph() {
+//        return GraphView.createDefaultGraph(this);
+//    }
+//
+//    @Override
+//    public Graph getGraph(Node graphNode) {
+//        return GraphView.createNamedGraph(this, graphNode);
+//    }
 
     @Override
     public abstract Iterator<Quad> find(Node g, Node s, Node p, Node o);

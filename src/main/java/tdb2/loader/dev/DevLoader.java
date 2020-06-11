@@ -35,7 +35,7 @@ import org.apache.jena.tdb2.loader.base.LoaderOps;
 /** code in support of TDB2 loader development */
 public class DevLoader {
     
-    static { JenaSystem.init(); LogCtl.setCmdLogging(); }
+    static { JenaSystem.init(); LogCtl.setLogging(); }
     
     // Tests of DataLoader.
     

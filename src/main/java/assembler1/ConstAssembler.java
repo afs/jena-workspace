@@ -18,7 +18,6 @@
 
 package assembler1;
 
-import assembler1.JA;
 import assembler1.assemblers.*;
 
 /*

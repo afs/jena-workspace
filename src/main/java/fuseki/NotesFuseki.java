@@ -19,56 +19,25 @@
 package fuseki;
 
 public class NotesFuseki {
-    // Other
-    //   To archive: fuseki1, ...
+    // Does not work: empty dataset name and named services ("/sparql" looks like a dataset name.)
+    //   ActionLib.mapRequestToDataset is registry oblivious
 
-    // DataServiceBuilder
-
-    // -----------------------
-    // Global configuration from init:
-    // :: DataServiceBuilder / jena-workspace
-    // -----------------------
-
-    // MUST
-    // [*] Context on endpoints.
-    //     FusekiConfig.buildEndpoint - ?? per DatasetService context settings.
-    //     Tests.
 
     // Next:
-    // QueryExecutionBuilder
-    //   Clean up QueryExecutionBase.
-    // EndpointBuilder.
-    //   Use!
-    // DataServiceBuilder.
-
-    // QueryExecutionBuilder
-    //  QueryExecution
-    // public static QueryExecutionBuilder create() { return QueryExecutionBuilder.create(); }
-
-    // SHOULD
-    //   ActionLib.doOptionsGet etc.
-    //   Check use of ActionLib2.setCommonHeaders
+    //   Modular Fuseki
+    //     With admin, with backup.
+    //   Query string dispatch [??]
 
     // -----------------------
-    // [] Check : "XXX"
-    // [] Check : Default setting of Endpoints. ==> FusekiConfig.buildDataAccessPoint
-    // [] :: Tests
-    //   fuseki:endpoint.
-    //   FusekiExt
-
     // [DISPATCH LEGACY] - only in Dispatcher. If miss a dispatch lookup, look more widely.
-    //   3 occurrences. Line 221. Relevant. Have service* register twice. (Slight change in auth)
-    //   Use chooseEndpointNoLegacy, service* registers twice.
+    //   2 occurrences.
+    //    Searching named services in Dispatch.chooseEndpoint
+    //    Checking access control.
+
 
     // [] Check stats.
-    // [] Examples
-    // [] Documentation
 
     // --- Later
-    // [] Use DataServiceBuilder
-    // [] Use EnspointBuilder ??
-    // [] :: Endpoint Context
-    //   Certain predicates are known and config sets context.
     // [] Admin!
 
     // Shiro filter?

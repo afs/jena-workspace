@@ -14,12 +14,19 @@
   <description>AFS workspace</description>
 
   <properties>
-    <ver.jena>3.13.0-SNAPSHOT</ver.jena>
+    <ver.jena>3.16.0-SNAPSHOT</ver.jena>
     <ver.fuseki>${ver.jena}</ver.fuseki>
-    <ver.jetty>9.4.12.v20180830</ver.jetty>
+    <ver.jetty>9.4.26.v20200117</ver.jetty>
+    <ver.log4j2>2.13.1</ver.log4j2>
   </properties>
 
   <dependencies>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.4</version>
+    </dependency>
 
     <dependency>
       <groupId>javax.websocket</groupId>
@@ -66,11 +73,24 @@
       <classifier>tests</classifier>
     </dependency>
 
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-querybuilder</artifactId>
+      <version>${ver.jena}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-querybuilder</artifactId>
+      <version>${ver.jena}</version>
+      <classifier>sources</classifier> 
+    </dependency>
+
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-core</artifactId>
       <version>${ver.jena}</version>
-      <scope>runtime</scope>
       <classifier>tests</classifier> 
     </dependency>
 
@@ -78,15 +98,15 @@
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-arq</artifactId>
       <version>${ver.jena}</version>
-      <scope>runtime</scope>
       <classifier>tests</classifier> 
+      <scope>runtime</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-tdb</artifactId>
       <version>${ver.jena}</version>
-      <scope>runtime</scope>
+      <scope>compile</scope>
       <classifier>tests</classifier> 
     </dependency>
 
@@ -98,7 +118,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
+          <artifactId>slf4j-jdk14</artifactId>
         </exclusion>
       </exclusions>
       -->
@@ -116,28 +136,12 @@
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-text</artifactId>
       <version>${ver.jena}</version>
-      <!-- JUL
-      <exclusions>
-         <exclusion>
-          <groupId>org.apache.jena</groupId>
-          <artifactId>jena-cmds</artifactId>
-        </exclusion>
-       </exclusions>
-       -->
     </dependency>
 
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-fuseki-webapp</artifactId>
       <version>${ver.fuseki}</version>
-      <!-- JUL
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-      </exclusions>
-      -->
     </dependency>
 
     <dependency>
@@ -160,6 +164,13 @@
     </dependency>
     
     <!-- Require a logging implementation -->
+    
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${ver.log4j2}</version>
+    </dependency>
+    
     <!-- JUL
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -168,6 +179,7 @@
     </dependency>
     -->
 
+    <!-- 
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
@@ -178,6 +190,13 @@
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>1.2.17</version>
+    </dependency> 
+   -->
+ 
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>3.6.1</version>
     </dependency> 
 
   </dependencies>

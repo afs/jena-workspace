@@ -35,7 +35,7 @@ public class SkolemizeBNodes {
     
     static {
         //JenaSystem.init();
-        LogCtl.setCmdLogging();
+        LogCtl.setLogging();
     }
     
     public static void main(String...args) {

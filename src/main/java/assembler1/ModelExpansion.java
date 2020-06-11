@@ -20,7 +20,6 @@ package assembler1;
 
 import java.util.*;
 
-import assembler1.AssemblerHelp;
 import org.apache.jena.rdf.model.* ;
 import org.apache.jena.vocabulary.* ;
 

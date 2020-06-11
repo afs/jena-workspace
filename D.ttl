@@ -1,7 +1,12 @@
-PREFIX : <http://example/>
+PREFIX :     <http://example/>
 
-:s :p 1 .
-:s :p 2 .
-:z :p 3 .
-:s :q 0 .
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX tdb:     <http://jena.hpl.hp.com/2008/tdb#>
+PREFIX text:    <http://jena.apache.org/text#>
 
+:s1 rdfs:label "words" .
+:s2 rdfs:label "more words" .
+:s3 rdfs:label "other text" .
+
+<< :s1 rdfs:label "words" >> :p 123 .
