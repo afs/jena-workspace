@@ -44,7 +44,7 @@ import org.apache.jena.riot.system.PrefixMapFactory;
 import org.apache.jena.riot.tokens.Token;
 import org.apache.jena.riot.tokens.TokenType;
 import org.apache.jena.riot.tokens.Tokenizer;
-import org.apache.jena.riot.tokens.TokenizerFactory;
+import org.apache.jena.riot.tokens.TokenizerText;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Var;
@@ -174,7 +174,7 @@ public class DevRDFStar {
 
     /** Parse a Node in TTL syntax. */
     public static Node ttlNode(String string) {
-        Tokenizer tok = TokenizerFactory.makeTokenizerString(string);
+        Tokenizer tok = TokenizerText.fromString(string);
         PrefixMap pmap = PrefixMapFactory.create(SSE.getPrefixMapRead());
         return ttlNode(tok, pmap);
     }

@@ -1,0 +1,3 @@
+PREFIX : <http://example/>
+
+:DATA :PREDICATE 123456789 .

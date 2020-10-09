@@ -19,6 +19,45 @@
 package glib;
 
 public class NoteGLib {
+
+    // G == G1 as of 2020-July-10 : from jena-shacl : graph walking
+    //   No direct tests
+
+    // G2 = Copy from jena-http.  A few operations on graphs
+    //   See also core GraphUtil for bulk and
+
+    // GLib : Riot.
+    //   Iterator operations, listSubject etc.
+    //   No direct tests
+    //   Merge with G
+    //   TransitiveX
+
+    // Plan.
+    // [x] Add G2 into G
+    // [x] Merge GLib into G
+    // [x] G/G1 to org.apache.jena.graph in jena-core.
+    // [x] GraphUtils, GraphUtil and G
+    // Go!
+
+    // [ ] test listTypesOfNode, getTypesOfNode, listNodesOfType, getTypesOfNode
+    // Some bulk AbstractTestGraph
+    /* TESTS
+        listSubClasses(Graph, Node)
+        listSuperClasses(Graph, Node)
+        subClasses(Graph, Node)
+        superClasses(Graph, Node)
+        listTypesOfNodeRDFS(Graph, Node)
+        listNodesOfTypeRDFS(Graph, Node)
+        allTypesOfNodeRDFS(Graph, Node)
+        allNodesOfTypeRDFS(Graph, Node)
+     */
+
+    // --------
+
+    // Tests?
+
+    // For list returning operations, if no match return fixed empty list.
+
     // Single class of functions for working with graph/triples/nodes.
     // Streaming!
 
@@ -27,7 +66,7 @@ public class NoteGLib {
     // -- basic graph : find, contains, hasProperty
     // -- getSP, getPO, getOne, getOneOrZero,
     // -- tests: absentOrOne, containsOne
-    // -- typesOfNode, nodesofType
+    // -- typesOfNode, nodesOfType
     // -- subclass, subproperty
     // -- Bulk: G2
 
@@ -37,11 +76,10 @@ public class NoteGLib {
 
     // Check coverage
 
-    // rename "setSP" as "allSP" or ? No sets - only iterSP().toSet()
+    // **** rename "setSP" as "allSP" or ? No sets - only iterSP().toSet()
 
     // Categories:
     //   Bulk operations - copy, delete, clear
-
 
     // Replace ExtendedIterator with Iter for Graph, not API.
 
@@ -62,7 +100,5 @@ public class NoteGLib {
     //    ExtendedIterator.toSet() :: Iter.toSet
 
     // Close?
-
-
 }
 

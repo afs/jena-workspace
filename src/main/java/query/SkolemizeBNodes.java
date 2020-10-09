@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package skolemize;
+package query;
 
 import java.util.function.Function;
 

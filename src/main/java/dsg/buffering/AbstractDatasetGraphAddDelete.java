@@ -67,7 +67,6 @@ public abstract class AbstractDatasetGraphAddDelete extends DatasetGraphBaseFind
 //        super.delete(g, s, p, o);
 //    }
 
-
     protected abstract void actionAdd(Node g, Node s, Node p, Node o);
     protected abstract void actionDelete(Node g, Node s, Node p, Node o);
 

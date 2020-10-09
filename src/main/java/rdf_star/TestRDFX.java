@@ -25,12 +25,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.function.Function;
 
-import glib.G;
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.other.G;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Test;

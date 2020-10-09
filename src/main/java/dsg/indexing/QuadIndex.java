@@ -32,38 +32,38 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Quad;
 
 public class QuadIndex implements QuadIndexI {
-    
+
     private static class Index4 extends HashMap<Node, Index3> {}
     private static class Index3 extends HashMap<Node, Index2> {}
     private static class Index2 extends HashMap<Node, Index1> {}
     private static class Index1 extends HashMap<Node, Quad> {}
-    
+
     private TupleMap order;
     private String name;
     private Index4 index;
-    
+
     public QuadIndex(String name, TupleMap order) {
         this.name = name ;
         this.order = order ;
         this.index = new Index4() ;
     }
-    
+
     @Override
     public void add(Node g, Node s, Node p, Node o) {
         Tuple<Node> pattern = TupleFactory.create4(g,s,p,o);
         Tuple<Node> storage = order.map(pattern);
         add(index, storage.get(0), storage.get(1), storage.get(2), storage.get(3), Quad.create(g, s, p, o));
     }
-    
+
     @Override
     public void delete(Node g, Node s, Node p, Node o) {
         Tuple<Node> pattern = TupleFactory.create4(g,s,p,o);
         Tuple<Node> storage = order.map(pattern);
         delete(index, storage.get(0), storage.get(1), storage.get(2), storage.get(3));
     }
-    
+
     @Override
-    public Iterator<Quad> find(Node x1, Node x2, Node x3, Node x4) { 
+    public Iterator<Quad> find(Node x1, Node x2, Node x3, Node x4) {
         // Assumes correct order.
         if ( x4 != null )
             return access(index, x1, x2, x3, x4);
@@ -75,15 +75,15 @@ public class QuadIndex implements QuadIndexI {
             return access(index, x1);
         return access(index);
     }
-    
+
     @Override
     public String toString() {
         return name;
     }
-    
+
     public int weight(Node g, Node s, Node p, Node o) {
         //XXX Avoid an Object - hard code the "4"?
-        Tuple<Node> pattern = TupleFactory.create4(g,s,p,o); 
+        Tuple<Node> pattern = TupleFactory.create4(g,s,p,o);
         return weight(pattern, order);
     }
 
@@ -111,7 +111,7 @@ public class QuadIndex implements QuadIndexI {
     private <X> X ensure(Map<Node, X> index, Node n, Supplier<X> creator) {
         return index.computeIfAbsent(n, (k)->creator.get());
     }
-    
+
     private Quad delete(Index4 index4, Node n1, Node n2, Node n3, Node n4) {
         Index3 index3 = index4.get(n1);
         if ( index3 == null )
@@ -133,9 +133,9 @@ public class QuadIndex implements QuadIndexI {
             index4.remove(n1);
         return x;
     }
-    
+
     private static Iterator<Quad> noQuads = Iter.nullIterator();
-    
+
     private static Function< Index1, Iterator<Quad> >   level2to1 = m -> m.values().iterator();
     private static Function< Index2, Iterator<Index1> > level3to2 = m -> m.values().iterator();
     private static Function< Index3, Iterator<Index2> > level4to3 = m -> m.values().iterator();
@@ -191,7 +191,7 @@ public class QuadIndex implements QuadIndexI {
             return noQuads;
         return m1.values().iterator();
     }
-    
+
     private static Iterator<Quad> access(Index4 index4, Node x1, Node x2, Node x3, Node x4) {
         Index3 m3 = index4.get(x1);
         if ( m3 == null )

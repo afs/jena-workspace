@@ -19,42 +19,27 @@
 package test4;
 
 public class NotesNextTest {
-    // test4.next
-    //   Clean up ExecQueryTest.
+
+    // [2]
+    // Checking phase : SPARQL 1.1 tests
+    // + SPARQL 1.1 tests.
+    // Make sure the WG SPARQL 1.1 test that matter get run.
+    // Move test4.next  TextTestRunner
+
+    // -----
+
+    // 3: Get rid of core-TURTLE
+    //   JENA- old writer names,
+    //    Take out of readers and writers.
+    //    Delete from tests.
+    // Assembler uses Turtle - move tests to "integration"
+    // jena-core FileManager, LocationMapper
+    // JA -- convert schema to RDF/XML. Does it need it?
 
     // ----
 
-    // @Parameterised - unwrap a leaf manifest
-    // @RunWith(AllTests.class) -- looks for public static junit.framework.Test suite() {
-    // @RunWith(Suite.class) --Only with fixed.class?
-
-//    Current ARQ TC_Scripted
-//    "jena-arq/testing/ARQ/Syntax/manifest-syntax.ttl"
-//    "jena-arq/testing/ARQ/manifest-arq.ttl")) ;
-//    "jena-arq/testing/ARQ/Serialization/manifest.ttl")) ;
-    // RDF*
-    // 1087 tests.
-
-    // next: 1044, not RDF* (43)
-
-
-
-    // ** RunnerSPARQL --> RunnerOfScripts > RunnerSPARQL, RunnerRIOT
-    // + Review ExecQueryTest ; dead code?
-    // + Delete BaseTest2
-    // + Check if a test failure is noticed! Blue/fail
-    //   Do we need to catch the exception in the run(Notifier)
-    // + Remove CheckerLiterals.WarnOnBadLiterals
-    // + DAWG-Final : strict must be off - why?
-
-    // Parser. Only StreamRDF version?
-
-    // RIOT tests ==>
-    //   Clean langeval tests : no Model.
-    // Merge tests.
-
-    // Make sure the WG SPARQl 1.1 test that matter get run.
-
-    // Check tests - do setup early.
+    // Separate:
+    //   Issue old Turtle. Remove TURTLE from core?
+    //   core FileUtils. Deprecate constants. private?
 }
 

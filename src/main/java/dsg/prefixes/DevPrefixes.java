@@ -33,57 +33,6 @@ import org.apache.jena.tdb2.DatabaseMgr;
 
 public class DevPrefixes {
 
-    // Prepare PR
-    // https://github.com/afs/jena/pull/new/prefixes
-
-    // Steps/Now to Jena.
-    // What about XML? PrefixMappingImpl.
-
-    // Part 2:
-    // Library: PrefixLib.
-//    safePrefixName_TTL(String, String)
-//    safeForPrefix_TTL(String)
-//    safeForPrefixLocalname_TTL(String)
-
-//    safePrefixName_XML(String, String)
-//    safeForPrefix_XML(String)
-//    safeForPrefixLocalname_XML(String)
-
-    // ----
-    // Migrate Graph from PrefixMapping to PrefixMap.
-
-    // PrefixMapIBase -- no copy getMapping.
-    // ParserProfile.makeIRI
-
-    //   Combine with iri4ld?
-    // PrefixMapTDB2 - isn't StoragePrefixes switching/txn safe?
-
-    // -------------------------
-
-    /* From PrefixMapI
-     * @apiNote
-     * <p>See {@link StoragePrefixMap} for the storage implementation view.
-     * <p>See {@link PrefixMapIBase} for an implementation over {@link StoragePrefixMap}
-     */
-
-
-    // Store4 plan.
-    // NOW PrefixMapI: replaces PrefixMap: (with @deprecated?)
-
-
-    // Prefixes
-    //   StoragePrefixes - dataset prefixes storage.
-    //   StoragePrefixMap - graph prefix storage (StoragePrefixesView:  StoragePrefixes -> StoragePrefixMap)
-
-    // PrefixesFactory
-    //   PrefixMapI: replaces PrefixMap: API focused.  (PrefixMapBase:  StoragePrefixMap -> PrefixMapI)
-    //   PrefixMapping: old API only: PrefixMappingOverPrefixMapI: PrefixMap to ? PrefixMapping)
-
-    // PrefixesFactory -> "Prefixes"?
-    // Migrate Graph from PrefixMapping to PrefixMap.
-    // Too many layers? Or use final classes
-
-
     public static void main(String ...a) {
         {
             //DatasetGraph dsg = TDBFactory.createDatasetGraph();

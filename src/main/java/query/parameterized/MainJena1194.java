@@ -15,7 +15,7 @@
  *  information regarding copyright ownership.
  */
 
-package syntaxtransform;
+package query.parameterized;
 
 import java.util.HashMap ;
 import java.util.Map ;
@@ -36,6 +36,8 @@ import org.apache.jena.sparql.syntax.syntaxtransform.QueryTransformOps ;
 
 public class MainJena1194
 {
+    /// JENA-1194 :: "Syntaxtransform does not handle HAVING expressions" - closed
+
     /*
 
 
@@ -44,11 +46,11 @@ QueryTransformOps.transform(query, substitutions) does not handle variables in H
 SELECT * { } HAVING (?count > $minCount)
 
 the variable $minCount would not be substituted.
- 
+
  See also jena-workspace::syntaxtransform
- 
+
      */
-    
+
     public static void main(String ... argv) {
         Query query = QueryFactory.create("SELECT (count(?Y) AS ?C) { } HAVING (?count > $X)") ;
         Map<Var, Node> x = new HashMap<>() ;
@@ -57,14 +59,14 @@ the variable $minCount would not be substituted.
         //x.put(Var.alloc("C"), SSE.parseNode("<abc>")) ;
         Query query2 = QueryTransformOps.transform(query, x) ;
         }
-    
+
     private static void printQuery(Query q) {
         IndentedWriter out = new IndentedWriter(System.out) ;
         out.setFlatMode(true);
         q.serialize(out);
         out.flush();
         }
-    
+
     private static ResultSet wrapExecution(ResultSet rs, Map<Var, Node> values) {
         ResultSet rs2 = new ResultSetWrapper(rs) {
             @Override
@@ -78,10 +80,10 @@ the variable $minCount would not be substituted.
                 BindingMap b2 = BindingFactory.create(b) ;
                 values.forEach((v,n)->{
                     if ( b.contains(v) ) {
-                        if ( ! b.get(v).equals(n) ) 
+                        if ( ! b.get(v).equals(n) )
                             System.err.println("Mismatch") ;
                     } else {
-                        b2.add(v, n); 
+                        b2.add(v, n);
                     }
                 }) ;
                 return b2 ;
@@ -90,5 +92,5 @@ the variable $minCount would not be substituted.
         return rs2 ;
     }
 
-} 
+}
 

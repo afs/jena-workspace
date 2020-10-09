@@ -1,0 +1,18 @@
+[INFO] +- org.graalvm.js:js:jar:20.2.0:compile (optional) 
+[INFO] |  +- org.graalvm.regex:regex:jar:20.2.0:compile (optional) 
+[INFO] |  +- org.graalvm.truffle:truffle-api:jar:20.2.0:compile (optional) 
+[INFO] |  +- org.graalvm.sdk:graal-sdk:jar:20.2.0:compile (optional) 
+[INFO] |  +- org.ow2.asm:asm:jar:7.1:compile (optional) 
+[INFO] |  +- org.ow2.asm:asm-tree:jar:7.1:compile (optional) 
+[INFO] |  +- org.ow2.asm:asm-analysis:jar:7.1:compile (optional) 
+[INFO] |  +- org.ow2.asm:asm-commons:jar:7.1:compile (optional) 
+[INFO] |  +- org.ow2.asm:asm-util:jar:7.1:compile (optional) 
+[INFO] |  \- com.ibm.icu:icu4j:jar:67.1:compile (optional) 
+[INFO] +- org.graalvm.js:js-scriptengine:jar:20.2.0:compile (optional)
+
+mvn dependency:get -DgroupId=org.graalvm.js -DartifactId=js -Dversion=20.2.0
+mvn dependency:get -DgroupId=org.graalvm.js -DartifactId=js-scriptengine -Dversion=20.2.0
+
+or
+pom-graalvm.xml
+

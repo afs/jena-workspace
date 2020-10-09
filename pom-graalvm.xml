@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.apache.jena</groupId>
+  <artifactId>jena-graal-fetcher</artifactId>
+  <packaging>pom</packaging>
+  <version>0.0.0-SNAPSHOT</version>
+
+  <description>GraalVM fetcher</description>
+
+  <properties> 
+    <ver.graalvm>20.2.0</ver.graalvm>
+  </properties>
+
+  <dependencies>
+
+      <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js</artifactId>
+        <version>${ver.graalvm}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js-scriptengine</artifactId>
+        <version>${ver.graalvm}</version>
+      </dependency>
+
+  </dependencies>
+
+</project>

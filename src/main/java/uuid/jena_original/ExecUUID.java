@@ -24,8 +24,6 @@ import java.util.UUID;
 
 import org.apache.jena.atlas.io.IO;
 
-// Rewrite : extract V1 generator as standalone, makign a java.util.UUID.
-
 public class ExecUUID {
 
  public static void main(String ...a) {

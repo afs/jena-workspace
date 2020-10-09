@@ -18,17 +18,15 @@
 
 package dsg.prefixes;
 
-class Impl_PrefixMapI2 {}
+import org.apache.jena.dboe.storage.prefixes.PrefixMapIOverStorage;
+import org.apache.jena.dboe.storage.prefixes.StoragePrefixMap;
 
-//import org.apache.jena.dboe.storage.prefixes.PrefixMapIOverStorage;
-//import org.apache.jena.dboe.storage.prefixes.StoragePrefixMap;
-//
-//
-//
-//class Impl_PrefixMapI2 extends PrefixMapIOverStorage implements PrefixMapI2 {
-//
-//    public Impl_PrefixMapI2(StoragePrefixMap storage) {
-//        super(storage);
-//    }
-//
-//}
+
+
+class Impl_PrefixMapI2 extends PrefixMapIOverStorage implements PrefixMapI2 {
+
+    public Impl_PrefixMapI2(StoragePrefixMap storage) {
+        super(storage);
+    }
+
+}

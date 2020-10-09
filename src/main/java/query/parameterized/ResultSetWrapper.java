@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package syntaxtransform;
+package query.parameterized;
 
 import java.util.List ;
 
@@ -26,14 +26,14 @@ import org.apache.jena.rdf.model.Model ;
 import org.apache.jena.sparql.engine.binding.Binding ;
 
 class ResultSetWrapper implements ResultSet {
-    
+
     protected ResultSet get() { return rs ; }
     private final ResultSet rs;
 
     ResultSetWrapper(ResultSet rs) {
         this.rs = rs ;
     }
-    
+
     @Override
     public boolean hasNext() {
         return get().hasNext() ;
@@ -68,5 +68,5 @@ class ResultSetWrapper implements ResultSet {
     public Model getResourceModel() {
         return get().getResourceModel() ;
     }
-    
+
 }

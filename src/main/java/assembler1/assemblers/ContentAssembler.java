@@ -31,10 +31,10 @@ import org.apache.jena.vocabulary.* ;
 public class ContentAssembler extends AssemblerBase implements Assembler
     {
     protected final FileManager defaultFileManager;
-    
+
     public ContentAssembler()
         { this( null ); }
-    
+
     public ContentAssembler( FileManager fm )
         { this.defaultFileManager = fm; }
 
@@ -43,14 +43,14 @@ public class ContentAssembler extends AssemblerBase implements Assembler
         checkType( root, JA.Content );
         return new Content( loadContent( new ArrayList<Content>(), a, root ) );
         }
-    
+
     public final static Set<Property> contentProperties = new HashSetWith<Property>()
         .with( JA.content )
         .with( JA.literalContent )
         .with( JA.externalContent )
         .with( JA.quotedContent )
         ;
-    
+
     static class HashSetWith<T> extends HashSet<T>
         {
         public HashSetWith<T> with( T x )
@@ -69,7 +69,7 @@ public class ContentAssembler extends AssemblerBase implements Assembler
         addIndirectContent( contents, a, root );
         return contents;
         }
-    
+
     private static void addIndirectContent( List<Content> contents, Assembler a, Resource root )
         {
         StmtIterator it = root.listProperties( JA.content );
@@ -115,7 +115,7 @@ public class ContentAssembler extends AssemblerBase implements Assembler
 
     private static Model parseAsXML( String lexicalForm )
         {
-        String pre = 
+        String pre =
             "<?xml version='1.0'?>"
             + "<rdf:RDF"
             + " xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'"
@@ -141,20 +141,20 @@ public class ContentAssembler extends AssemblerBase implements Assembler
 
     protected static Content newModelContent( final Model m )
         {
-        return new Content() 
-            { 
-            @Override public Model fill( Model x ) { x.setNsPrefixes( m ); return x.add( m ); } 
-            
+        return new Content()
+            {
+            @Override public Model fill( Model x ) { x.setNsPrefixes( m ); return x.add( m ); }
+
             @Override public boolean isEmpty() { return m.isEmpty(); }
             };
         }
 
     protected Content objectAsContent( FileManager fm, Statement s )
         {
-        final Model m = fm.loadModel( getModelName( s ) );
+        final Model m = fm.loadModelInternal( getModelName( s ) );
         return newModelContent( m );
         }
-    
+
     private String getModelName( Statement s )
         {
         Node o = s.getObject().asNode();
@@ -164,9 +164,9 @@ public class ContentAssembler extends AssemblerBase implements Assembler
     private FileManager getFileManager( Assembler a, Resource root )
         {
         Resource fm = getUniqueResource( root, JA.fileManager );
-        return 
+        return
             fm != null ? (FileManager) a.open( fm )
-            : defaultFileManager == null ? FileManager.get() 
+            : defaultFileManager == null ? FileManager.getInternal()
             : defaultFileManager
             ;
         }
@@ -178,7 +178,7 @@ public class ContentAssembler extends AssemblerBase implements Assembler
         + "\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> ."
         + "\n@prefix dc: <" + DC_11.getURI() + "> ."
         ;
-    
+
     protected static Model parseAsN3( String value )
         {
         Model result = ModelFactory.createDefaultModel();

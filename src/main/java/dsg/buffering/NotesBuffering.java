@@ -31,6 +31,16 @@ public class NotesBuffering {
 
     // BufferingDatasetGraph vs BufferingDatasetGraphQuads. Is it worth it? just Quads version?
 
+    // **** Plan:
+
+    // BufferingDatasetGraph
+    // BufferingGraph
+    // BufferingStoragePrefixMap
+    // BufferingPrefixes
+
+
+    // ---
+
     // What about BufferingGraph and a DSG of BufferingGraphs?
     // BufferingPrefixes.
 

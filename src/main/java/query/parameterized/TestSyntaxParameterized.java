@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package syntaxtransform;
+package query.parameterized;
 
 import static org.junit.Assert.assertEquals ;
 
@@ -27,11 +27,9 @@ import java.util.Map ;
 import org.apache.jena.atlas.lib.StrUtils ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.graph.NodeFactory ;
-import org.apache.jena.query.ARQ ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.query.QueryFactory ;
 import org.apache.jena.query.Syntax ;
-import org.apache.jena.riot.out.NodeFmtLib ;
 import org.apache.jena.sparql.core.Var ;
 import org.junit.Test ;
 
@@ -39,23 +37,25 @@ import org.junit.Test ;
  *  These build on top of TestSyntaxTransform.
  */
 public class TestSyntaxParameterized {
-    
+
     static String prefixes = StrUtils.strjoinNL
         ("PREFIX : <http://example/>"
-        ,"PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>" 
-        ,"PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>" 
+        ,"PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>"
+        ,"PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
         ,"PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>"
         ) ;
-    
+
     static Map<Var, Node> mapEmpty = Collections.emptyMap() ;
     static Map<Var, Node> map1 = new LinkedHashMap<Var, Node>() ;
     static {
-        map1.put(Var.alloc("x"), NodeFactory.createURI("http://example/X")) ; 
+        map1.put(Var.alloc("x"), NodeFactory.createURI("http://example/X")) ;
     }
-    
+
     static Node bn = NodeFactory.createBlankNode() ;
-    // centralize."_:"+NodeFmtLib.encodeBNodeLabel(node.getBlankNodeLabel()) ;
-    static String bnUri = "<_:"+NodeFmtLib.encodeBNodeLabel(bn.getBlankNodeLabel())+">" ;
+
+    // NB RAW label.
+    // XXX Centralize in RiotLib
+    static String bnUri = "<_:"+bn.getBlankNodeLabel()+">" ;
     static Map<Var, Node> map2 = new LinkedHashMap<Var, Node>() ;
     static {
         map2.put(Var.alloc("x"), NodeFactory.createURI("http://example/X")) ;
@@ -65,15 +65,15 @@ public class TestSyntaxParameterized {
     @Test public void test_01() {
         test("ASK{}", "ASK{}", mapEmpty, true) ;
     }
-    
+
     @Test public void test_02() {
         test("ASK{}", "ASK{}", map1, false) ;
     }
-    
+
     @Test public void test_03() {
         test("ASK{}", "ASK{}", map1, true) ;
     }
-    
+
     @Test public void test_10() {
         test("SELECT * {}", "SELECT * {}", mapEmpty, false) ;
     }
@@ -89,37 +89,42 @@ public class TestSyntaxParameterized {
     @Test public void test_13() {
         test("SELECT * { ?x :p ?o }", "SELECT * { :X :p ?o}", map1, false) ;
     }
-    
+
     @Test public void test_14() {
         test("SELECT * { ?x :p ?o }", "SELECT ?o (:X as ?x) { :X :p ?o }", map1, true) ;
     }
 
     // BNodes
+
     @Test public void test_20() {
-        test("SELECT * { }", "SELECT (:X as ?x) ("+bnUri+" AS ?b)  { }", map2, true) ;
+        // Needs ARQ.getContext().set(ARQ.constantBNodeLabels, true) ;
+        test("SELECT * { ?b :p ?o }", "SELECT * { "+bnUri+" :p ?o }", map2, false);
     }
-    
+
+
     @Test public void test_21() {
-        test("SELECT * { ?b :p ?o }", "SELECT ?o (:X as ?x) ("+bnUri+" AS ?b)  { "+bnUri+" :p ?o }", map2, true) ;
+        test("SELECT * { }", "SELECT (:X as ?x) ("+bnUri+" AS ?b)  { }", map2, true) ;
     }
 
     @Test public void test_22() {
-        test("SELECT * { ?x :p ?b }", "SELECT (:X AS ?x) ("+bnUri+" AS ?b) { :X :p ?o }", map2, true) ;
+        test("SELECT * { ?b :p ?o }", "SELECT ?o (:X as ?x) ("+bnUri+" AS ?b)  { "+bnUri+" :p ?o }", map2, true) ;
+    }
+
+    @Test public void test_23() {
+        test("SELECT * { ?x :p ?b }", "SELECT (:X AS ?x) ("+bnUri+" AS ?b) { :X :p "+bnUri+" }", map2, true) ;
+    }
+
+    @Test public void test_24() {
+        test("SELECT ?x ?b { ?x :p ?b }", "SELECT (:X AS ?x) ("+bnUri+" AS ?b) { :X :p "+bnUri+" }", map2, true) ;
     }
 
     protected void test(String input, String expected, Map<Var, Node> map, boolean includeInput) {
-        Object v = ARQ.getContext().get(ARQ.constantBNodeLabels) ;
-        ARQ.getContext().set(ARQ.constantBNodeLabels, false) ;
-        try {
-            Query qInput = QueryFactory.create(prefixes+input, Syntax.syntaxARQ) ;
-            Query qExpected = QueryFactory.create(prefixes+expected, Syntax.syntaxARQ) ;
-            Query output = includeInput
-                ? ParameterizedQuery.parameterizeIncludeInput(qInput, map)
-                : ParameterizedQuery.parameterize(qInput, map) ;
+        Query qInput = QueryFactory.create(prefixes+input, Syntax.syntaxARQ) ;
+        Query qExpected = QueryFactory.create(prefixes+expected, Syntax.syntaxARQ) ;
+        Query output = includeInput
+            ? ParameterizedQuery.parameterizeIncludeMapped(qInput, map)
+            : ParameterizedQuery.parameterize(qInput, map) ;
 
-            assertEquals("ParameterizedQuery", qExpected, output) ;
-        } finally {
-            ARQ.getContext().set(ARQ.constantBNodeLabels, v) ;
-        }
+        assertEquals("ParameterizedQuery", qExpected, output) ;
     }
 }

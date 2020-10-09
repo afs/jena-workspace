@@ -15,7 +15,7 @@
  *  information regarding copyright ownership.
  */
 
-package syntaxtransform;
+package query.parameterized;
 
 public class NOTES_Element {
     // Modify SELECT to put in pre- bindings.

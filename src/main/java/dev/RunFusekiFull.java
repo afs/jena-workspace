@@ -29,6 +29,8 @@ import org.apache.jena.atlas.json.JsonValue;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.Lib;
 import org.apache.jena.atlas.lib.ThreadLib;
+import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.fuseki.Fuseki;
 import org.apache.jena.fuseki.cmd.FusekiCmd;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.riot.WebContent;
@@ -40,7 +42,9 @@ import org.slf4j.LoggerFactory;
 
 public class RunFusekiFull
 {
-    static { FusekiLogging.setLogging(); }
+    static { FusekiLogging.setLogging();
+        LogCtl.enable(Fuseki.requestLog);
+    }
     static Logger LOG = LoggerFactory.getLogger("APP");
 
     public static void main(String ... a) {
@@ -62,6 +66,9 @@ public class RunFusekiFull
         String runArea = Paths.get(fusekiBase).toAbsolutePath().toString() ;
         FileOps.ensureDir(runArea) ;
         FileOps.clearAll(runArea);
+        FusekiCmd.main("--loc=/home/afs/tmp/DB", "/ds");
+        System.exit(0);
+
 //        FusekiCmd.main(
 //            //"-v"
 //            //,"--conf=/home/afs/tmp/config-tdb2-model.ttl"
@@ -75,50 +82,16 @@ public class RunFusekiFull
 //            //--loc=/home/afs/tmp/DB", "/ds"
 //            ) ;
 
-        ThreadLib.async(()->FusekiCmd.main("--mem", "/ds"));
-        Lib.sleep(1500);
-        for(;;) {
-            try {
-                HttpOp.execHttpPost("http://localhost:3030/$/ping", null);
-                break;
-            } catch (Exception ex) {
-                System.err.println(ex.getMessage());
-                Lib.sleep(500);
-            }
-        }
-
-        int W = 1_000;
-        int N = 3;
-
-        String HOST = "[::1]";
-        HOST = "[fe80::8286:f2ff:fecc:c9]";
         try {
-            for ( int i = 0 ; i < N ; i++ ) {
-                try {
-                    String taskId = execSleepTask("http://"+HOST+":3030/", W);
-                    LOG.info("Task = "+taskId);
-                } catch (Exception ex) {
-                    System.err.println("i = "+i+" : "+ex.getMessage());
-                    break;
-                }
+            ThreadLib.async(()->FusekiCmd.main("--mem", "/ds"));
+            Lib.sleep(2000);
+            try {
+                HttpOp.execHttpDelete("http://localhost:3030/$/datasets/ds");
+            } catch (Exception ex) {
+                System.err.println("RUN: "+ex.getMessage());
             }
-//            String taskId3 = execSleepTask("http://"+HOST+":3030/", N);
-//            LOG.info("Task = "+taskId3);
-//            String taskId4 = execSleepTask("http://"+HOST+":3030/", N);
-//            LOG.info("Task = "+taskId4);
-
-            HttpOp.execHttpPost("http://"+HOST+":3030/$/backup/ds", null);
-
-//            Lib.sleep(500);
-//            execTaskList("http://localhost:3030/");
-//            Lib.sleep(250);
-//            execTaskList("http://localhost:3030/");
-
-
-            Lib.sleep(3*W+1000);
-        } finally {
-            System.exit(0);
-        }
+            Lib.sleep(50_000);
+        } finally { System.exit(0); }
    }
 
     private static String execSleepTask(String serveURL, int millis) {

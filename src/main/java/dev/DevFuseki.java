@@ -34,6 +34,17 @@ import org.eclipse.jetty.security.UserStore;
 
 public class DevFuseki
 {
+    // -- Dispatch
+
+    // Dispatcher.chooseEndpoint, no name maytch.
+    //   if 404
+
+    // Old style test in TTestMai
+
+    // ** /ds/MyServlet : interacts with dropping into Jetty's default 404 handler.
+    // ** Does database name "/" work?
+    // ---
+
     // JENA-1854
     // ActionLib.parse - throw the RiotException?
     //   SPARQL query parsing

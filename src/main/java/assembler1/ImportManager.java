@@ -18,14 +18,16 @@
 
 package assembler1;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import assembler1.ImportManager;
 import org.apache.jena.graph.Graph ;
 import org.apache.jena.graph.compose.MultiUnion ;
 import org.apache.jena.rdf.model.* ;
 import org.apache.jena.util.FileManager ;
-import org.apache.jena.vocabulary.* ;
+import org.apache.jena.vocabulary.OWL;
 
 public class ImportManager
     {
@@ -37,25 +39,25 @@ public class ImportManager
         assembler methods.
     */
     public final static ImportManager instance = new ImportManager();
-    
+
     /**
         The cache of models already read by this manager.
     */
     protected Map<String, Graph> cache = new HashMap<>();
-    
+
     /**
         Clear this ImportManager's cache.
     */
     public void clear()
         { cache.clear(); }
-    
+
     /**
         Answer <code>model</code> if it has no imports, or a union model with
         <code>model</code> as its base and its imported models as the other
         components. The default file manager is used to load the models.
     */
     public Model withImports( Model model )
-        { return withImports( FileManager.get(), model ); }
+        { return withImports( FileManager.getInternal(), model ); }
 
     /**
         Answer <code>model</code> if it has no imports, or a union model with
@@ -83,13 +85,13 @@ public class ImportManager
 
     private void addImportedGraphs( FileManager fm, Set<String> loading, StmtIterator oit, MultiUnion g )
         {
-        while (oit.hasNext()) 
+        while (oit.hasNext())
             {
             String path = getObjectURI( oit.nextStatement() );
             if (loading.add( path )) g.addGraph( graphFor( fm, loading, path ) );
             }
         }
-    
+
     private String getObjectURI( Statement s )
         {
         RDFNode ob = s.getObject();
@@ -103,7 +105,7 @@ public class ImportManager
         Graph already = cache.get( path );
         if (already == null)
             {
-            Graph result = withImports( fm, fm.loadModel( path ), loading ).getGraph();
+            Graph result = withImports( fm, fm.loadModelInternal( path ), loading ).getGraph();
             cache.put( path, result );
             return result;
             }

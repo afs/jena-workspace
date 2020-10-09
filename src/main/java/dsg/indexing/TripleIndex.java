@@ -32,37 +32,37 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
 public class TripleIndex implements TripleIndexI {
-    
+
     private static class Index3 extends HashMap<Node, Index2> {}
     private static class Index2 extends HashMap<Node, Index1> {}
     private static class Index1 extends HashMap<Node, Triple> {}
-    
+
     private TupleMap order;
     private String name;
     private Index3 index;
-    
+
     public TripleIndex(String name, TupleMap order) {
         this.name = name ;
         this.order = order ;
         this.index = new Index3() ;
     }
-    
+
     @Override
     public void add(Node s, Node p, Node o) {
         Tuple<Node> pattern = TupleFactory.create3(s,p,o);
         Tuple<Node> storage = order.map(pattern);
         add(index, storage.get(0), storage.get(1), storage.get(2), Triple.create(s, p, o));
     }
-    
+
     @Override
     public void delete(Node s, Node p, Node o) {
         Tuple<Node> pattern = TupleFactory.create3(s,p,o);
         Tuple<Node> storage = order.map(pattern);
         delete(index, storage.get(0), storage.get(1), storage.get(2));
     }
-    
+
     @Override
-    public Iterator<Triple> find(Node x1, Node x2, Node x3) { 
+    public Iterator<Triple> find(Node x1, Node x2, Node x3) {
         // Assumes correct order.
         if ( x3 != null )
             return access(index, x1, x2, x3);
@@ -72,15 +72,15 @@ public class TripleIndex implements TripleIndexI {
             return access(index, x1);
         return access(index);
     }
-    
+
     @Override
     public String toString() {
         return name;
     }
-    
+
     public int weight(Node s, Node p, Node o) {
         //XXX Avoid an Object - hard code the "3"
-        Tuple<Node> pattern = TupleFactory.create3(s,p,o); 
+        Tuple<Node> pattern = TupleFactory.create3(s,p,o);
         return weight(pattern, order);
     }
 
@@ -107,7 +107,7 @@ public class TripleIndex implements TripleIndexI {
     private <X> X ensure(Map<Node, X> index, Node n, Supplier<X> creator) {
         return index.computeIfAbsent(n, (k)->creator.get());
     }
-    
+
     private Triple delete(Index3 index3, Node n1, Node n2, Node n3) {
         Index2 index2 = index3.get(n1);
         if ( index2 == null )
@@ -123,10 +123,10 @@ public class TripleIndex implements TripleIndexI {
             index3.remove(n1);
         return x;
     }
-    
+
     // Triple -> Tuple3 or a remapper.
     private static Iterator<Triple> noTriples = Iter.nullIterator();
-    
+
     private static Function< Index1, Iterator<Triple> > level2to1 = m -> m.values().iterator();
     private static Function< Index2, Iterator<Index1> > level3to2 = m -> m.values().iterator();
     //private static Function< Index3, Iterator<Index2> > level4to3 = m -> m.values().iterator();

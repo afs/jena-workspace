@@ -21,6 +21,7 @@ package dev;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.fuseki.ctl.ActionDumpRequest;
+import org.apache.jena.fuseki.ctl.ActionMetrics;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryGeneral;
 import org.apache.jena.fuseki.system.FusekiLogging;
@@ -28,27 +29,52 @@ import org.apache.jena.fuseki.validation.DataValidator;
 import org.apache.jena.fuseki.validation.IRIValidator;
 import org.apache.jena.fuseki.validation.QueryValidator;
 import org.apache.jena.fuseki.validation.UpdateValidator;
-import org.apache.jena.query.*;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.ResultSetFormatter;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.rdfconnection.RDFConnectionFuseki;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.web.HttpOp;
+import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.tdb2.DatabaseMgr;
+import org.apache.jena.tdb2.params.StoreParams;
+import org.apache.jena.tdb2.sys.TDBInternal;
 
 public class RunFuseki
 {
-    public static void main(String ... a) {
-        //System.setProperty("fuseki.loglogging", "true");
+    public static void main(String ... a) throws Exception {
         FusekiLogging.setLogging();
-//        org.apache.jena.fuseki.main.cmds.FusekiMainCmd.main("--mem", "/ds");
-//        System.exit(0);
-
-        mainFusekiText();
         mainServer();
+        System.exit(0);
     }
 
     public static void mainServer(String ... a) {
+        //org.apache.jena.fuseki.ctl.ActionMetrics
+
+        DatasetGraph dsg = DatabaseMgr.connectDatasetGraph("DB2");
+        StoreParams params = TDBInternal.getDatasetGraphTDB(dsg).getStoreParams();
+
+        System.out.println("Node2NodeId = "+params.getNode2NodeIdCacheSize());
+        System.out.println("NodeId2Node = "+params.getNodeId2NodeCacheSize());
+        System.out.println("NodeMiss    = "+params.getNodeMissCacheSize());
+        System.exit(0);
         FusekiServer server = FusekiServer.create()
-            //.parseConfigFile("config.ttl")
+//            .enableMetrics(true)
+//            .parseConfigFile("/home/afs/ASF/Examples/config-1-mem.ttl")
+//            .parseConfigFile("/home/afs/ASF/Examples/config-2-mem-old.ttl")
+
+            //** Authorization is the "and" of named services.
+
             .add("/ds", DatasetGraphFactory.createTxnMem())
+//            //.addOperation("/ds", Operation.Shacl)
+//            .addEndpoint("/ds", "shacl", Operation.Shacl)
+
             .port(3030)
             //.verbose(true)
             //.staticFileBase("Files")
@@ -56,6 +82,36 @@ public class RunFuseki
         try { server.start().join(); }
         finally { server.stop(); }
     }
+
+    public static void mainServerRunExit(String ... a) {
+        FusekiServer server = FusekiServer.create()
+            .add("/ds", DatasetGraphFactory.createTxnMem())
+            .port(3030)
+            .verbose(true)
+            .addServlet("/$/metrics", new ActionMetrics())
+            .build();
+        server.start();
+
+        String str = HttpOp.execHttpGetString("http://localhost:3030/$/metrics");
+        System.out.println(str);
+        System.exit(0);
+
+
+        //RDFConnection c = RDFConnectionFactory.connectFuseki("http://localhost:3030/ds");
+        RDFConnection c =  RDFConnectionFuseki.create()
+            .destination("http://localhost:3030/ds").build();
+
+        Model m = RDFDataMgr.loadModel("/home/afs/tmp/D.ttl");
+        c.put(m);
+        c.put(m);
+
+        RDFDataMgr.write(System.out, c.fetchDataset(), Lang.TRIG);
+
+//        server.stop();
+        System.out.println("DONE");
+        System.exit(0);
+    }
+
 
     public static void mainFusekiText() {
         FileOps.ensureDir("Lucene");

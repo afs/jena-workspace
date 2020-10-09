@@ -23,11 +23,11 @@ import org.apache.jena.ontology.OntDocumentManager ;
 import org.apache.jena.rdf.model.* ;
 import org.apache.jena.util.* ;
 
-public class DocumentManagerAssembler extends AssemblerBase 
-    {    
+public class DocumentManagerAssembler extends AssemblerBase
+    {
     @Override
     public Object open( Assembler a, Resource root, Mode irrelevant )
-        { 
+        {
         checkType( root, JA.DocumentManager );
         OntDocumentManager result = createDocumentManager();
         result.setMetadataSearchPath( getPath( a, root ), false );
@@ -45,9 +45,9 @@ public class DocumentManagerAssembler extends AssemblerBase
     private FileManager getFileManager( Assembler a, Resource root )
         {
         Resource fm = getUniqueResource( root, JA.fileManager );
-        return fm == null ? FileManager.get() : (FileManager) a.open( fm );
+        return fm == null ? FileManager.getInternal() : (FileManager) a.open( fm );
         }
-    
+
     /**
         Tests may subclass and override to supply testable objects.
     */

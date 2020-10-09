@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package syntaxtransform;
+package query.parameterized;
 
 import java.util.Map ;
 

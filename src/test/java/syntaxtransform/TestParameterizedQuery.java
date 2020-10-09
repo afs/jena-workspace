@@ -27,6 +27,7 @@ import org.apache.jena.query.QueryFactory ;
 import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.update.UpdateFactory ;
 import org.apache.jena.update.UpdateRequest ;
+import query.parameterized.ParameterizedQuery;
 
 public class TestParameterizedQuery extends AbstractTestParameterized {
 

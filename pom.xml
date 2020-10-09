@@ -14,7 +14,7 @@
   <description>AFS workspace</description>
 
   <properties>
-    <ver.jena>3.16.0-SNAPSHOT</ver.jena>
+    <ver.jena>3.17.0-SNAPSHOT</ver.jena>
     <ver.fuseki>${ver.jena}</ver.fuseki>
     <ver.jetty>9.4.26.v20200117</ver.jetty>
     <ver.log4j2>2.13.1</ver.log4j2>
@@ -73,7 +73,7 @@
       <classifier>tests</classifier>
     </dependency>
 
-
+    <!--
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-querybuilder</artifactId>
@@ -86,6 +86,7 @@
       <version>${ver.jena}</version>
       <classifier>sources</classifier> 
     </dependency>
+    -->
 
     <dependency>
       <groupId>org.apache.jena</groupId>
@@ -99,14 +100,12 @@
       <artifactId>jena-arq</artifactId>
       <version>${ver.jena}</version>
       <classifier>tests</classifier> 
-      <scope>runtime</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-tdb</artifactId>
       <version>${ver.jena}</version>
-      <scope>compile</scope>
       <classifier>tests</classifier> 
     </dependency>
 
