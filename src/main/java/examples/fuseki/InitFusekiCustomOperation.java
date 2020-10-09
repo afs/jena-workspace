@@ -16,13 +16,15 @@
  * limitations under the License.
  */
 
-package fuseki.examples;
+package examples.fuseki;
 
 import java.io.IOException;
 
 import org.apache.jena.atlas.lib.DateTimeUtils;
 import org.apache.jena.fuseki.Fuseki;
 import org.apache.jena.fuseki.FusekiException;
+import org.apache.jena.fuseki.build.FusekiExt;
+import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.fuseki.servlets.ActionService;
 import org.apache.jena.fuseki.servlets.HttpAction;
 import org.apache.jena.riot.WebContent;
@@ -47,9 +49,9 @@ public class InitFusekiCustomOperation implements JenaSubsystemLifecycle {
         // Can use Fuseki server logging.
         Fuseki.configLog.info("Add custom operation");
         System.err.println("**** Fuseki extension ****");
-//        Operation op = Operation.alloc("http://example/extra-service", "extra-service", "Test");
-//        FusekiExt.registerOperation(op, new MyCustomService());
-//        FusekiExt.addDefaultEndpoint(op, "extra");
+        Operation op = Operation.alloc("http://example/extra-service", "extra-service", "Test");
+        FusekiExt.registerOperation(op, new MyCustomService());
+        FusekiExt.addDefaultEndpoint(op, "extra");
     }
 
     @Override

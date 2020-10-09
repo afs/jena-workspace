@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package fuseki.examples;
+package examples.fuseki;
 
 import static java.lang.String.format;
 
@@ -52,7 +52,7 @@ import org.eclipse.jetty.util.security.Password;
 /**
  * Example of a Fuseki with per-graph data access control.
  */
-public class Ex_DataAccessCtl {
+public class ExFuseki_DataAccessCtl {
 
     public static void main(String ... a) {
         FusekiLogging.setLogging();

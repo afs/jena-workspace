@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package dev;
+package examples.fuseki;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +37,7 @@ import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 
-public class ExampleFusekiMain_AddShiro {
+public class ExFusekiMain_2_AddShiro {
     // From Barry Nouwt : https://lists.apache.org/thread.html/r1e3fa952ff9f4a9108e16f07f1edf78c67e08c9b081497c627e3b833%40%3Cusers.jena.apache.org%3E
 
     public static void addShiroFilter(FusekiServer fusekiServer) {

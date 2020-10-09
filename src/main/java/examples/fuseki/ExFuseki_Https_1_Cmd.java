@@ -16,31 +16,28 @@
  * limitations under the License.
  */
 
-package fuseki.examples;
+package examples.fuseki;
 
 import org.apache.jena.fuseki.main.cmds.FusekiMainCmd;
 
-/** Run Fuseki server, with HTTPS and authentication */ 
-public class Ex_FusekiHttpsCmdAuth {
-    
-    // curl -k -d 'query=ASK{}' --basic --user 'user:password' https://localhost:3443/ds
+/** Run a Fuseki server with https from the command line*/
+public class ExFuseki_Https_1_Cmd {
 
+    // curl -k -d 'query=ASK{}' https://localhost:3443/ds
+    
     public static void main(String...argv) {
         try {
-            cmdHttpsAuth();
+            cmdHttps();
         } catch (Exception ex){
             ex.printStackTrace();
         } finally {
             System.exit(0);
         }
     }
-
-    public static void cmdHttpsAuth() {
+    
+    public static void cmdHttps() {
         FusekiMainCmd.main(
-            //"--verbose",
             "--https=Examples/certs/https-details",
-            "--auth=basic",
-            "--passwd=Examples/passwd-basic",
             "--port=3030",
             "--httpsPort=3443",
             "--mem",

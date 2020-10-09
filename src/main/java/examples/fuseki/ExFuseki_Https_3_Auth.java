@@ -16,21 +16,25 @@
  * limitations under the License.
  */
 
-package fuseki.examples;
+package examples.fuseki;
 
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
-import org.apache.jena.atlas.lib.Lib;
+import org.apache.jena.atlas.web.AuthScheme;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.query.QueryExecution;
@@ -39,40 +43,47 @@ import org.apache.jena.rdfconnection.RDFConnectionFuseki;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.util.QueryExecUtils;
+import org.apache.jena.web.AuthSetup;
 
-/** Run a Fuseki server with HTTPS, programmatic. */ 
-public class Ex_FusekiHttps {
-
-    // curl -k -d 'query=ASK{}' https://localhost:3443/ds
+/** Run a Fuseki server with HTTPS and Authentication, programmatic. */ 
+public class ExFuseki_Https_3_Auth {
+    // Setup
+    static String    USER     = "user1";
+    static String    PASSWORD = "pw1";
+    // When using "digest", this must agree with the password file
+    // for MD5 and CRYPT entries.
+    static String    REALM    = "TripleStore";
+    static String    HOST     = "localhost";
+    static int       PORT     = 3443;
+    static AuthSetup auth     = new AuthSetup(HOST, PORT, USER, PASSWORD, REALM);
     
+    // curl -k -d 'query=ASK{}' --basic --user 'user:password' https://localhost:3443/ds
+
     public static void main(String...argv) {
         try {
             // By code, with client.
-            codeHttps();
-            try { 
-                client();
-            } catch (Exception ex){
-                ex.printStackTrace();
-            }    
-            Lib.sleep(30000);
+            codeHttpsAuth();
+            client();
         } catch (Exception ex){
             ex.printStackTrace();
         } finally {
             System.exit(0);
         }
     }
-    
-    public static FusekiServer codeHttps() {
+
+    public static FusekiServer codeHttpsAuth() {
         FusekiLogging.setLogging();
         // Some empty dataset
         DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
         FusekiServer server = FusekiServer.create()
-            .https(3443, /*certStore*/"Examples/certs/mykey.jks", /*certStorePassword*/"cert-pw")
+            //.verbose(true)
+            .https(3443, /*certStore*/"certs/mykey.jks", /*certStorePassword*/"cert-pw")
             .port(3030)
+            .auth(AuthScheme.BASIC)
+            .passwordFile("Examples/passwd-basic")
             .add("/ds", dsg)
             .build();
         server.start();
-        //Lib.sleep(1000);
         //server.join();
         return server;
     }
@@ -90,13 +101,23 @@ public class Ex_FusekiHttps {
             return null;
         }
     }
+
+    private static HttpClient httpClient(String user, String password) {
+    
+        BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+        Credentials credentials = new UsernamePasswordCredentials(user, password);
+        credsProvider.setCredentials(AuthScope.ANY, credentials);
+        
+        HttpClientBuilder builder = httpClientBuilder()
+            .setDefaultCredentialsProvider(credsProvider);
+        return builder.build(); 
+    }
     
     private static void client() {
-        // Need to provide a suitable HttpClient that can handle https. 
         //RDFConnection connSingle = RDFConnectionFactory.connect("https://localhost:3443/ds");
         
         // Allow self-signed
-        HttpClient hc = httpClientBuilder().build();
+        HttpClient hc = httpClient(USER, PASSWORD);
         
         RDFConnection connSingle = RDFConnectionFuseki.create()
             .httpClient(hc)
@@ -107,7 +128,16 @@ public class Ex_FusekiHttps {
             QueryExecution qExec = conn.query("ASK{}");
             QueryExecUtils.executeQuery(qExec);
         }
+        
+        HttpClient hc2 = httpClient("user1", "wrong-password");
+        try ( RDFConnection conn = RDFConnectionFuseki.create()
+                                    .httpClient(hc2)
+                                    .destination("https://localhost:3443/ds")
+                                    .build(); ) {
+            QueryExecution qExec = conn.query("ASK{}");
+            QueryExecUtils.executeQuery(qExec);
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
     }
-
-
 }

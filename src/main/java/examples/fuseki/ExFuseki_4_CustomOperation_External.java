@@ -16,12 +16,11 @@
  * limitations under the License.
  */
 
-package fuseki.examples;
+package examples.fuseki;
 
 import java.util.ServiceLoader;
 
 import org.apache.jena.fuseki.main.FusekiServer;
-import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
@@ -31,50 +30,44 @@ import org.apache.jena.sys.JenaSystem;
  * Example of adding a new operation to a Fuseki server by registering it with the
  * global Fuseki registries.
  *
+ * The custom operation is loaded using {@link ServiceLoader} as shown in
+ * {@link InitFusekiCustomOperation}.
+ *
  * Doing this, adding the jar to the classpath, including the {@link ServiceLoader}
  * setup, will automatically add it to the server.
+ * <p>
+ * See <a href="https://jena.apache.org/documentation/notes/jena-repack.html">Repacking Jena jars</a>.
+ * <p>
+ * See <a href="https://jena.apache.org/documentation/notes/system-initialization.html">System Initialization</a>
  */
-public class Ex_FusekiCustomOperation {
+public class ExFuseki_4_CustomOperation_External {
 
     static {
-        // Imitate Service loader behaviour.
         JenaSystem.init();
-        new InitFusekiCustomOperation().start();
+        FusekiLogging.setLogging();
     }
 
     // Example usage.
     public static void main(String...args) {
-        FusekiLogging.setLogging();
 
-        // Also get the operation from the registry (by URI) to add under a different endpoint name.
-        System.err.println("**** Fuseki extension ****");
-        //Operation op = Operation.alloc("http://example/extra-service", "extra-service", "Test");
-        Operation op = null;
+        // Imitate Service loader behaviour.
+        new InitFusekiCustomOperation().start();
 
-        FusekiServer server = FusekiServer.create()
-            .add("/ds", DatasetGraphFactory.createTxnMem())
 
-            // No need to do this. It is added as a standard endpoint service by FusekiConfig.addDefaultEndpoint.
-            //.addEndpoint("/ds", "extra", op)
+        // Standard Fuseki startup by commandline.
+        // /ds/extra will be added because InitFusekiCustomOperation adds it to the default services.
 
-            // Also put the operation in under a unregistered name.
-            .addEndpoint("/ds", "abc", op)
+        // ThreadLib.async(()->FusekiMainCmd.main("--port=3230", "--mem", "/ds"));
+        //Lib.sleep(1000);
+        // Same as the above command line except it does not block the thread (which is why the ThreadLib.async is added).
+        FusekiServer.create().port(3230).add("/ds", DatasetGraphFactory.createTxnMem()).build().start();
 
-            .port(3030)
-            //.verbose(true)
-            .build();
-        try {
-            server.start();
-            callOperation("extra");
-            callOperation("abc");
-        }
-        finally {
-            server.stop();
-        }
+        callOperation("extra");
+        System.exit(0);
     }
 
     private static void callOperation(String name) {
-        String x = HttpOp.execHttpGetString("http://localhost:3030/ds/"+name);
+        String x = HttpOp.execHttpGetString("http://localhost:3230/ds/"+name);
         if ( x == null ) {
             System.out.println("Not found : <null>");
         } else {
@@ -83,5 +76,4 @@ public class Ex_FusekiCustomOperation {
                 System.out.println();
         }
     }
-
 }

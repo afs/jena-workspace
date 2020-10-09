@@ -16,14 +16,12 @@
  * limitations under the License.
  */
 
-package fuseki.examples;
+package examples.fuseki;
 
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.atlas.web.WebLib;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.system.FusekiLogging;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
@@ -33,15 +31,15 @@ import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.function.FunctionBase1;
 import org.apache.jena.sparql.function.FunctionRegistry;
 
-/** 
+/**
  * Add a function to the global function registry.
  * Start up a fuseki server.
- * Use the function.   
+ * Use the function.
  */
 
-public class Ex_FusekiCustomFunction {
-    
-    /** Our function */ 
+public class ExFuseki_5_CustomFunction {
+
+    /** Our function */
     public static class MyFunction extends FunctionBase1 {
         @Override
         public NodeValue exec(NodeValue v) {
@@ -50,19 +48,19 @@ public class Ex_FusekiCustomFunction {
             return NodeValue.makeString("not a number");
         }
     }
-    
+
     public static void main(String...a) {
         FusekiLogging.setLogging();
-        
-        // ---- Register the function 
+
+        // ---- Register the function
         FunctionRegistry ref = FunctionRegistry.get();
         ref.put("http://my/num", MyFunction.class);
-        
+
         // ---- Show it can be used
         // -- Start a server
 
         int PORT = WebLib.choosePort();
-        
+
         // Some empty dataset
         DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
         FusekiServer server = FusekiServer.create()
@@ -78,21 +76,12 @@ public class Ex_FusekiCustomFunction {
             , "  BIND (<http://my/num>(?Z) AS ?X )"
             ,"}"
             );
-        
+
         try {
             String url = "http://localhost:"+PORT+"/ds";
             // Connect to the server and execute the query.
             try ( RDFConnection conn = RDFConnectionFactory.connect(url) ) {
-                // Using Java8 features.
-                // String parsed and unparsed.
                 conn.queryResultSet(queryString, ResultSetFormatter::out);
-                
-                // Without Java8 features
-                // String goes as-is.
-                try ( QueryExecution qExec = conn.query(queryString) ) {
-                    ResultSet rs = qExec.execSelect();
-                    ResultSetFormatter.out(rs);
-                }
             }
         } catch (Exception ex) {
             ex.printStackTrace();

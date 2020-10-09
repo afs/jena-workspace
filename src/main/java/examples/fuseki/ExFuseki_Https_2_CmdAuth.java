@@ -16,28 +16,34 @@
  * limitations under the License.
  */
 
-package glib;
+package examples.fuseki;
 
-import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.sparql.util.graph.GNode;
+import org.apache.jena.fuseki.main.cmds.FusekiMainCmd;
 
-public class GN {
+/** Run Fuseki server, with HTTPS and authentication */ 
+public class ExFuseki_Https_2_CmdAuth {
+    
+    // curl -k -d 'query=ASK{}' --basic --user 'user:password' https://localhost:3443/ds
 
-    public static GNode create(Graph graph, Node node) {
-        return new GNode(graph, node);
+    public static void main(String...argv) {
+        try {
+            cmdHttpsAuth();
+        } catch (Exception ex){
+            ex.printStackTrace();
+        } finally {
+            System.exit(0);
+        }
     }
 
-    public static GNode subject(Graph graph, Triple triple) {
-        return triple == null ? null : create(graph, triple.getSubject());
-    }
-
-    public static GNode predicate(Graph graph, Triple triple) {
-        return triple == null ? null : create(graph, triple.getPredicate());
-    }
-
-    public static GNode object(Graph graph, Triple triple) {
-        return triple == null ? null : create(graph, triple.getObject());
+    public static void cmdHttpsAuth() {
+        FusekiMainCmd.main(
+            //"--verbose",
+            "--https=Examples/certs/https-details",
+            "--auth=basic",
+            "--passwd=Examples/passwd-basic",
+            "--port=3030",
+            "--httpsPort=3443",
+            "--mem",
+            "/ds");
     }
 }

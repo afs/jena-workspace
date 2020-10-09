@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package dev;
+package examples.fuseki;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -41,9 +41,8 @@ import org.eclipse.jetty.servlet.ServletHandler;
 
 /**
  * Example of intercepting Fuseki dispatch.
- * Apache Jena Fuseki 3.15.0
  */
-public class ExampleFusekiMain_AddFilter
+public class ExFusekiMain_1_Servlet_AddFilter
 {
     public static void main(String ... a) {
         try {

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package fuseki.examples;
+package examples.fuseki;
 
 import java.io.IOException;
 
