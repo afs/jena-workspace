@@ -21,18 +21,27 @@ package dev;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.List;
 
+import assembler1.JA;
 import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.reasoner.rulesys.Rule;
 import org.apache.jena.riot.*;
+import org.apache.jena.shacl.ShaclValidator;
+import org.apache.jena.shacl.ValidationReport;
+import org.apache.jena.shacl.lib.ShLib;
 import org.apache.jena.sparql.algebra.*;
 import org.apache.jena.sparql.algebra.op.OpGraph;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.core.assembler.AssemblerUtils;
 import org.apache.jena.sparql.util.QueryExecUtils;
 import riotcmd.riot;
 import shacl.shacl_parse;
@@ -40,12 +49,32 @@ import shacl.shacl_parse;
 public class Report {
     static {
         LogCtl.setLog4j2();
-        //RIOT.getContext().set(RIOT.symTurtleDirectiveStyle, "sparql");
+        RIOT.getContext().set(RIOT.symTurtleDirectiveStyle, "sparql");
     }
 
     public static class Foo{}
 
     public static void main(String...a) {
+
+
+        //Object obj = AssemblerUtils.build("/home/afs/tmp/assem.ttl", JA.InfModel);
+        //System.out.println(obj.getClass().getName());
+        List<Rule> x = Rule.rulesFromURL("/home/afs/tmp/rules");
+        x.forEach(System.out::println);
+
+        System.exit(0);
+
+        // tosh.ttl is RDF/XML
+        // SPARQL parsing needs predefined prefixes.
+
+
+        Graph shapesGraph = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM).read("/home/afs/tmp/SHACL/shapes.ttl", "TTL").getGraph();
+        Graph dataGraph = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM).read("/home/afs/tmp/SHACL/data.ttl", "TTL").getGraph();
+        ShaclValidator validator = ShaclValidator.get();
+        ValidationReport report = validator.validate(shapesGraph, dataGraph);
+        ShLib.printReport(report);
+        System.exit(0);
+
         mainBase(); System.exit(0);
         mainJSONLD(); System.exit(0);
 
