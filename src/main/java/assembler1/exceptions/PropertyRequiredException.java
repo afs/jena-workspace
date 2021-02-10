@@ -18,7 +18,8 @@
 
 package assembler1.exceptions;
 
-import org.apache.jena.rdf.model.* ;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 
 /**
     Exception used to report that a required property is missing.

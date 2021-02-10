@@ -28,6 +28,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.query.TxnType;
+import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.sparql.core.*;
 
 /** BufferingDatasetGraph - decomposes operations in "triples" (default graph) and "quads" (named graphs)
@@ -39,11 +40,13 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements B
     private DatasetGraph baseDSG;
     protected DatasetGraph get() { return baseDSG; }
 
-    private Set<Triple> addedTriples   = new HashSet<>();
+    private Set<Triple> addedTriples   = new HashSet<>(); //ConcurrentHashMap.newKeySet();
     private Set<Triple> deletedTriples = new HashSet<>();
 
     private Set<Quad>   addedQuads     = new HashSet<>();
     private Set<Quad>   deletedQuads   = new HashSet<>();
+
+    private BufferingPrefixMap prefixes;
 
     // True  -> read-optimized.
     // False -> write-optimized
@@ -51,6 +54,7 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements B
 
     public BufferingDatasetGraph(DatasetGraph dsg) {
         baseDSG = dsg;
+        prefixes = new BufferingPrefixMap(dsg.prefixes());
     }
 
     @Override
@@ -226,6 +230,12 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements B
     public Iterator<Node> listGraphNodes() {
         return null;
     }
+
+    @Override
+    public PrefixMap prefixes() {
+        return prefixes;
+    }
+
 
     private final Transactional txn                     = TransactionalLock.createMRSW() ;
     protected final Transactional txn()                 { return get(); }

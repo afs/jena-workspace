@@ -30,18 +30,16 @@ public class ParserProfileNoStar extends ParserProfileWrapper {
         super(other);
     }
 
-    /** Create a triple node (RDF*) */
+    /** Create a triple node (RDF-star) */
     @Override
     public Node createTripleNode(Node subject, Node predicate, Node object, long line, long col) {
-        throw new RiotParseException("RDF* Triple Term not permitted", line, col);
+        throw new RiotParseException("RDF-star Triple Term not permitted", line, col);
     }
 
-    /** Create a triple node (RDF*) */
+    /** Create a triple node (RDF-star) */
     @Override
     public Node createTripleNode(Triple triple, long line, long col) {
-        throw new RiotParseException("RDF* Triple Term not permitted", line, col);
+        throw new RiotParseException("RDF-star Triple Term not permitted", line, col);
     }
-
-
 }
 

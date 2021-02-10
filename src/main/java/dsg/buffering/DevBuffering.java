@@ -19,12 +19,13 @@
 package dsg.buffering;
 
 import org.apache.jena.dboe.storage.StoragePrefixes;
-import org.apache.jena.dboe.storage.prefixes.PrefixMapI;
-import org.apache.jena.dboe.storage.prefixes.PrefixesFactory;
+import org.apache.jena.dboe.storage.prefixes.PrefixesDboeFactory;
 import org.apache.jena.dboe.storage.prefixes.StoragePrefixMap;
 import org.apache.jena.dboe.storage.prefixes.StoragePrefixesView;
-import org.apache.jena.dboe.storage.simple.StoragePrefixesMem;
+import org.apache.jena.dboe.storage.simple.StoragePrefixesSimpleMem;
 import org.apache.jena.graph.Graph;
+import org.apache.jena.riot.system.PrefixMap;
+import org.apache.jena.riot.system.Prefixes;
 import org.apache.jena.shared.PrefixMapping;
 
 public class DevBuffering {
@@ -39,10 +40,10 @@ public class DevBuffering {
         // StoragePrefixesView - add direct to PrefixMapping? = projection, PrefixMapping API.
 
         // Dataset storage.
-        StoragePrefixes sPrefixes = new StoragePrefixesMem();
+        StoragePrefixes sPrefixes = new StoragePrefixesSimpleMem();
 
         // Storage oriented view for a single graph : StoragePrefixesView
-        StoragePrefixMap spv = StoragePrefixesView.viewDefaultGraph(sPrefixes);
+        StoragePrefixMap spv = StoragePrefixesView.viewDataset(sPrefixes);
 
         // Build PrefixMapI into StoragePrefixMap?
 
@@ -51,12 +52,8 @@ public class DevBuffering {
         // Add PrefixMapping to ? PrefixMapOverPrefixMapI
         //   PrefixMapBase = PrefixMapI over StoragePrefixMap
 
-        PrefixMapI pm = PrefixesFactory.newPrefixMap(spv);
-
-        // Model/graph PrefixMapping
-        //   PrefixMappingOverPrefixMapI
-        PrefixMapping pmap = PrefixesFactory.newPrefixMappingOverPrefixMapI(pm);
-        return pmap;
+        PrefixMap pm = PrefixesDboeFactory.newPrefixMap(spv);
+        return Prefixes.adapt(pm);
     }
 
 }

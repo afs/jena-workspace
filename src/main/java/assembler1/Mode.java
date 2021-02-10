@@ -18,7 +18,6 @@
 
 package assembler1;
 
-import assembler1.Mode;
 import org.apache.jena.rdf.model.Resource ;
 
 /**

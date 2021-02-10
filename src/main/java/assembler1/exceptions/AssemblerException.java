@@ -18,7 +18,8 @@
 
 package assembler1.exceptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import assembler1.assemblers.AssemblerGroup;
 import assembler1.assemblers.AssemblerGroup.Frame;

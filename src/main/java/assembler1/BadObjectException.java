@@ -19,7 +19,8 @@
 package assembler1;
 
 import assembler1.exceptions.AssemblerException;
-import org.apache.jena.rdf.model.* ;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Statement;
 
 /**
     Exception used to report that the object of a statement is not a Resource.

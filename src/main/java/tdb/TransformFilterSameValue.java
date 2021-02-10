@@ -19,7 +19,6 @@
 package tdb;
 
 import org.apache.jena.atlas.lib.Pair ;
-
 import org.apache.jena.graph.Node ;
 import org.apache.jena.query.Query ;
 import org.apache.jena.query.QueryFactory ;

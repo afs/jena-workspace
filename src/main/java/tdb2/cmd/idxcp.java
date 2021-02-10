@@ -20,8 +20,8 @@ package tdb2.cmd;
 
 import java.util.Objects;
 
-import jena.cmd.CmdException;
 import org.apache.jena.atlas.lib.InternalErrorException;
+import org.apache.jena.cmd.CmdException;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.tdb2.loader.base.LoaderOps;
 import org.apache.jena.tdb2.loader.base.MonitorOutput;
@@ -39,15 +39,15 @@ public class idxcp extends CmdTDB {
     public static final int DataSuperTick   = 10;
     public static final int IndexTickPoint  = 1_000_000;
     public static final int IndexSuperTick  = 10;
-    
+
     private static final MonitorOutput output = LoaderOps.outputToLog();
 
     private String srcIndexName = null;
     private String dstIndexName = null;
-    
+
     private boolean showProgress = true;
     private boolean generateStats = true;
-    
+
     public static void main(String... args) {
         CmdTDB.init();
         new idxcp(args).mainRun();
@@ -67,9 +67,9 @@ public class idxcp extends CmdTDB {
                 srcIndexName = "SPO";
             else if ( dstIndexName.length() == 4 )
                 srcIndexName = "GSPO";
-            else 
+            else
                 throw new InternalErrorException("Index arg of length: "+dstIndexName.length());
-            
+
         } else if ( super.getNumPositional() == 2) {
             srcIndexName = getPositionalArg(0);
             checkIsIndex(srcIndexName);
@@ -80,20 +80,20 @@ public class idxcp extends CmdTDB {
         }
         else
             throw new CmdException("Usage: 1 or 2 index names");
-        
+
     }
 
     // Imperfect
     private void checkIsIndex(String idxName) {
         if ( idxName.length() == 3 ) {
-            if ( ! idxName.matches("[SPO]{3}") ) 
+            if ( ! idxName.matches("[SPO]{3}") )
                 throw new CmdException("Not recognized as an index: "+idxName);
         }
         if ( idxName.length() == 4 ) {
-            if ( ! idxName.matches("[GSPO]{4}") ) 
+            if ( ! idxName.matches("[GSPO]{4}") )
                 throw new CmdException("Not recognized as an index: "+idxName);
         }
-        
+
         long n = idxName.chars().distinct().count();
         if ( n != idxName.length())
             throw new CmdException("Repeated column: "+idxName);
@@ -113,7 +113,7 @@ public class idxcp extends CmdTDB {
 //        storeParams.getTripleIndexes();
 //        storeParams.getQuadIndexes();
         // Check contains srcIndex and does not contain dstIndex.
-        
+
         // Must exist
         TupleIndex srcIdx = getIndex(srcIndexName, dsgtdb);
         if ( srcIdx == null )
@@ -124,20 +124,20 @@ public class idxcp extends CmdTDB {
             throw new CmdException("Existing index: "+dstIndexName);
         TupleIndex[] dstIndexes = { dstIdx };
         String label = srcIndexName+"->"+dstIndexName;
-        
+
         System.err.println("Not upgraded to new TDB2");
-//        TDB2StorageBuilder        
+//        TDB2StorageBuilder
 //        //TDBBuilder builder = TDBBuilder.create(dsgtdb.getLocation());
 //        RecordFactory recordFactory = new RecordFactory(dstIndexName.length(),0);
 //        RangeIndex index = builder.buildRangeIndex(recordFactory, dstIndexName);
-//        
+//
 //        dstIdx = new TupleIndexRecord(dstIndexName.length(),
 //                                      TupleMap.create(srcIndexName, dstIndexName),
 //                                      dstIndexName, recordFactory,
 //                                      index);
-        
+
         ProgressMonitor monitor = ProgressMonitorOutput.create(output, label, IndexTickPoint, IndexSuperTick);
-        LoaderOps.copyIndex(srcIdx.all(), dstIndexes, monitor);  
+        LoaderOps.copyIndex(srcIdx.all(), dstIndexes, monitor);
     }
 
     private TupleIndex getIndex(String indexName, DatasetGraphTDB dsgtdb) {
@@ -154,5 +154,5 @@ public class idxcp extends CmdTDB {
                 return idx;
         }
         return null;
-    }    
+    }
 }

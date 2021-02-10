@@ -18,9 +18,8 @@
 
 package uuid.jena_original;
 
-import java.util.*;
-
-import java.security.*;
+import java.security.SecureRandom;
+import java.util.Random;
 
 /**
  * Version 4 random number based UUIDs

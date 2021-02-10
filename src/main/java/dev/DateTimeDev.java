@@ -18,12 +18,17 @@
 
 package dev;
 
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.jena.atlas.lib.DateTimeUtils;
@@ -51,7 +56,7 @@ public class DateTimeDev {
 //        return df.format(new Date()) ;
 //    }
 
-    public static void main(String...a) {
+    public static void main(String...a) throws DatatypeConfigurationException {
 
         System.out.println("todayAsString: "+todayAsString());
         System.out.println("todayAsXSDDateString: "+todayAsXSDDateString());
@@ -67,7 +72,18 @@ public class DateTimeDev {
         gCal.toInstant();
 
         System.out.println();
+        // ****
         ZonedDateTime zdt = ZonedDateTime.now(ZoneOffset.UTC);
+        GregorianCalendar gregorianCalendar1 = GregorianCalendar.from(zdt);
+        // ****
+
+        LocalDateTime ldt = LocalDateTime.now();
+        ZonedDateTime zdt2 =  ZonedDateTime.from(ldt);
+        GregorianCalendar gregorianCalendar2 = GregorianCalendar.from(ldt.atZone(ZoneOffset.UTC));
+
+
+        XMLGregorianCalendar xmlGregorianCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar1);
+
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSxxx");
         String x = fmt.format(zdt);
         System.out.println(x);

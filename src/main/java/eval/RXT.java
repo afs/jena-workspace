@@ -33,12 +33,12 @@ import org.apache.jena.sparql.core.VarAlloc;
 import org.apache.jena.sparql.util.Context;
 
 /**
- * Transform library for RDF*.
+ * Transform library for RDF-star.
  * <p>
  * There are two entry points.
  * <p>
  * Function {@link #rdfStarTriple} for matching a single triple pattern in a basic
- * graph pattern that may involve RDF* terms.
+ * graph pattern that may involve RDF-star terms.
  * <p>
  * Function {@link #matchTripleStar} for matches a triple term and assigning the
  * triple matched to a variable. It is used within {@link #rdfStarTriple} for nested
@@ -52,7 +52,7 @@ import org.apache.jena.sparql.util.Context;
 public class RXT {
 
     /**
-     * Match a single triple pattern that may involve RDF* terms.
+     * Match a single triple pattern that may involve RDF-star terms.
      * This is the top level function for matching triples.
      *
      * The function {@link #matchTripleStar} matches a triple term and assigns the triple matched to a variable.
@@ -73,7 +73,7 @@ public class RXT {
 //        // Should all work without this trap for plain RDF.
 //        // Better to call tripleHasNodeTriple first to avoid the object churn of emitting an OpTriple.
 //        if ( ! tripleHasNodeTriple(triple) ) {
-//            // No RDF* : direct to data.
+//            // No RDF-star : direct to data.
 //            matchData(acc, triple);
 //        }
         rdfStarTripleSub(acc, triple, cxt);

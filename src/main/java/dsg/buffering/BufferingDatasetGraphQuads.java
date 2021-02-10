@@ -23,11 +23,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import dsg.buffering.old.DatasetGraphQuads2;
 import org.apache.jena.atlas.iterator.Iter;
+import org.apache.jena.atlas.lib.NotImplemented;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.query.TxnType;
+import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.GraphView;
 import org.apache.jena.sparql.core.Quad;
@@ -141,6 +144,12 @@ public class BufferingDatasetGraphQuads extends DatasetGraphQuads2 implements Bu
 
     public Collection<Quad> deletedQuads() {
         return deletedQuads;
+    }
+
+    @Override
+    public PrefixMap prefixes() {
+        throw new NotImplemented();
+        //return null;
     }
 
     @Override

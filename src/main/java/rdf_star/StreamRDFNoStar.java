@@ -25,7 +25,7 @@ import org.apache.jena.riot.system.StreamRDFBase;
 import org.apache.jena.sparql.core.Quad;
 
 /**
- * Generate a parse exception on seeing a RDF* triple term.
+ * Generate a parse exception on seeing a RDF-star triple term.
  */
 public class StreamRDFNoStar extends StreamRDFBase {
 
@@ -54,7 +54,7 @@ public class StreamRDFNoStar extends StreamRDFBase {
 
     private void check(Node term) {
         if ( term.isNodeTriple() ) { //|| term.isNodeGraph() ) {}
-            throw new RiotException("RDF* Triple term: "+term);
+            throw new RiotException("RDF-star Triple term: "+term);
         }
     }
 }

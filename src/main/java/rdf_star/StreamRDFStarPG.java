@@ -27,7 +27,7 @@ import org.apache.jena.riot.system.StreamRDFBase;
 import org.apache.jena.sparql.core.Quad;
 
 /**
- * Generate the target triple for each RDF* triple term.
+ * Generate the target triple for each RDF-star triple term.
  */
 public class StreamRDFStarPG extends StreamRDFBase {
 

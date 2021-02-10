@@ -18,12 +18,17 @@
 
 package assembler1.assemblers;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
+import assembler1.Assembler;
+import assembler1.JA;
+import assembler1.Mode;
 import assembler1.exceptions.ReasonerClashException;
-import assembler1.* ;
-import org.apache.jena.ontology.* ;
-import org.apache.jena.rdf.model.* ;
+import org.apache.jena.ontology.OntDocumentManager;
+import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.rdf.model.ModelGetter;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.reasoner.ReasonerFactory ;
 import org.apache.jena.shared.NotFoundException ;
 

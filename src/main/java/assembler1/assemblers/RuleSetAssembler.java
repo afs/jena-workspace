@@ -18,10 +18,15 @@
 
 package assembler1.assemblers;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import assembler1.* ;
-import org.apache.jena.rdf.model.* ;
+import assembler1.Assembler;
+import assembler1.JA;
+import assembler1.Mode;
+import assembler1.RuleSet;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.reasoner.rulesys.Rule ;
 
 public class RuleSetAssembler extends AssemblerBase implements Assembler

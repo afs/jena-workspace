@@ -22,6 +22,8 @@ import java.util.AbstractList ;
 import java.util.List ;
 import java.util.RandomAccess ;
 
+import org.apache.jena.atlas.lib.tuple.Tuple;
+
 /** Wrap a {@link Tuple} as an immutable Java collection {@link List} */
 /*package*/ class MTupleList<X> extends AbstractList<X> implements RandomAccess {
 

@@ -20,8 +20,13 @@ package assembler1.assemblers;
 
 import java.util.List;
 
-import assembler1.exceptions.*;
-import assembler1.* ;
+import assembler1.Assembler;
+import assembler1.AssemblerHelp;
+import assembler1.Mode;
+import assembler1.exceptions.CannotConstructException;
+import assembler1.exceptions.CannotLoadClassException;
+import assembler1.exceptions.NotUniqueException;
+import assembler1.exceptions.PropertyRequiredException;
 import org.apache.jena.rdf.model.* ;
 import org.apache.jena.shared.JenaException ;
 import org.apache.jena.sys.JenaSystem ;

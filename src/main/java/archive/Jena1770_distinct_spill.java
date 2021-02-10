@@ -28,13 +28,13 @@ import org.apache.jena.atlas.data.ThresholdPolicyCount;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.SortCondition;
-import org.apache.jena.riot.system.SerializationFactoryFinder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingComparator;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.engine.binding.BindingMap;
 import org.apache.jena.sparql.resultset.ResultSetCompare;
+import org.apache.jena.sparql.system.SerializationFactoryFinder;
 import org.apache.jena.sparql.util.NodeUtils;
 import org.junit.Test;
 

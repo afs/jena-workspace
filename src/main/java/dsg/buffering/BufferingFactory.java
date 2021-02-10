@@ -19,13 +19,13 @@
 package dsg.buffering;
 
 import org.apache.jena.dboe.storage.StoragePrefixes;
-import org.apache.jena.dboe.storage.prefixes.PrefixMapI;
-import org.apache.jena.dboe.storage.prefixes.PrefixesFactory;
+import org.apache.jena.dboe.storage.prefixes.PrefixesDboeFactory;
 import org.apache.jena.dboe.storage.prefixes.StoragePrefixMap;
 import org.apache.jena.dboe.storage.prefixes.StoragePrefixesView;
 import org.apache.jena.graph.Node;
+import org.apache.jena.riot.system.PrefixMap;
+import org.apache.jena.riot.system.Prefixes;
 import org.apache.jena.shared.PrefixMapping;
-import org.apache.jena.sparql.core.Quad;
 
 public class BufferingFactory {
 
@@ -33,11 +33,12 @@ public class BufferingFactory {
         // Too many layers!
         // Dataset storage : storagePrefixes
 
-        StoragePrefixMap spv = ( graphNode == null || Quad.isDefaultGraph(graphNode) )
-                ? StoragePrefixesView.viewDefaultGraph(storagePrefixes)
-                : StoragePrefixesView.viewGraph(storagePrefixes, graphNode);
-        PrefixMapI pm = PrefixesFactory.newPrefixMap(spv);
-        PrefixMapping pmap = PrefixesFactory.newPrefixMappingOverPrefixMapI(pm);
-        return pmap;
+//        StoragePrefixMap spv = ( graphNode == null || Quad.isDefaultGraph(graphNode) )
+//                ? StoragePrefixesView.viewDefaultGraph(storagePrefixes)
+//                : StoragePrefixesView.viewGraph(storagePrefixes, graphNode);
+
+        StoragePrefixMap spv =  StoragePrefixesView.viewDataset(storagePrefixes);
+        PrefixMap pmap = PrefixesDboeFactory.newPrefixMap(spv);
+        return Prefixes.adapt(pmap);
     }
 }

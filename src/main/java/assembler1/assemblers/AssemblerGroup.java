@@ -23,11 +23,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import assembler1.Assembler;
+import assembler1.AssemblerHelp;
+import assembler1.JA;
+import assembler1.Mode;
 import assembler1.exceptions.AmbiguousSpecificTypeException;
 import assembler1.exceptions.AssemblerException;
 import assembler1.exceptions.NoImplementationException;
 import assembler1.exceptions.NoSpecificTypeException;
-import assembler1.*;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;

@@ -14,10 +14,13 @@
   <description>AFS workspace</description>
 
   <properties>
-    <ver.jena>3.17.0-SNAPSHOT</ver.jena>
+    <ver.jena>4.0.0-SNAPSHOT</ver.jena>
     <ver.fuseki>${ver.jena}</ver.fuseki>
-    <ver.jetty>9.4.26.v20200117</ver.jetty>
-    <ver.log4j2>2.13.1</ver.log4j2>
+    <ver.jetty>9.4.26.v20200117</ver.jetty>  
+
+    <ver.slf4j>1.7.30</ver.slf4j>
+    <ver.log4j2>2.13.3</ver.log4j2>
+
   </properties>
 
   <dependencies>
@@ -29,36 +32,11 @@
     </dependency>
 
     <dependency>
-      <groupId>javax.websocket</groupId>
-      <artifactId>javax.websocket-api</artifactId>
-      <version>1.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.websocket</groupId>
-      <artifactId>javax.websocket-client-api</artifactId>
-      <version>1.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>websocket-api</artifactId>
-      <version>${ver.jetty}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>websocket-server</artifactId>
-      <version>${ver.jetty}</version>
-    </dependency>
-
-    <!--
-    <dependency>
       <groupId>org.seaborne</groupId>
-      <artifactId>xsd4ld</artifactId>
+      <artifactId>iri4ld</artifactId>
       <version>0.0.0-SNAPSHOT</version>
     </dependency>
-    -->
+
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>apache-jena-libs</artifactId>
@@ -93,7 +71,16 @@
       <artifactId>jena-core</artifactId>
       <version>${ver.jena}</version>
       <classifier>tests</classifier> 
+      <scope>compile</scope>
     </dependency>
+
+    <!--
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-sdb</artifactId>
+      <version>${ver.jena}</version>
+    </dependency>
+    -->
 
     <dependency>
       <groupId>org.apache.jena</groupId>
@@ -164,6 +151,12 @@
     
     <!-- Require a logging implementation -->
     
+    <dependency>
+       <groupId>org.slf4j</groupId>
+       <artifactId>jul-to-slf4j</artifactId>
+       <version>${ver.slf4j}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>

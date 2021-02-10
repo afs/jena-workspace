@@ -18,8 +18,12 @@
 
 package assembler1.assemblers;
 
-import assembler1.* ;
-import org.apache.jena.rdf.model.* ;
+import assembler1.Assembler;
+import assembler1.JA;
+import assembler1.Mode;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 
 public class DefaultModelAssembler extends ModelAssembler implements Assembler
     {

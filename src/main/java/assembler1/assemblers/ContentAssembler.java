@@ -19,14 +19,24 @@
 package assembler1.assemblers;
 
 import java.io.StringReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import assembler1.Assembler;
+import assembler1.Content;
+import assembler1.JA;
+import assembler1.Mode;
 import assembler1.exceptions.UnknownEncodingException;
-import assembler1.* ;
 import org.apache.jena.graph.Node ;
 import org.apache.jena.rdf.model.* ;
-import org.apache.jena.util.* ;
-import org.apache.jena.vocabulary.* ;
+import org.apache.jena.util.FileManager;
+import org.apache.jena.util.ResourceUtils;
+import org.apache.jena.vocabulary.DC_11;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 
 public class ContentAssembler extends AssemblerBase implements Assembler
     {

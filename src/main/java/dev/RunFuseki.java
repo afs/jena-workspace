@@ -20,19 +20,18 @@ package dev;
 
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.StrUtils;
+import org.apache.jena.atlas.web.AuthScheme;
 import org.apache.jena.fuseki.ctl.ActionDumpRequest;
 import org.apache.jena.fuseki.ctl.ActionMetrics;
 import org.apache.jena.fuseki.main.FusekiServer;
+import org.apache.jena.fuseki.main.cmds.FusekiMainCmd;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryGeneral;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.fuseki.validation.DataValidator;
 import org.apache.jena.fuseki.validation.IRIValidator;
 import org.apache.jena.fuseki.validation.QueryValidator;
 import org.apache.jena.fuseki.validation.UpdateValidator;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryFactory;
-import org.apache.jena.query.ResultSetFormatter;
+import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
@@ -42,36 +41,59 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
-import org.apache.jena.tdb2.DatabaseMgr;
-import org.apache.jena.tdb2.params.StoreParams;
-import org.apache.jena.tdb2.sys.TDBInternal;
+import org.apache.jena.sparql.sse.SSE;
+import org.apache.jena.sparql.util.QueryExecUtils;
 
 public class RunFuseki
 {
     public static void main(String ... a) throws Exception {
         FusekiLogging.setLogging();
-        mainServer();
-        System.exit(0);
+        try {
+            mainExternal();
+//            mainServer();
+//            runClient();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            System.exit(0);
+        }
+    }
+
+    private static void mainExternal() {
+        FusekiMainCmd.main("-v", "--mem", "/ds");
+    }
+
+    private static void runClient() {
+        DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
+        String queryString = "SELECT * { SERVICE <http://localhost:3030/ds> { GRAPH ?g { ?s ?p ?o }} }";
+        Query query = QueryFactory.create(queryString);
+
+
+        try ( QueryExecution qExec = QueryExecutionFactory.create(query, dsg) ) {
+            QueryExecUtils.executeQuery(qExec);
+        }
     }
 
     public static void mainServer(String ... a) {
         //org.apache.jena.fuseki.ctl.ActionMetrics
 
-        DatasetGraph dsg = DatabaseMgr.connectDatasetGraph("DB2");
-        StoreParams params = TDBInternal.getDatasetGraphTDB(dsg).getStoreParams();
+        //FusekiMainCmd.main("--passwd=/home/afs/tmp/passwd", "--auth=basic", "--mem", "/ds");
 
-        System.out.println("Node2NodeId = "+params.getNode2NodeIdCacheSize());
-        System.out.println("NodeId2Node = "+params.getNodeId2NodeCacheSize());
-        System.out.println("NodeMiss    = "+params.getNodeMissCacheSize());
-        System.exit(0);
+
+        DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
+        dsg.add(SSE.parseQuad("(:g :s :p :o)"));
+
         FusekiServer server = FusekiServer.create()
+            .passwordFile("/home/afs/tmp/passwd")
+            .auth(AuthScheme.BASIC)
+
 //            .enableMetrics(true)
 //            .parseConfigFile("/home/afs/ASF/Examples/config-1-mem.ttl")
 //            .parseConfigFile("/home/afs/ASF/Examples/config-2-mem-old.ttl")
 
             //** Authorization is the "and" of named services.
 
-            .add("/ds", DatasetGraphFactory.createTxnMem())
+            .add("/ds", dsg)
 //            //.addOperation("/ds", Operation.Shacl)
 //            .addEndpoint("/ds", "shacl", Operation.Shacl)
 
@@ -79,8 +101,12 @@ public class RunFuseki
             //.verbose(true)
             //.staticFileBase("Files")
             .build();
-        try { server.start().join(); }
-        finally { server.stop(); }
+        server.start();
+
+
+
+//        try { server.start().join(); }
+//        finally { server.stop(); }
     }
 
     public static void mainServerRunExit(String ... a) {

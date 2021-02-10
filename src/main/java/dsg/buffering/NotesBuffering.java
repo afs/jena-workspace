@@ -22,21 +22,40 @@ import java.util.Iterator;
 
 import org.apache.jena.dboe.storage.StoragePrefixes;
 import org.apache.jena.dboe.storage.StorageRDF;
-import org.apache.jena.dboe.storage.prefixes.PrefixEntry;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.riot.system.PrefixEntry;
 import org.apache.jena.sparql.core.Quad;
 
 public class NotesBuffering {
 
     // BufferingDatasetGraph vs BufferingDatasetGraphQuads. Is it worth it? just Quads version?
+    //  ==> Do properly.
 
-    // **** Plan:
+    // **** Plan
 
-    // BufferingDatasetGraph
-    // BufferingGraph
+    // 1 :: Add prefixes to DatasetGraph
+    //   How to make transactionally connected?:
+    //      Update GraphView
+    // See "prefixes" package
+
+    // ToDo BufferingDatasetPrefixes
+
+    // 2 :: General.
+    //   BufferingDatasetGraph
+    //   BufferingDatasetPrefixStorage
+    //     And when graph handed out? GraphView - comes for free.
+
+
+    // ** Maybe: DBOE
+    // BufferingStorageRDF
     // BufferingStoragePrefixMap
-    // BufferingPrefixes
+    //   Port TIM to DBOE?
+
+
+    // Graph:
+    // BufferingGraph
+    // BufferingPrefixMapping
 
 
     // ---
@@ -55,21 +74,14 @@ public class NotesBuffering {
      */
 
     // Yes - having the default graph kept as triples is useful.
-
     // XXX GraphView to take a PrefixMapping object.
-
 
     // G S P O
     // Algorithmically determine index.
     // Ask each index to weight a choice, choose best.
-
-
     // BufferingDatasetGraph/_Q for now (pure quads) tests test working.
 
-    // StorageRDF?
-    // StoragePrefixes
-
-    static class BufferingStorage implements StorageRDF {
+    static class BufferingStorageRDF implements StorageRDF {
 
         @Override
         public void add(Triple triple) {}
@@ -117,7 +129,7 @@ public class NotesBuffering {
         }
     }
 
-    static class BufferingPrefixes implements StoragePrefixes {
+    static class BufferingStoragePrefixes implements StoragePrefixes {
 
         @Override
         public String get(Node graphNode, String prefix) {

@@ -18,7 +18,10 @@
 
 package dsg.indexing;
 
-import static dsg.indexing.ChooseIndex.IndexOrder.*;
+import static dsg.indexing.ChooseIndex.IndexOrder.G;
+import static dsg.indexing.ChooseIndex.IndexOrder.O;
+import static dsg.indexing.ChooseIndex.IndexOrder.P;
+import static dsg.indexing.ChooseIndex.IndexOrder.S;
 
 import java.util.EnumSet;
 

@@ -21,7 +21,9 @@ package assembler1;
 import java.util.*;
 
 import org.apache.jena.rdf.model.* ;
-import org.apache.jena.vocabulary.* ;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 
 /**
      The ModelExpansion code expands a model <code>M</code> against a 

@@ -18,9 +18,10 @@
 
 package assembler1;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import assembler1.RuleSet;
 import org.apache.jena.reasoner.rulesys.Rule ;
 
 /**

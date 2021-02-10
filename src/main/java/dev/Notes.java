@@ -20,13 +20,4 @@ package dev;
 
 public class Notes
 {
-    // JENA-1924: ucschar
-    // two stage - fix now, ErrorHandler later.
-
-    // [1] log4j2.properties changes
-    // [1.1] filter.threshold.level = ALL
-    // [1.2] %c to -15.
-    // [] Desktop/LOGGING
-
-
 }

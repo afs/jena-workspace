@@ -37,8 +37,11 @@ import org.apache.jena.riot.RIOT;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.out.NodeFmtLib;
 import org.apache.jena.riot.system.PrefixMap;
-import org.apache.jena.riot.system.PrefixMapFactory;
-import org.apache.jena.riot.tokens.*;
+import org.apache.jena.riot.system.Prefixes;
+import org.apache.jena.riot.tokens.Token;
+import org.apache.jena.riot.tokens.TokenType;
+import org.apache.jena.riot.tokens.Tokenizer;
+import org.apache.jena.riot.tokens.TokenizerText;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transformer;
@@ -198,7 +201,7 @@ public class DevNewExecutor {
     /** Parse a Node in TTL syntax. */
     public static Node ttlNode(String string) {
         Tokenizer tok = TokenizerText.fromString(string);
-        PrefixMap pmap = PrefixMapFactory.create(SSE.getPrefixMapRead());
+        PrefixMap pmap = Prefixes.adapt(SSE.getPrefixMapRead());
         return ttlNode(tok, pmap);
     }
 

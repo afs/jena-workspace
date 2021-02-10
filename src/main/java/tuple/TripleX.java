@@ -20,17 +20,19 @@ package tuple;
 
 import java.util.Iterator ;
 import java.util.Objects ;
+import java.util.function.Function;
 
 import org.apache.jena.atlas.lib.tuple.Tuple ;
+import org.apache.jena.atlas.lib.tuple.TupleFactory;
 import org.apache.jena.graph.Node ;
 
 /** Dummy version of Triple */
-public final class TripleX  implements Tuple<Node> // Only so alternative designs elsewhere can be experimented with 
+public final class TripleX implements Tuple<Node> // Only so alternative designs elsewhere can be experimented with
 {
     private final Node subject;
     private final Node predicate;
     private final Node object;
-    
+
     public TripleX(Node s, Node p, Node o) {
         subject = Objects.requireNonNull(s) ;
         predicate = Objects.requireNonNull(p) ;
@@ -38,7 +40,7 @@ public final class TripleX  implements Tuple<Node> // Only so alternative design
     }
 
     //---- Tuple
-    // This imposes the idea that Triples are S-P-O tuples. 
+    // This imposes the idea that Triples are S-P-O tuples.
     @Override
     public Node get(int i) {
         switch (i) {
@@ -46,7 +48,7 @@ public final class TripleX  implements Tuple<Node> // Only so alternative design
             case 1: return getPredicate() ;
             case 2: return getObject() ;
             default:
-                throw new IndexOutOfBoundsException("index = "+i) ; 
+                throw new IndexOutOfBoundsException("index = "+i) ;
         }
     }
 
@@ -97,7 +99,7 @@ public final class TripleX  implements Tuple<Node> // Only so alternative design
             return false;
         return true;
     }
-    
+
     @Override public String toString() {
         return "[ "+subject+", "+predicate+", "+object+" ]" ;
     }
@@ -109,4 +111,11 @@ public final class TripleX  implements Tuple<Node> // Only so alternative design
 
     @Override
     public void copyInto(Node[] array, int start, int length) {}
+
+    @Override
+    public <Y> Tuple<Y> map(Function<Node, Y> function) {
+        return TupleFactory.create3(function.apply(subject),
+                                    function.apply(predicate),
+                                    function.apply(object));
+    }
 }

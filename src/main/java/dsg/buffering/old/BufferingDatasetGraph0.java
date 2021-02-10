@@ -28,6 +28,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.query.TxnType;
+import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphBase;
 import org.apache.jena.sparql.core.Quad;
@@ -146,6 +147,11 @@ public class BufferingDatasetGraph0 extends DatasetGraphBase implements Bufferin
 
     @Override
     public void removeGraph(Node graphName) {}
+
+    @Override
+    public PrefixMap prefixes() {
+        return null;
+    }
 
 //    containsGraph(Node)
 

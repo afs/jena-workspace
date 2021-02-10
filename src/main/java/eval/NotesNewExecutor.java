@@ -21,7 +21,7 @@ package eval;
 public class NotesNewExecutor {
 
     // https://github.com/RDFstar/RDFstarTools
-    // Revisit RDF* docs
+    // Revisit RDF-star docs
 
     // https://rdf4j.org/documentation/programming/rdfstar/
 
@@ -99,7 +99,7 @@ public class NotesNewExecutor {
 
     // SHOULD
     // PG mode - StreamRDF.
-    // Look [RDF*] (only in RDFX)
+    // Look [RDF-star] (only in RDFX)
     // PG mode. All deletes cause looking for the terms in S and O position.
     // RDFX and quads.
 

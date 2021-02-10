@@ -40,6 +40,6 @@ public class NotesQueryExecution {
 
     // ----
 
-    // OpFind for RDF*
+    // OpFind for RDF-star
 }
 

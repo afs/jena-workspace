@@ -23,13 +23,13 @@ import java.util.ArrayList ;
 import java.util.List ;
 import java.util.stream.IntStream ;
 
-import jena.cmd.ArgDecl ;
-import jena.cmd.CmdException ;
-import jena.cmd.CmdGeneral ;
 import org.apache.jena.atlas.io.IO ;
 import org.apache.jena.atlas.lib.* ;
 import org.apache.jena.atlas.lib.cache.CacheInfo ;
 import org.apache.jena.atlas.logging.LogCtl ;
+import org.apache.jena.cmd.ArgDecl;
+import org.apache.jena.cmd.CmdException;
+import org.apache.jena.cmd.CmdGeneral;
 import org.apache.jena.riot.Lang ;
 import org.apache.jena.riot.RDFLanguages ;
 import org.apache.jena.riot.RDFParser ;

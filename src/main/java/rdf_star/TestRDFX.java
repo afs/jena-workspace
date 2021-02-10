@@ -51,7 +51,7 @@ public class TestRDFX {
     private static final Node rdfObject = RDF.Nodes.object;
 
     @Test public void rdfx_basic() {
-        // No RDF* triple terms - no change.
+        // No RDF-star triple terms - no change.
         Graph g = data("(graph (:s :p :o))");
         Graph g1 = RDFX.encodeRDFStar(g);
         assertTrue(g.isIsomorphicWith(g1));

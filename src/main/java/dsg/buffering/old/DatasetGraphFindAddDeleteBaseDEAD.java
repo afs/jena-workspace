@@ -24,6 +24,7 @@ import dsg.buffering.AbstractDatasetGraphAddDelete;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.query.TxnType;
+import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Transactional;
@@ -79,4 +80,8 @@ public class DatasetGraphFindAddDeleteBaseDEAD extends AbstractDatasetGraphAddDe
     @Override public boolean supportsTransactions()     { return get().supportsTransactions(); }
     @Override public boolean supportsTransactionAbort() { return get().supportsTransactionAbort(); }
 
+    @Override
+    public PrefixMap prefixes() {
+        return null;
+    }
 }

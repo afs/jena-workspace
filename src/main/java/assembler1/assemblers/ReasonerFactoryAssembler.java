@@ -18,14 +18,28 @@
 
 package assembler1.assemblers;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import assembler1.exceptions.*;
-import assembler1.* ;
-import org.apache.jena.graph.* ;
-import org.apache.jena.rdf.model.* ;
-import org.apache.jena.reasoner.* ;
-import org.apache.jena.reasoner.rulesys.* ;
+import assembler1.Assembler;
+import assembler1.JA;
+import assembler1.Mode;
+import assembler1.exceptions.AssemblerException;
+import assembler1.exceptions.CannotHaveRulesException;
+import assembler1.exceptions.NotExpectedTypeException;
+import assembler1.exceptions.UnknownReasonerException;
+import org.apache.jena.graph.Factory;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.GraphUtil;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.reasoner.Reasoner;
+import org.apache.jena.reasoner.ReasonerFactory;
+import org.apache.jena.reasoner.ReasonerRegistry;
+import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
+import org.apache.jena.reasoner.rulesys.GenericRuleReasonerFactory;
+import org.apache.jena.reasoner.rulesys.Rule;
 
 /**
     The ReasonerFactoryAssembler constructs a ReasonerFactory from the

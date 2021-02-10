@@ -27,7 +27,6 @@ import java.util.Set ;
 
 import assembler1.assemblers.AssemblerGroup;
 import assembler1.exceptions.AmbiguousSpecificTypeException;
-
 import org.apache.jena.atlas.logging.Log ;
 import org.apache.jena.datatypes.xsd.XSDDatatype ;
 import org.apache.jena.rdf.model.* ;

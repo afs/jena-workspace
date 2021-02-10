@@ -18,7 +18,8 @@
 
 package assembler1.exceptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.jena.rdf.model.Resource ;
 

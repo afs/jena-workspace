@@ -34,7 +34,7 @@ import org.apache.jena.shared.JenaException;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.vocabulary.RDF;
 
-/** Library for RDF* translation to and from reification form. */
+/** Library for RDF-star translation to and from reification form. */
 public class RDFX {
 
     private static final Node rdfSubject   = RDF.Nodes.subject;
@@ -64,7 +64,7 @@ public class RDFX {
     }
 
     /**
-     * Copy to a {@link StreamRDF}, encoding RDF* Triple terms by replacing them with
+     * Copy to a {@link StreamRDF}, encoding RDF-star Triple terms by replacing them with
      * RDF Reification.
      */
     public static void encodeRDFStar(Graph graph, StreamRDF dest) {
@@ -105,7 +105,7 @@ public class RDFX {
         decodeProcessGraph(graph, map, dest);
     }
 
-    /** Return a {@link StreamRDF} that encodes RDF* triples as reification. */
+    /** Return a {@link StreamRDF} that encodes RDF-star triples as reification. */
     private static StreamRDF encodeRDFStar(StreamRDF dest) {
         return new ConvertToReified(dest);
     }
@@ -140,7 +140,7 @@ public class RDFX {
         }
 
     /**
-     * Encode RDF* Triple terms by replacing them with RDF Reification.
+     * Encode RDF-star Triple terms by replacing them with RDF Reification.
      * <p>
      * Changes the argument graph in-place.
      * @see #decodeRDFStar
@@ -174,12 +174,12 @@ public class RDFX {
 
     // Assuming good encoding as reification, reverse the process on a graph.
     /**
-     * Replace reification encoding of RDF* terms with RDF* triples.
+     * Replace reification encoding of RDF-star terms with RDF-star triples.
      * <p>
-     * This function assuming any reification use in the graph is for RDF* terms.
+     * This function assuming any reification use in the graph is for RDF-star terms.
      */
 
-    // [RDF*] Streamify. Buffering Graph
+    // [RDF-star] Streamify. Buffering Graph
     public static Graph decodeRDFStarInPlace(Graph graph) {
         Graph gx = copyGraph(graph);
 
@@ -195,7 +195,7 @@ public class RDFX {
     // XXX
 //    /**
 //     * Generate reification triples the input triple has an {@link Node_Triple} term
-//     * (i.e. RDF*, triple used as subject or object).
+//     * (i.e. RDF-star, triple used as subject or object).
 //     *
 //     * Return true if this triple was converted.
 //     *
@@ -235,7 +235,7 @@ public class RDFX {
 
     /**
      * Generate reification triples the input triple has an {@link Node_Triple} term
-     * (i.e. RDF*, triple used as subject or object).
+     * (i.e. RDF-star, triple used as subject or object).
      *
      * Return true if this triple was converted.
      *
@@ -288,7 +288,7 @@ public class RDFX {
         return cache.getOrFill(nt, ()->genReif(nt, output));
     }
 
-    /** Build a mapping of reification terms to RDF*triple terms. */
+    /** Build a mapping of reification terms to RDF-startriple terms. */
     private static Map<Node, Node> decodeBuildTerms(Graph graph) {
         Map<Node, Node> map = new HashMap<>();
         StreamRDF builder = new StreamRDFBase() {
@@ -309,7 +309,7 @@ public class RDFX {
         return map;
     }
 
-    /** Given a mapping of reification terms, convert graph to RDF* graph */
+    /** Given a mapping of reification terms, convert graph to RDF-star graph */
     private static void decodeProcessGraph(Graph graph, Map<Node, Node> map, StreamRDF dest) {
         StreamRDF translate = new StreamRDFWrapper(dest) {
             @Override
@@ -420,7 +420,7 @@ public class RDFX {
         deletes.add(oReifTriple);
 
         // What about <<reif1>> :p <<reif2>>
-        // [RDF*] BUG : Does not see <<reif1>> changes
+        // [RDF-star] BUG : Does not see <<reif1>> changes
 
         // Find mentions, accumulate deletions and insertions.
         // BOTH!! Uncommon (??!) so don't worry about using a list for "both"

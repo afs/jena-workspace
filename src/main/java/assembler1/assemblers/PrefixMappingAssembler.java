@@ -18,7 +18,9 @@
 
 package assembler1.assemblers;
 
-import assembler1.* ;
+import assembler1.Assembler;
+import assembler1.JA;
+import assembler1.Mode;
 import org.apache.jena.rdf.model.* ;
 import org.apache.jena.shared.PrefixMapping ;
 

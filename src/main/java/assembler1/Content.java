@@ -18,9 +18,9 @@
 
 package assembler1;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import assembler1.Content;
 import org.apache.jena.rdf.model.Model ;
 
 /**

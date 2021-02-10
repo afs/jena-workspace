@@ -19,6 +19,7 @@
 package tdb2;
 
 import static java.util.Arrays.stream;
+
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
