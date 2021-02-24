@@ -34,7 +34,6 @@ import org.apache.jena.sparql.engine.ExecutionContext ;
 import org.apache.jena.sparql.engine.QueryIterator ;
 import org.apache.jena.sparql.engine.binding.Binding ;
 import org.apache.jena.sparql.engine.binding.BindingFactory ;
-import org.apache.jena.sparql.engine.binding.BindingMap ;
 import org.apache.jena.sparql.engine.iterator.QueryIter ;
 import org.apache.jena.sparql.engine.iterator.QueryIterExtendByVar ;
 import org.apache.jena.sparql.pfunction.PFuncSimple ;
@@ -58,11 +57,11 @@ public class PFbyTable extends PFuncSimple {
     static Map<Node, Table> tables = new ConcurrentHashMap<>() ;
     static Table getTable(Node node) { return tables.get(node) ; }
     static void addTable(Node node, Table table) { tables.put(node, table) ; }
-    
+
     // Dev hack
-    
+
     public PFbyTable() {}
-    
+
     @Override
     public QueryIterator execEvaluated(Binding binding, Node subject, Node predicate, Node object, ExecutionContext execCxt) {
         Table table = getTable(predicate) ;
@@ -70,7 +69,7 @@ public class PFbyTable extends PFuncSimple {
             Log.warn(this,  "No table for "+SSE.str(predicate));
             return IterLib.noResults(execCxt) ;
         }
-        
+
         if ( subject.isVariable() ) {
             if ( object.isVariable() )
                 return execVarVar(binding, table, subject, object, execCxt) ;
@@ -103,7 +102,7 @@ public class PFbyTable extends PFuncSimple {
         Collection<Node> x = table.subj2obj.get(subject) ;
         return x.contains(object) ? IterLib.result(binding, execCxt) : IterLib.noResults(execCxt) ;
     }
-    
+
     static class QueryIterExtendByVar2 extends QueryIter
     {
         // Use QueryIterProcessBinding?
@@ -111,7 +110,7 @@ public class PFbyTable extends PFuncSimple {
         private Var var1 ;
         private Var var2 ;
         private Iterator<Entry<Node,Node>> entries ;
-        
+
         public QueryIterExtendByVar2(Binding binding, Var var1, Var var2, Iterator<Entry<Node,Node>> entries, ExecutionContext execCxt) {
             super(execCxt);
             if ( true ) { // Assume not too costly.
@@ -134,10 +133,7 @@ public class PFbyTable extends PFuncSimple {
         @Override
         protected Binding moveToNextBinding() {
             Entry<Node, Node> e = entries.next();
-            BindingMap b = BindingFactory.create(binding) ;
-            b.add(var1, e.getKey()) ; 
-            b.add(var2, e.getValue()) ;
-            return b;
+            return BindingFactory.binding(var1, e.getKey(), var2, e.getValue());
         }
 
         @Override

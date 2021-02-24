@@ -19,6 +19,7 @@
 package sparql;
 
 import org.apache.jena.atlas.io.IndentedWriter ;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.shared.PrefixMapping ;
 import org.apache.jena.sparql.ARQInternalErrorException ;
 import org.apache.jena.sparql.algebra.OpAsQuery ;
@@ -28,13 +29,14 @@ import org.apache.jena.sparql.serializer.FmtExprSPARQL ;
 import org.apache.jena.sparql.serializer.FormatterElement ;
 import org.apache.jena.sparql.serializer.SerializationContext ;
 import org.apache.jena.sparql.syntax.Element ;
+import org.apache.jena.sparql.util.FmtUtils;
 
 /** Output expressions in SPARQL syntax */
 
 public class FmtExprSPARQL_Assoc
 {
-    
-    /** Test whether the expression is an associative operator (that we handle) */  
+
+    /** Test whether the expression is an associative operator (that we handle) */
     private static boolean isAssocOp(Expr expr) {
         if ( ! expr.isFunction() )
             return false ;
@@ -43,7 +45,7 @@ public class FmtExprSPARQL_Assoc
             return true ;
         return false ;
     }
-    
+
 //    private static boolean isBinaryOp(Expr expr) {
 //        if ( expr.isFunction() && expr instanceof ExprFunction2 ) {
 //            ExprFunction2 ex2 = (ExprFunction2)expr ;
@@ -51,8 +53,8 @@ public class FmtExprSPARQL_Assoc
 //        }
 //        return false ;
 //    }
-    
-    /** Get the opName of a associative operator we handle specially else null */  
+
+    /** Get the opName of a associative operator we handle specially else null */
     private static String getAssocOpName(Expr expr) {
         if ( ! isAssocOp(expr) )
             return null ;
@@ -60,20 +62,20 @@ public class FmtExprSPARQL_Assoc
     }
 
     static final int INDENT = 2 ;
-    
-    private FmtExprARQVisitor visitor ; 
+
+    private FmtExprARQVisitor visitor ;
 
     public FmtExprSPARQL_Assoc(IndentedWriter writer, SerializationContext cxt) {
         visitor = new FmtExprARQVisitor(writer, cxt) ;
     }
-    
+
     // Top level writing of an expression.
     public void format(Expr expr)
-    { expr.visit(visitor) ; } 
-    
+    { expr.visit(visitor) ; }
+
     public static void format(IndentedWriter out,Expr expr)
     { format(out, expr, null) ; }
-    
+
     public static void format(IndentedWriter out, Expr expr, SerializationContext cxt) {
         FmtExprSPARQL fmt = new FmtExprSPARQL(out, cxt) ;
         fmt.format(expr) ;
@@ -126,7 +128,7 @@ public class FmtExprSPARQL_Assoc
                 out.print(" )");
                 return ;
             }
-            
+
             if ( expr.getOpName() == null ) {
                 printInFunctionForm(expr) ;
                 return ;
@@ -144,13 +146,13 @@ public class FmtExprSPARQL_Assoc
         // ExprFunction2 vs BinaryOperator.
         // The parser produces left-associatve trees for "1+2+3"
         // i.e. (1+2)+3
-        // This undoes that but looses an explicitly written (1+2)+3 
+        // This undoes that but looses an explicitly written (1+2)+3
         // Short of an explicit "brackets" node in the Expr tree, or a flag on the Expr,
-        // or expressions that are N-ary, 
+        // or expressions that are N-ary,
         // there is not enough the information to distinguish these two cases.
-        
+
         private void printAssoc(ExprFunction2 expr, String opName) {
-            // If same operator, flatten left. 
+            // If same operator, flatten left.
             Expr left = expr.getArg1() ;
             String opNameLeft = getAssocOpName(left) ;
             if ( opNameLeft != null && opNameLeft.equals(opName) )
@@ -163,7 +165,7 @@ public class FmtExprSPARQL_Assoc
             out.print(" ") ;
 
             // Leave right.
-            
+
             Expr right = expr.getArg2() ;
             // Flatten right is not so simple for "-"
             writeMaybeBracketted(right) ;
@@ -173,8 +175,8 @@ public class FmtExprSPARQL_Assoc
         private void writeMaybeBracketted(Expr expr) {
             expr.visit(this) ;
         }
-        
-        
+
+
 //        private void writeMaybeBracketted(Expr expr) {
 //            if ( expr.isConstant() || expr.isVariable() ) {
 //               expr.visit(this) ;
@@ -189,7 +191,7 @@ public class FmtExprSPARQL_Assoc
 //            out.print(" )") ;
 //            // Operator.
 //        }
-        
+
         @Override
         public void visit(ExprFunction3 expr) {
             printInFunctionForm(expr) ;
@@ -237,7 +239,7 @@ public class FmtExprSPARQL_Assoc
             }
             out.print(")") ;
         }
-        
+
         @Override
         public void visit(ExprFunctionOp funcOp) {
             String fn = funcOp.getFunctionPrintName(context) ;
@@ -268,6 +270,12 @@ public class FmtExprSPARQL_Assoc
         @Override
         public void visit(NodeValue nv) {
             out.print(nv.asQuotedString(context)) ;
+        }
+
+        @Override
+        public void visit(ExprTripleTerm tripleTerm) {
+            Triple t = tripleTerm.getTriple();
+            out.print(FmtUtils.stringForNode(tripleTerm.getNode(), context));
         }
 
         @Override

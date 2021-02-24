@@ -29,10 +29,7 @@ import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.SortCondition;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.binding.BindingComparator;
-import org.apache.jena.sparql.engine.binding.BindingFactory;
-import org.apache.jena.sparql.engine.binding.BindingMap;
+import org.apache.jena.sparql.engine.binding.*;
 import org.apache.jena.sparql.resultset.ResultSetCompare;
 import org.apache.jena.sparql.system.SerializationFactoryFinder;
 import org.apache.jena.sparql.util.NodeUtils;
@@ -58,12 +55,10 @@ public class Jena1770_distinct_spill {
     public void testOptionalVariablesOriginal() {
         // Setup a situation where the second binding in a spill file binds more
         // variables than the first binding
-        BindingMap binding1 = BindingFactory.create();
-        binding1.add(Var.alloc("1"), NodeFactory.createLiteral("A"));
+        Binding binding1 = BindingFactory.binding(Var.alloc("1"), NodeFactory.createLiteral("A"));
 
-        BindingMap binding2 = BindingFactory.create();
-        binding2.add(Var.alloc("1"), NodeFactory.createLiteral("A"));
-        binding2.add(Var.alloc("2"), NodeFactory.createLiteral("B"));
+        Binding binding2 = BindingFactory.binding(Var.alloc("1"), NodeFactory.createLiteral("A"),
+                                                  Var.alloc("2"), NodeFactory.createLiteral("B"));
 
         List<Binding> undistinct = Arrays.asList(binding1, binding2, binding1);
         List<Binding> control = Iter.toList(Iter.distinct(undistinct.iterator()));
@@ -92,12 +87,10 @@ public class Jena1770_distinct_spill {
         // Setup a situation where the second binding in a spill file binds more
         // variables than the first binding
 
-        BindingMap binding1 = BindingFactory.create();
-        binding1.add(Var.alloc("1"), NodeFactory.createLiteral("A"));
+        Binding binding1 = BindingFactory.binding(Var.alloc("1"), NodeFactory.createLiteral("A"));
 
-        BindingMap binding2 = BindingFactory.create();
-        binding2.add(Var.alloc("1"), NodeFactory.createLiteral("A"));
-        binding2.add(Var.alloc("2"), NodeFactory.createLiteral("B"));
+        Binding binding2 = BindingFactory.binding(Var.alloc("1"), NodeFactory.createLiteral("A"),
+                                                  Var.alloc("2"), NodeFactory.createLiteral("B"));
 
         List<Binding> undistinct = Arrays.asList(binding1, binding2, binding1);
         List<Binding> control = Iter.toList(Iter.distinct(undistinct.iterator()));

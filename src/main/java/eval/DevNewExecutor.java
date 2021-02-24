@@ -119,7 +119,7 @@ public class DevNewExecutor {
             if ( true ) {
                 DatasetGraph dsg = TDBFactory.createDatasetGraph();
                 //DatasetGraph dsg = DatabaseMgr.createDatasetGraph();
-                String DIR = "/home/afs/ASF/afs-jena/jena-arq/testing/ARQ/RDF-Star/SPARQL-Star";
+                String DIR = "/home/afs/ASF/afs-jena/jena-arq/testing/ARQ/RDF-star/SPARQL-star";
                 Txn.executeWrite(dsg, ()->{
                     RDFDataMgr.read(dsg, DIR+"/data-quads.trig");
                     Query query = QueryFactory.read(DIR+"/sparql-star-union-2.arq");

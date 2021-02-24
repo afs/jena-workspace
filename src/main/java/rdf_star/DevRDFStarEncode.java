@@ -21,10 +21,8 @@ package rdf_star;
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.graph.Graph;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.RIOT;
-import org.apache.jena.sparql.sse.SSE;
+import org.apache.jena.riot.*;
+import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.vocabulary.RDF;
 
@@ -48,13 +46,24 @@ public class DevRDFStarEncode {
             ,"PREFIX :     <http://example/>"
             ,"PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>"
             ,""
-            ,"<<:s :p :o >> :q :z ."
+            ,"<<:s :p :o >> :q1 :z ."
+            ,"<<:s :p :o >> :q2 :z ."
             );
+
+        {
+            Graph g = data(str);
+            Graph g1 = RDFX.encodeRDFStar(g);
+            RDFDataMgr.write(System.out, g, RDFFormat.TURTLE_BLOCKS);
+            System.out.println("----");
+            RDFDataMgr.write(System.out, g1, RDFFormat.TURTLE_BLOCKS);
+
+            System.exit(0);
+        }
 
         Graph g = data(str);
         Graph g1 = RDFX.encodeRDFStar(g);
 
-
+        System.exit(0);
         //Reification missing base triple!
         Graph g2 = data(str);
         RDFX.encodeRDFStarInPlace(g2);
@@ -73,7 +82,9 @@ public class DevRDFStarEncode {
     }
 
     static Graph data(String dataStr) {
-        Graph g = SSE.parseGraph(dataStr);
+        Graph g = GraphFactory.createDefaultGraph();
+        RDFParser.fromString(dataStr).lang(Lang.TTL).parse(g);
+        //Graph g = SSE.parseGraph(dataStr);
         g.getPrefixMapping().setNsPrefix("", "http://example/");
         g.getPrefixMapping().setNsPrefix("rdf", RDF.getURI());
         return g;

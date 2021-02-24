@@ -18,14 +18,17 @@
 
 package dev;
 
+import java.io.OutputStream;
 import java.util.List;
 
 import com.github.jsonldjava.core.JsonLdProcessor;
 import com.github.jsonldjava.core.RDFDataset;
 import com.github.jsonldjava.utils.JsonUtils;
 
+import org.apache.jena.atlas.io.IO;
 import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.ontology.OntDocumentManager;
@@ -37,22 +40,75 @@ import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.reasoner.rulesys.Rule;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RIOT;
+import org.apache.jena.riot.system.*;
 import org.apache.jena.shacl.Shapes;
 import org.apache.jena.shacl.lib.ShLib;
+import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.graph.GraphWrapper;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.sparql.util.QueryExecUtils;
+import org.apache.jena.system.Txn;
+import org.apache.jena.tdb2.DatabaseMgr;
 import org.apache.jena.util.iterator.ExtendedIterator;
 
 public class Report {
     static {
         LogCtl.setLog4j2();
         RIOT.getContext().set(RIOT.symTurtleDirectiveStyle, "sparql");
+    }
+
+    public static void main(String...a) throws Exception {
+
+    }
+
+    public static void mainAdam(String...a) throws Exception {
+
+        OutputStream out = System.out;
+
+        // Stream writer.
+        StreamRDF dest =
+            StreamRDFWriter.getWriterStream(out, RDFFormat.TURTLE_BLOCKS);
+
+        Graph graph1 = RDFDataMgr.loadGraph("/home/afs/tmp/D1.ttl");
+
+
+        // Send prefixes.
+        dest.start();
+        PrefixMap prefixMap = PrefixMapFactory.create(graph1.getPrefixMapping()) ;
+        StreamRDFOps.sendPrefixesToStream(prefixMap, dest);
+
+        StreamRDFOps.sendGraphToStream(graph1, dest, null, null) ;
+        StreamRDFOps.sendGraphToStream(graph1, dest, null, null) ;
+        dest.finish();
+//        // Process models.
+//
+//        for each model: {
+//           // Don't send the prefx map
+//           StreamRDFOps.sendGraphToStream(model.getGraph, stream, null, null) ;
+//          }
+
+        IO.flush(out);
+    }
+
+    private static void parseRule(String str) {
+        System.out.println(str);
+        try {
+            Rule rule = Rule.parseRule(str);
+            System.err.flush();
+            System.out.println(rule);
+        } catch (Rule.ParserException ex) {
+            System.err.println(str);
+            ex.printStackTrace();
+        }
+        System.err.flush();
+        System.out.flush();
     }
 
     /*
@@ -65,14 +121,28 @@ Thread [main] (Suspended (breakpoint at line 108 in RX))
     QueryIterBlockTriplesStar.create(QueryIterator, BasicPattern, ExecutionContext) line: 36
      */
 
-    public static void main(String...a) throws Exception {
-        String pattern = "{ <<:s :p :o>> :q :z }";
-        String qs = "PREFIX : <http://example/> SELECT * "+pattern;
-        Query query = QueryFactory.create(qs);
+    public static void main2(String...a) throws Exception {
+        boolean USE_TDB2 = true;
+        DatasetGraph dsg = DatabaseMgr.createDatasetGraph();
         Graph graph1 = SSE.parseGraph("(prefix ((: <http://example/>)) (graph (<<:s :p :o >> :q :z) ))");
         Graph graph2 = SSE.parseGraph("(prefix ((: <http://example/>)) (graph (<<:s :p :o >> :q :z) ( :s :p :o )))");
-        QueryExecution qExec= QueryExecutionFactory.create(query, DatasetGraphFactory.wrap(graph1));
-        QueryExecUtils.executeQuery(qExec);
+
+        String pattern = "{ <<:s :p :o>> :q :z BIND('A' AS ?A) }";
+        String qs = "PREFIX : <http://example/> SELECT * "+pattern;
+        Query query = QueryFactory.create(qs);
+        Graph graph = graph1;
+
+        if ( USE_TDB2 ) {
+            Txn.executeWrite(dsg, ()->{
+                GraphUtil.addInto(dsg.getDefaultGraph(), graph);
+                QueryExecution qExec = QueryExecutionFactory.create(query, dsg);
+                QueryExecUtils.executeQuery(qExec);
+            });
+
+        } else {
+            QueryExecution qExec = QueryExecutionFactory.create(query, DatasetGraphFactory.wrap(graph));
+            QueryExecUtils.executeQuery(qExec);
+        }
         System.exit(0);
     }
 

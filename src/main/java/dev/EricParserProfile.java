@@ -51,7 +51,6 @@ public class EricParserProfile {
             }
         };
 
-        @SuppressWarnings("deprecation")
         var parser = RDFParserRegistry.getFactory(Lang.TTL).create(Lang.TTL, profile);
         parser.read(new StringReader("PREFIX : <#> :s <p> <o> .\n<s> <p> <o> .\n"), null, null, StreamRDFLib.sinkNull(), RIOT.getContext());
     }

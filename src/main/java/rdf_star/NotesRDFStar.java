@@ -23,29 +23,10 @@ public class NotesRDFStar {
     // https://github.com/RDFstar/RDFstarTools
     // Revisit RDF-star docs
 
-    // RX
-    // SolverRX *2
-
-    // RxFind - do everything FIND, no TDB1, TDB2 specials
-    // Dual mode - term matchign and index using.
-
     // https://rdf4j.org/documentation/programming/rdfstar/
     // ** Test and Migrate RDFX to org.apache.jena.system (in jena-arq) JENA-1903
 
-
-
-
-
-
-    /*
-     * https://arxiv.org/abs/1406.3399
-     * https://blog.liu.se/olafhartig/2019/01/10/position-statement-rdf-star-and-sparql-star/
-     */
-
-    // SHOULD
-    // PG mode - StreamRDF.
-    // Look [RDF-star] (only in RDFX)
-
-    // Node.getTriple()
-    // Node.getGraph()
+    // TDB - <<>> as <<node node node>> or as <<NodeId, NodeId, NodeId>>
+    // For now, "Node,Node,Node" so storing the <<> is self contained.
+    // constants don't need to come from NodeTable!
 }

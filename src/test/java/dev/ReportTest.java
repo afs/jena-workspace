@@ -18,7 +18,6 @@
 
 package dev;
 
-import arq.qtest;
 import org.apache.jena.arq.junit.riot.ParseForTest;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.lang.extra.TurtleJCC;
@@ -34,7 +33,7 @@ public class ReportTest {
 
     public static void mainSPARQL() {
         String FN = "/home/afs/W3C/rdf-star-afs/tests/sparql/syntax/manifest.jsonld";
-        qtest.main(FN);
+        arq.qtest.main("/home/afs/W3C/rdf-star-afs/tests/sparql/syntax/manifest.ttl");
     }
 
     public static void mainLang() {

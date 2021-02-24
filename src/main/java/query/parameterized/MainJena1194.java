@@ -29,8 +29,7 @@ import org.apache.jena.query.ResultSet ;
 import org.apache.jena.sparql.core.ResultBinding ;
 import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.engine.binding.Binding ;
-import org.apache.jena.sparql.engine.binding.BindingFactory ;
-import org.apache.jena.sparql.engine.binding.BindingMap ;
+import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.sse.SSE ;
 import org.apache.jena.sparql.syntax.syntaxtransform.QueryTransformOps ;
 
@@ -77,7 +76,7 @@ the variable $minCount would not be substituted.
             @Override
             public Binding nextBinding() {
                 Binding b = get().nextBinding() ;
-                BindingMap b2 = BindingFactory.create(b) ;
+                BindingBuilder b2 = Binding.builder(b) ;
                 values.forEach((v,n)->{
                     if ( b.contains(v) ) {
                         if ( ! b.get(v).equals(n) )
@@ -86,7 +85,7 @@ the variable $minCount would not be substituted.
                         b2.add(v, n);
                     }
                 }) ;
-                return b2 ;
+                return b2.build() ;
             }
         } ;
         return rs2 ;

@@ -79,7 +79,7 @@ public class RunFusekiSmall
 
         Location location = Location.create("DB");
         FileOps.ensureDir("DB");
-        if ( ! FileOps.exists("DB./tdb.cfg") ) {
+        if ( ! FileOps.exists("DB/tdb.cfg") ) {
 //        FileOps.clearAll("DB");
             StoreParams params = StoreParams.getSmallStoreParams();
             StoreParamsCodec.write(location, params);
