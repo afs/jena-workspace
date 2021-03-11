@@ -16,35 +16,15 @@
  * limitations under the License.
  */
 
-package tuple;
+package dev;
 
-import org.apache.jena.atlas.lib.tuple.Tuple ;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.sparql.graph.GraphFactory;
 
-/** Build tuples */
-public class TupleBuilder<X> {
-    public static <X> TupleBuilder<X>  create() { return new TupleBuilder<>() ; } 
-    
-    public static <X> TupleBuilder<X>  create(int n) { return new TupleBuilder<>(n) ; }
-    
-    X x1 = null ;
-    X x2 = null ;
-    X x3 = null ;
-    X x4 = null ;
-    
-    X[] array = null ;
-    
-    private TupleBuilder() {}
-    @SuppressWarnings("unchecked")
-    private TupleBuilder(int n) {
-        if ( n >= 4 )
-            array = (X[])new Object[n] ;
-    }
-    
-    
-    
-    private Tuple<X> build() {
-        return null ;
+public class R {
+    public static void main(String...a) {
+        Graph graph = GraphFactory.createGraphMem();
+        graph.find();
+        System.out.println("DONE");
     }
 }
-
-

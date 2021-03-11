@@ -21,7 +21,6 @@ package rdf_star;
 import org.apache.jena.atlas.lib.CacheFactory;
 import org.apache.jena.atlas.lib.CacheSet;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Node_Triple;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.system.StreamRDFBase;
 import org.apache.jena.sparql.core.Quad;
@@ -57,10 +56,10 @@ public class StreamRDFStarPG extends StreamRDFBase {
 
     @Override
     public void triple(Triple triple) {
-        Triple ts = Node_Triple.tripleOrNull(triple.getSubject());
-        Triple to = Node_Triple.tripleOrNull(triple.getObject());
-        gen(null, ts);
-        gen(null, to);
+        if ( triple.getSubject().isNodeTriple() )
+            gen(null, triple.getSubject().getTriple());
+        if ( triple.getObject().isNodeTriple() )
+            gen(null, triple.getObject().getTriple());
         super.triple(triple);
     }
 
@@ -86,10 +85,10 @@ public class StreamRDFStarPG extends StreamRDFBase {
 
     @Override
     public void quad(Quad quad) {
-        Triple ts = Node_Triple.tripleOrNull(quad.getSubject());
-        Triple to = Node_Triple.tripleOrNull(quad.getObject());
-        gen(quad.getGraph(), ts);
-        gen(quad.getGraph(), to);
+        if ( quad.getSubject().isNodeTriple() )
+            gen(quad.getGraph(), quad.getSubject().getTriple());
+        if ( quad.getObject().isNodeTriple() )
+            gen(quad.getGraph(), quad.getObject().getTriple());
         super.quad(quad);
     }
 }

@@ -278,12 +278,12 @@ public class RDFX {
     private static Node nodeReif(Node x, Cache<Node_Triple, Node> cache, StreamRDF output) {
         if ( ! x.isNodeTriple() )
             return x;
-        Triple t = Node_Triple.triple(x);
+        Triple t = x.getTriple();
         // Reify any nested triple terms. Reifications sent to stream.
         Triple t2 = encode(t, cache, output);
         // If its a new triple, this node is based on the replacement t2.
         Node_Triple nt = ( t2 == null )
-            ? Node_Triple.cast(x)
+            ? (Node_Triple)x
             : (Node_Triple)NodeFactory.createTripleNode(t2);
         return cache.getOrFill(nt, ()->genReif(nt, output));
     }
@@ -342,7 +342,7 @@ public class RDFX {
                     return x;
                 // Recursively translate
                 if ( x1.isNodeTriple() ) {
-                    Triple triple = Node_Triple.triple(x1);
+                    Triple triple = x1.getTriple();
                     Node s = triple.getSubject();
                     Node p = triple.getPredicate();
                     Node o = triple.getObject();
@@ -387,7 +387,7 @@ public class RDFX {
      * reification triples.
      */
     private static Node genReif(Node_Triple nt, StreamRDF output) {
-        Triple t = nt.get();
+        Triple t = nt.getTriple();
         Node n = reificationSubject(nt);
         output.triple(Triple.create(n, rdfSubject, t.getSubject()));
         output.triple(Triple.create(n, rdfPredicate, t.getPredicate()));
@@ -468,7 +468,7 @@ public class RDFX {
      * a {@link Node_Triple} with the same s/p/o.
      */
     public static Node reificationSubject(Node_Triple nodeTriple) {
-        Triple t = nodeTriple.get();
+        Triple t = nodeTriple.getTriple();
         String x = reifStr(t);
         x = Lib.murmurHashHex(x);
         if ( USE_REIF_URIS )
@@ -491,9 +491,8 @@ public class RDFX {
             // Non-URI character to separate the URI, in case we start using the string without hashing.
             return node.getLiteralLexicalForm()+" "+node.getLiteralDatatypeURI();
         }
-        Triple t = Node_Triple.tripleOrNull(node);
-        if ( t != null )
-            return reifStr(t);
+        if ( node.isNodeTriple() )
+            return reifStr(node.getTriple());
         throw new JenaException("Node type not supported in Node_Triple: "+node);
     }
 

@@ -42,4 +42,3 @@ public class ParserProfileNoStar extends ParserProfileWrapper {
         throw new RiotParseException("RDF-star Triple Term not permitted", line, col);
     }
 }
-

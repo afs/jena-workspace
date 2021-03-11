@@ -58,7 +58,7 @@ public class IterX
                 // Iterator ran out.
                 return CMP_LESS;
             if ( !it.hasNext())
-                // Finsiehd at the same timne.
+                // Finished at the same timne.
                 return CMP_EQUAL;
             // Still more to go
             return CMP_GREATER;

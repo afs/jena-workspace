@@ -21,7 +21,6 @@ package eval;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.lib.StrUtils;
@@ -31,8 +30,9 @@ import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.*;
-import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.query.ARQ;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.riot.RIOT;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.out.NodeFmtLib;
@@ -44,7 +44,6 @@ import org.apache.jena.riot.tokens.Tokenizer;
 import org.apache.jena.riot.tokens.TokenizerText;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
-import org.apache.jena.sparql.algebra.Transformer;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Var;
@@ -55,13 +54,11 @@ import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.engine.iterator.QueryIterRoot;
 import org.apache.jena.sparql.engine.iterator.RX;
 import org.apache.jena.sparql.sse.SSE;
-import org.apache.jena.sparql.util.Context;
-import org.apache.jena.sparql.util.QueryExecUtils;
 import org.apache.jena.system.Txn;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.tdb.solver.BindingNodeId;
+import org.apache.jena.tdb.solver.Solver;
 import org.apache.jena.tdb.solver.SolverLib;
-import org.apache.jena.tdb.solver.SolverRX;
 import org.apache.jena.tdb.store.DatasetGraphTDB;
 import org.apache.jena.tdb.store.nodetupletable.NodeTupleTable;
 import org.apache.jena.tdb.sys.TDBInternal;
@@ -76,20 +73,6 @@ public class DevNewExecutor {
     // OpQuad in OpExecutorTDB1
 
     public static void main(String...a) {
-        {
-            Query query = QueryFactory.create("PREFIX : <http://example/> SELECT * { GRAPH ?g { ?s :p :x1 . ?s :p :x2 . <<<<?s :p1 ?o>> :p2 ?o>> :p3 ?z  . }}");
-            Op op = Algebra.compile(query);
-            System.out.print(op);
-            System.out.println("--");
-            Op op1 = Transformer.transform(new TransformRDFStar(), op);
-            System.out.print(op1);
-            System.out.println("--");
-            Op op2 = Algebra.toQuadForm(op1);
-            System.out.print(op2);
-
-            System.exit(0);
-        }
-
         {
             Query query = QueryFactory.create("SELECT * { GRAPH ?g { ?s ?p ?o . ?s ?p ?o } GRAPH ?g1 { ?s ?p ?o } }");
             Op op = Algebra.compile(query);
@@ -107,28 +90,6 @@ public class DevNewExecutor {
             //System.out.println("--");
 
             System.exit(0);
-        }
-        {
-            Consumer<Op> acc = System.out::print;
-            Triple t = SSE.parseTriple("(<<<<?s :p ?o>> :p ?o>> :q1 ?z)");
-            System.out.println(NodeFmtLib.displayStr(t));
-            System.out.println();
-            RXT.rdfStarTriple(acc, t, new Context());
-            System.exit(0);
-
-            if ( true ) {
-                DatasetGraph dsg = TDBFactory.createDatasetGraph();
-                //DatasetGraph dsg = DatabaseMgr.createDatasetGraph();
-                String DIR = "/home/afs/ASF/afs-jena/jena-arq/testing/ARQ/RDF-star/SPARQL-star";
-                Txn.executeWrite(dsg, ()->{
-                    RDFDataMgr.read(dsg, DIR+"/data-quads.trig");
-                    Query query = QueryFactory.read(DIR+"/sparql-star-union-2.arq");
-                    QueryExecution qExec = QueryExecutionFactory.create(query, dsg);
-                    QueryExecUtils.executeQuery(qExec);
-
-                });
-                System.exit(0);
-            }
         }
         main1();
 
@@ -240,15 +201,15 @@ public class DevNewExecutor {
     public static void tdb1(Triple pattern) {
         DatasetGraph dsg = TDBFactory.createDatasetGraph();
         common(dsg);
-        Tuple<Node> tuplePattern = TupleFactory.create3(pattern.getSubject(), pattern.getPredicate(),pattern.getObject());
+        Tuple<Node> patternTuple = TupleFactory.create3(pattern.getSubject(), pattern.getPredicate(),pattern.getObject());
         Txn.executeRead(dsg, ()->{
             ExecutionContext execCxt = new ExecutionContext(ARQ.getContext().copy(), dsg.getDefaultGraph(), dsg, null);
             DatasetGraphTDB dsgtdb = TDBInternal.getDatasetGraphTDB(dsg);
-            System.out.println("SOLVE "+tuplePattern);
+            System.out.println("SOLVE "+patternTuple);
             NodeTupleTable ntt = dsgtdb.chooseNodeTupleTable(null);
-            Iterator<BindingNodeId> rootIter = Iter.singleton(new BindingNodeId());
+            Iterator<BindingNodeId> rootIter = Iter.singleton(BindingNodeId.root);
             Iterator<BindingNodeId> iter =
-                SolverRX.solveRX(ntt, tuplePattern, false, rootIter, /*filter*/null, execCxt);
+                    Solver.matchQuadPattern(rootIter, null, pattern, ntt, patternTuple, false, /*filter*/null, execCxt);
             Iterator<Binding> iter2 = SolverLib.convertToNodes(iter, ntt.getNodeTable());
             QueryIterator qIter = new QueryIterPlainWrapper(iter2);
             print(System.out, qIter);
@@ -258,15 +219,15 @@ public class DevNewExecutor {
     public static void tdb2(Triple pattern) {
         DatasetGraph dsg = DatabaseMgr.createDatasetGraph();
         common(dsg);
-        Tuple<Node> tuplePattern = TupleFactory.create3(pattern.getSubject(), pattern.getPredicate(),pattern.getObject());
+        Tuple<Node> patternTuple = TupleFactory.create3(pattern.getSubject(), pattern.getPredicate(),pattern.getObject());
         Txn.executeRead(dsg, ()->{
             ExecutionContext execCxt = new ExecutionContext(ARQ.getContext().copy(), dsg.getDefaultGraph(), dsg, null);
             org.apache.jena.tdb2.store.DatasetGraphTDB dsgtdb = org.apache.jena.tdb2.sys.TDBInternal.getDatasetGraphTDB(dsg);
-            System.out.println("SOLVE "+tuplePattern);
+            System.out.println("SOLVE "+patternTuple);
             org.apache.jena.tdb2.store.nodetupletable.NodeTupleTable ntt = dsgtdb.chooseNodeTupleTable(null);
-            Iterator<org.apache.jena.tdb2.solver.BindingNodeId> rootIter = Iter.singleton(new org.apache.jena.tdb2.solver.BindingNodeId());
+            Iterator<org.apache.jena.tdb2.solver.BindingNodeId> rootIter = Iter.singleton(org.apache.jena.tdb2.solver.BindingNodeId.root);
             Iterator<org.apache.jena.tdb2.solver.BindingNodeId> iter =
-                org.apache.jena.tdb2.solver.SolverRX.solveRX(ntt, tuplePattern, false, rootIter, /*filter*/null, execCxt);
+                org.apache.jena.tdb2.solver.Solver.matchQuadPattern(rootIter, null, pattern, ntt, patternTuple, false, /*filter*/null, execCxt);
             Iterator<Binding> iter2 = org.apache.jena.tdb2.solver.SolverLib.convertToNodes(iter, ntt.getNodeTable());
             QueryIterator qIter = new QueryIterPlainWrapper(iter2);
             print(System.out, qIter);

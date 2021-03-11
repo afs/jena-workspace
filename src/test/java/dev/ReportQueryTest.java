@@ -24,7 +24,7 @@ import org.apache.jena.riot.lang.extra.TurtleJCC;
 import org.apache.jena.sys.JenaSystem;
 import riotcmd.rdflangtest;
 
-public class ReportTest {
+public class ReportQueryTest {
 
     public static void main(String...a) {
         JenaSystem.init();
@@ -32,8 +32,8 @@ public class ReportTest {
     }
 
     public static void mainSPARQL() {
-        String FN = "/home/afs/W3C/rdf-star-afs/tests/sparql/syntax/manifest.jsonld";
-        arq.qtest.main("/home/afs/W3C/rdf-star-afs/tests/sparql/syntax/manifest.ttl");
+        String FN = "/home/afs/W3C/rdf-star/tests/sparql/eval/manifest.ttl";
+        arq.qtest.main(FN);
     }
 
     public static void mainLang() {

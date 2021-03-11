@@ -33,11 +33,12 @@ import org.apache.jena.atlas.lib.tuple.Tuple;
  * These are not an extension of {@link Tuple}. {@code Tuple}s have value-equality and can
  * be used in sets and as keys in maps. Mutable tuples can not be used in sets by-value
  * and do not support value-equality. Their {@code .equals} is object identity.
- * 
  */
-public interface MTuple<X> extends Iterable<X> {
-    /** Get the i'th element, for i in the range 0 to len()-1 
-     * @throws IndexOutOfBoundsException for i out of range 
+interface MTuple<X> extends Iterable<X> {
+    // Use Tuplefactory
+
+    /** Get the i'th element, for i in the range 0 to len()-1
+     * @throws IndexOutOfBoundsException for i out of range
      */
     public X get(int i);
 
@@ -50,7 +51,7 @@ public interface MTuple<X> extends Iterable<X> {
     }
 
     /** stream */
-    public default Stream<X> stream() { 
+    public default Stream<X> stream() {
         return StreamSupport.stream(spliterator(), false) ;
     }
 

@@ -273,12 +273,6 @@ public class FmtExprSPARQL_Assoc
         }
 
         @Override
-        public void visit(ExprTripleTerm tripleTerm) {
-            Triple t = tripleTerm.getTriple();
-            out.print(FmtUtils.stringForNode(tripleTerm.getNode(), context));
-        }
-
-        @Override
         public void visit(ExprNone exprNone) {
             out.print("NONE") ;
         }
@@ -294,6 +288,12 @@ public class FmtExprSPARQL_Assoc
                 // Print in variable form or as an aggregator expression
                 out.print(nv.asSparqlExpr()) ;
             }
+        }
+
+        @Override
+        public void visit(ExprTripleTerm tripleTerm) {
+            Triple t = tripleTerm.getTriple();
+            out.print(FmtUtils.stringForNode(tripleTerm.getNode(), context));
         }
 
         @Override

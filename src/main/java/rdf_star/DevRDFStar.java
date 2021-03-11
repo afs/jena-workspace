@@ -18,37 +18,36 @@
 
 package rdf_star;
 
-import java.util.Iterator;
+import java.util.function.Predicate;
 
-import org.apache.jena.atlas.iterator.Iter;
+import org.apache.jena.atlas.lib.NotImplemented;
 import org.apache.jena.atlas.lib.StrUtils;
+import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.GraphUtil;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.graph.impl.GraphPlain;
 import org.apache.jena.query.*;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RIOT;
-import org.apache.jena.riot.out.NodeFmtLib;
-import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.engine.iterator.RX;
-import org.apache.jena.sparql.engine.iterator.RX_SA;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.sparql.util.QueryExecUtils;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.system.Txn;
+import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.tdb2.DatabaseMgr;
+import org.apache.jena.tdb2.TDB2Factory;
 import org.apache.jena.tdb2.solver.BindingNodeId;
-import org.apache.jena.tdb2.solver.SolverLib;
-import org.apache.jena.tdb2.store.nodetable.NodeTable;
-import org.apache.jena.tdb2.sys.TDBInternal;
+import org.apache.jena.tdb2.store.NodeId;
+import org.apache.jena.tdb2.sys.SystemTDB;
 
 public class DevRDFStar {
     static {
@@ -58,73 +57,70 @@ public class DevRDFStar {
     }
 
     public static void main(String...a) {
-
-//        Node n = SSE.parseNode("<< <<:s :p :o>> ?P 123>>");
-//        String str = FmtUtils.stringForNode(n, SSE.getPrefixMapRead());
-//        System.out.println(str);
-//        System.exit(0);
-
-        arq.qexpr.main("TRIPLE(:s, :p, 1+2)");
-        //arq.qexpr.main("<<:s :p 1>>");
-
-        System.out.println();
-        String s = StrUtils.strjoinNL
-                ("PREFIX : <http://example/>"
-                ,"SELECT * { "
-                ,"    BIND(123 as ?X)"
-                ,"    BIND(triple(:s, :p, ?X+1) as ?Y2)"
-                ,"}");
-        arq.qparse.main("--print=op", "--print=query", "--print=opt", s);
-        arq.sparql.main(s);
-
+//      runFile();
+//      runInline();
+//      System.exit(0);
+        //runDataAccess();
+        runInline();
         System.exit(0);
+    }
 
-        // <<>> in expressions
-        //   ExprVistors
-        //     ExprNoOpVarsWorker
-        //     ExprVarsWorker
-        //     ApplyTransformVisitor
+    public static void runInline(String...a) {
 
-        // Expr . equalsBySyntax
-        // Rename.RenameAnyVars - has to go deep.
+        Dataset dataset = TDB2Factory.createDataset();
 
-        // Rewrite a triple();
-        // Prints as:
-        // BIND(fnTriple(:s, :p, ?X) AS ?Y)
+        Predicate<Tuple<NodeId>> filter = tuple -> false;
+        DatasetGraph dsgtdb2 = dataset.asDatasetGraph();
+        dsgtdb2.getContext().set(SystemTDB.symTupleFilter, filter);
 
-        // Second time its a NodeValue
-        //   Exr parsing of SSE.
+        String data = StrUtils.strjoinNL("(dataset"
+                                        ,"  (_ <<:a :b :c>> :p 'abc')"
+                                        ,")");
+        String qs = "SELECT * { <<?a ?b ?c>> ?p 'abc'}";
+        Query query = QueryFactory.create(qs);
 
-        // ==== TDB2
-        // Tidy TDB2_dev
-        // [x] Use only if there is <<?>>
-        // [ ] Code tidy. SolverLib
-        // [ ] ReorderTransform.
-        // ** [ ] Filter and any graph. ==> basic "solve"
-        // [ ] StageMatchTuple -> becomes functions / TupleMatcher.
-        // [ ] SolverRX_SA: Pattern tuple and node+triple
-        // [ ] Process [RDF-star]
+        Txn.executeWrite(dataset, ()->{
+            DatasetGraph dsg = SSE.parseDatasetGraph(data);
+            dataset.asDatasetGraph().addAll(dsg);
+            QueryExecution qExec = QueryExecutionFactory.create(query, dataset);
+            //qExec.getContext().set(TDB2.symUnionDefaultGraph, true);
+            QueryExecUtils.executeQuery(qExec);
+        });
+    }
 
-        // ==== TDB1
-        // Same.
+    public static void runFile() {
+        //Dataset dataset = TDB2Factory.createDataset();
+        Dataset dataset = DatasetFactory.create();
 
-        // ===
-        // Update Turtle parsers
-        // Update N-triples, NQ Quads
-        //   What is LangNTuple.
-        // ===
-        // Update SPARQL parsers for exact grammar.
+//        String DIR = "/home/afs/W3C/rdf-star/tests/sparql/eval/";
+//        String DATA = DIR+"data-4.trig";
+//        String QUERY = DIR+"sparql-star-graphs-1.rq";
 
+        String DIR = "/home/afs/ASF/afs-jena/jena-arq/testing/ARQ/ExprBuiltIns";
+        String DATA = DIR+"/data-builtin-2.ttl";
+        String QUERY = DIR+"/q-lang-3.rq"; // Dataset general only?
+        Query query = QueryFactory.read(QUERY);
+        System.out.println(query);
 
+        Txn.executeWrite(dataset, ()->{
 
-        boolean USE_TDB2_DIRECT = false;
+            Graph plain = GraphPlain.plain();
+            RDFDataMgr.read(plain, DATA);
+            Dataset dataset2 = DatasetFactory.wrap(DatasetGraphFactory.wrap(plain));
+
+            //RDFDataMgr.read(dataset, DATA);
+            //Dataset dataset2 = dataset;
+            //GraphPlain
+            QueryExecution qExec = QueryExecutionFactory.create(query, dataset2);
+            QueryExecUtils.executeQuery(qExec);
+        });
+        arq.sparql.main("--data="+DATA, "--query="+QUERY);
+        System.exit(0);
+    }
+
+    public static void mainEngine(String...a) {
         boolean USE_TDB2_QUERY = true;
-
-        /* ******** */
-        RX.MODE_SA = true;
-        /* ******** */
-
-        DatasetGraph dsg = DatabaseMgr.createDatasetGraph();
+        boolean USE_TDB1_QUERY = true;
 
         // Temp - force term into the node table.
 
@@ -146,20 +142,33 @@ public class DevRDFStar {
 
         //String pattern = "{ <<:s ?p :o>> ?q :z . BIND('A' AS ?A) }";
         // BIND(<<?s ?p ?o>> AS ?T)
-        String pattern = "{ ?s ?p ?o {| :q ?z |} }";
+        //String pattern = "{ ?s ?p ?o {| :q ?z |} }";
+
+        String pattern = "{ <<:s :p ?o >> ?q ?z . }";
         String qs = "PREFIX : <http://example/> SELECT * "+pattern;
         Query query = QueryFactory.create(qs);
-        Graph graph = graph2;
-
-        Txn.executeWrite(dsg, ()->{
-//          GraphUtil.addInto(dsg.getDefaultGraph(), terms);
-//          GraphUtil.deleteFrom(terms, dsg.getDefaultGraph());
-            GraphUtil.addInto(dsg.getDefaultGraph(), graph);
-//          RDFDataMgr.write(System.out,  dsg,  Lang.TRIG);
-//          System.out.println();
-            });
+        Graph graph = graph1;
 
 //      // In-memory
+        if ( false )
+        {
+            // TEST
+            System.out.println("== Basic test");
+            Triple tData     = SSE.parseTriple("(<<:s :p :o >> :q :z)");
+            Triple tPattern  = SSE.parseTriple("(<<:s ?p ?o >> ?q ?z)");
+
+            //Binding input = BindingFactory.binding(Var.alloc("p"), SSE.parseNode(":pz"));
+            Binding input = BindingFactory.binding();
+            Binding b1 = RX.matchTriple(input, tData, tPattern);
+            System.out.println(b1);
+            Quad qData = SSE.parseQuad("(:g <<:s :p :o >> :q :z)");
+            Node qGraph = SSE.parseNode(":g");
+            Triple qPattern = tPattern;
+            Binding b2 = RX.matchQuad(input, qData, qGraph, qPattern);
+            System.out.println(b2);
+            System.exit(0);
+        }
+
         {
             System.out.println("== In-memory");
             QueryExecution qExec = QueryExecutionFactory.create(query, DatasetGraphFactory.wrap(graph));
@@ -168,96 +177,81 @@ public class DevRDFStar {
 
         if ( USE_TDB2_QUERY ) {
             System.out.println("== TDB2/Query");
-            Txn.executeRead(dsg, ()->{
-                QueryExecution qExec = QueryExecutionFactory.create(query, dsg);
+            Predicate<BindingNodeId> filter = bnid -> true;
+
+            DatasetGraph dsgtdb2 = DatabaseMgr.createDatasetGraph();
+            dsgtdb2.getContext().set(SystemTDB.symTupleFilter, filter);
+
+            Txn.executeWrite(dsgtdb2, ()->GraphUtil.addInto(dsgtdb2.getDefaultGraph(), graph));
+            Txn.executeRead(dsgtdb2, ()->{
+                QueryExecution qExec = QueryExecutionFactory.create(query, dsgtdb2);
                 QueryExecUtils.executeQuery(qExec);
             });
         }
 
-
-        if ( USE_TDB2_DIRECT ) {
-            Txn.executeRead(dsg, ()->{
-                NodeTable nodeTable = TDBInternal.getDatasetGraphTDB(dsg).getTripleTable().getNodeTupleTable().getNodeTable();
-
-                ExecutionContext execCxt = new ExecutionContext(ARQ.getContext(), dsg.getDefaultGraph(), dsg, null);
-                Iterator<BindingNodeId> chain = Iter.singleton(new BindingNodeId());
-
-                //**//
-                Triple tPattern = SSE.parseTriple("(?s :q ?z)");
-                // Must have a <<>> terms.
-                Iterator<BindingNodeId> out = TDB2_dev.stepOne(chain, Quad.defaultGraphIRI, tPattern, nodeTable, execCxt);
-                //**//
-                if ( out == null )
-                    System.out.println("null");
-                else {
-                    //out = Iter.log(out);
-
-//                    // Binding (!!) has the real results.
-//                    BindingNodeId bn = out.next();
-//                    Binding b = SolverLib.convToBinding(bn, nodeTable);
-//                    Var var_s = Var.alloc("s");
-//                    b.get(var_s);
-
-                    Iterator<Binding> iter =
-                            SolverLib.convertToNodes(out, nodeTable);
-                    if ( iter.hasNext() )
-                        iter.forEachRemaining(System.out::println);
-                    else
-                        System.out.println("Empty");
-                }
-
-
-            });
+        if ( USE_TDB1_QUERY ) {
+            System.out.println("== TDB1/Query");
+            try {
+                DatasetGraph dsgtdb1 = TDBFactory.createDatasetGraph();
+                Txn.executeWrite(dsgtdb1, ()-> GraphUtil.addInto(dsgtdb1.getDefaultGraph(), graph));
+                Txn.executeRead(dsgtdb1, ()->{
+                    QueryExecution qExec = QueryExecutionFactory.create(query, dsgtdb1);
+                    QueryExecUtils.executeQuery(qExec);
+                });
+            } catch (NotImplemented ex) {
+                System.out.println("Exception: "+ex.getClass().getName()+" : "+ex.getMessage());
+            }
         }
 
-    }
-
-    public static void main1(String...a) {
-        // To/From NodeId space.
-        //SolverRX.
-
-        DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
-        RX.MODE_SA = false;
-        RDFDataMgr.read(dsg, "/home/afs/tmp/D.ttl");
-        String PREFIXES = "PREFIX : <http://example/>\n";
-        String qs = PREFIXES+"SELECT * { <<:s ?p ?o >> :q :z . BIND('A' AS ?A) }";
-        Query query = QueryFactory.create(qs);
-        System.out.println("==== Query 1 ====");
-        QueryExecution qExec1 = QueryExecutionFactory.create(query, dsg);
-        QueryExecUtils.executeQuery(qExec1);
-
-        System.out.println("==== Query 2 ====");
-        RX.MODE_SA = true;
-        QueryExecution qExec2 = QueryExecutionFactory.create(query, dsg);
-        QueryExecUtils.executeQuery(qExec2);
-
-
-        System.exit(0);
-
-        ARQConstants.getGlobalPrefixMap().setNsPrefix("ex", "http://example/");
-
-//        dwim(":x", "?v");
-//        dwim("<< :s :p :o>>", "?v");
-//        dwim("<< :s :p :o>>", "<< ?s ?p ?o>>");
-//        dwim("<< <<:x :q :z>> :p :o>>", "<< ?s ?p ?o>>");
-//        dwim("<< <<:x :q :z>> :p :o>>", "<< <<?x ?q ?z>> ?p ?o>>");
-
-//        dwim("<< :s :p :o>>", "<< ?s :q ?o>>");
-//        dwim("<< :s :p :o>>", "<< ?x ?p ?x>>");
-
-//        dwim("<< <<:x :q :z>> :p :z>>", "<< <<?x ?q ?z>> ?p ?z>>");
-
-        dwim("<< <<:x1 :q :z1>> :p  <<:x2 :q :z2>> >>", "<< ?s :p <<?s2 ?q ?o2>> >>");
 
     }
-
-    private static void dwim(String dataStr, String patternStr) {
-        Node data = SSE.parseNode(dataStr);
-        Node pattern = SSE.parseNode(patternStr);
-        Binding r = RX_SA.match(BindingFactory.root(), data, pattern);
-        //r.vars().forEachRemaining(v->
-        System.out.println(NodeFmtLib.displayStr(data));
-        System.out.println(NodeFmtLib.displayStr(pattern));
-        System.out.println("    "+r);
-    }
+    // [RDFx]
+//    public static void main1(String...a) {
+//        // To/From NodeId space.
+//        //SolverRX.
+//
+//        DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
+//        RX.MODE_SA = false;
+//        RDFDataMgr.read(dsg, "/home/afs/tmp/D.ttl");
+//        String PREFIXES = "PREFIX : <http://example/>\n";
+//        String qs = PREFIXES+"SELECT * { <<:s ?p ?o >> :q :z . BIND('A' AS ?A) }";
+//        Query query = QueryFactory.create(qs);
+//        System.out.println("==== Query 1 ====");
+//        QueryExecution qExec1 = QueryExecutionFactory.create(query, dsg);
+//        QueryExecUtils.executeQuery(qExec1);
+//
+//        System.out.println("==== Query 2 ====");
+//        RX.MODE_SA = true;
+//        QueryExecution qExec2 = QueryExecutionFactory.create(query, dsg);
+//        QueryExecUtils.executeQuery(qExec2);
+//
+//
+//        System.exit(0);
+//
+//        ARQConstants.getGlobalPrefixMap().setNsPrefix("ex", "http://example/");
+//
+////        dwim(":x", "?v");
+////        dwim("<< :s :p :o>>", "?v");
+////        dwim("<< :s :p :o>>", "<< ?s ?p ?o>>");
+////        dwim("<< <<:x :q :z>> :p :o>>", "<< ?s ?p ?o>>");
+////        dwim("<< <<:x :q :z>> :p :o>>", "<< <<?x ?q ?z>> ?p ?o>>");
+//
+////        dwim("<< :s :p :o>>", "<< ?s :q ?o>>");
+////        dwim("<< :s :p :o>>", "<< ?x ?p ?x>>");
+//
+////        dwim("<< <<:x :q :z>> :p :z>>", "<< <<?x ?q ?z>> ?p ?z>>");
+//
+//        dwim("<< <<:x1 :q :z1>> :p  <<:x2 :q :z2>> >>", "<< ?s :p <<?s2 ?q ?o2>> >>");
+//
+//    }
+//
+//    private static void dwim(String dataStr, String patternStr) {
+//        Node data = SSE.parseNode(dataStr);
+//        Node pattern = SSE.parseNode(patternStr);
+//        Binding r = RX_SA.match(BindingFactory.root(), data, pattern);
+//        //r.vars().forEachRemaining(v->
+//        System.out.println(NodeFmtLib.displayStr(data));
+//        System.out.println(NodeFmtLib.displayStr(pattern));
+//        System.out.println("    "+r);
+//    }
 }

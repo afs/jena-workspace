@@ -27,7 +27,7 @@ import org.apache.jena.atlas.lib.tuple.TupleFactory;
 import org.apache.jena.graph.Node ;
 
 /** Dummy version of Triple */
-public final class TripleX implements Tuple<Node> // Only so alternative designs elsewhere can be experimented with
+public final class TripleX implements Tuple<Node>
 {
     private final Node subject;
     private final Node predicate;
@@ -57,6 +57,14 @@ public final class TripleX implements Tuple<Node> // Only so alternative designs
         return 3 ;
     }
     //---- Tuple
+
+    @Override
+    public boolean contains(Node item) {
+        if ( subject.equals(item) ) return true;
+        if ( predicate.equals(item) ) return true;
+        if ( object.equals(item) ) return true;
+        return false;
+    }
 
     public Node getSubject()    { return subject ; }
     public Node getPredicate()  { return predicate ; }

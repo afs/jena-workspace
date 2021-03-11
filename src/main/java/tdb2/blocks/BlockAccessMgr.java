@@ -28,6 +28,7 @@ import org.apache.jena.dboe.base.file.BlockAccess;
 import org.apache.jena.dboe.base.file.BlockAccessMapped;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.riot.thrift.RiotThriftException;
 import org.apache.jena.riot.thrift.TRDF;
 import org.apache.jena.riot.thrift.ThriftConvert;
 import org.apache.jena.riot.thrift.wire.RDF_Term;
@@ -39,22 +40,22 @@ import org.apache.thrift.transport.TTransport;
 /** A manager for BlockAccess classes for a single file. */
 public class BlockAccessMgr { //implements BlockAccess { // BlockaccessWrapper
     // BlockAccessMgr
-    
+
     private final BlockAccessMapped storage;
     private final int blkSize = 8*1024;
-    
+
     // Temp - memory index.
     private AtomicLong entryLocation = new AtomicLong(0);
-    private static class IndexEntry { 
+    private static class IndexEntry {
         String entry ; int rootOffset;
         IndexEntry(String entry , int rootOffset) {
             this.entry = entry;
             this.rootOffset = rootOffset;
         }
     }
-    
+
     private ConcurrentMap<String, BlockAccessShared> index = new ConcurrentHashMap<>();
-    
+
     public BlockAccessMgr() {
         storage = new BlockAccessMapped("all.blk", 0);
         if ( storage.isEmpty() ) {
@@ -65,30 +66,34 @@ public class BlockAccessMgr { //implements BlockAccess { // BlockaccessWrapper
         // The roots file.
         // Lock file.
     }
-    
+
     private void readIndex() {
         Block block = storage.read(0);
         // The block is formatted in RDF Thrift as "string", int, "string", int, "" , 0
 
-        TTransport transport = new TByteBuffer(block.getByteBuffer());
-        TProtocol protocol = TRDF.protocol(transport);
-        for(;;) {
-            try {
-                RDF_Term termName = new RDF_Term() ;
-                RDF_Term termId = new RDF_Term() ;
-                termName.read(protocol) ;
-                termId.read(protocol) ;
-                Node nameNode = ThriftConvert.convert(termName) ;
-                Node idNode = ThriftConvert.convert(termId) ;
-                long x = ((Number)idNode.getLiteralValue()).longValue();
-                String name = nameNode.getLiteralLexicalForm(); 
-                System.out.printf("%s [%d]\n", name, x);
-                if ( x == 0 )
-                    // End.
-                    break;
-            } catch (TException e) {
-                e.printStackTrace();
+        try {
+            TTransport transport = new TByteBuffer(block.getByteBuffer());
+            TProtocol protocol = TRDF.protocol(transport);
+            for(;;) {
+                try {
+                    RDF_Term termName = new RDF_Term() ;
+                    RDF_Term termId = new RDF_Term() ;
+                    termName.read(protocol) ;
+                    termId.read(protocol) ;
+                    Node nameNode = ThriftConvert.convert(termName) ;
+                    Node idNode = ThriftConvert.convert(termId) ;
+                    long x = ((Number)idNode.getLiteralValue()).longValue();
+                    String name = nameNode.getLiteralLexicalForm();
+                    System.out.printf("%s [%d]\n", name, x);
+                    if ( x == 0 )
+                        // End.
+                        break;
+                } catch (TException e) {
+                    e.printStackTrace();
+                }
             }
+        } catch (TException ex) {
+            throw new RiotThriftException(ex);
         }
     }
 
@@ -96,14 +101,18 @@ public class BlockAccessMgr { //implements BlockAccess { // BlockaccessWrapper
         Block block = storage.allocate(blkSize);
         writeIndexes();
     }
-    
+
     private void writeIndexes() {
         Block block = storage.read(0);
-        TTransport transport = new TByteBuffer(block.getByteBuffer());
-        TProtocol protocol = TRDF.protocol(transport);
-        index.forEach((n,id)->writeIndex(protocol, n, id.virtualZero));
-        // End marker.
-        writeIndex(protocol, "", 0);
+        try {
+            TTransport transport = new TByteBuffer(block.getByteBuffer());
+            TProtocol protocol = TRDF.protocol(transport);
+            index.forEach((n,id)->writeIndex(protocol, n, id.virtualZero));
+            // End marker.
+            writeIndex(protocol, "", 0);
+        } catch (TException ex) {
+            throw new RiotThriftException(ex);
+        }
     }
 
     public BlockAccess create(String name) {
