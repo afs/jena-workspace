@@ -24,6 +24,7 @@ public class NotesRDFStar {
 
     // [ ] Copy CG tests, Add to Scripts_*
     // [ ] ReorderTransform?
+    // [ ] EARL report.
 
     // == Part 2
     // [ ] BindingNodeId costs.

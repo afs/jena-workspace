@@ -1,0 +1,25 @@
+2021-07-16
+
+== Generate
+
+
+alias keyt=/usr/lib/jvm/java-11-openjdk-amd64/bin/keytool
+  Java12+ has a different algorithm
+
+keyt -genkey -keyalg RSA -alias localhost -keystore localhost-test.jks -storepass "store-pw" -validity 20000 -keysize 2048
+
+
+
+Then 
+What is your first and last name?
+  [Unknown]:  localhost
+then nothing.
+Is CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
+  [no]:  yes
+
+Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 20,000 days
+	for: CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown
+
+== List
+
+keytool -list -v -storepass store-pw -keystore localhost.jks

@@ -1,15 +1,13 @@
-PREFIX :     <http://example/>
+##BASE <http://base/>
+## <x> <p> <o> .
+ @base <https://sbolstandard.org/examples/> .
 
-PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX tdb:     <http://jena.hpl.hp.com/2008/tdb#>
-PREFIX text:    <http://jena.apache.org/text#>
+@prefix sbol: <http://sbols.org/v3#> .
+ @prefix prov: <http://www.w3.org/ns/prov#> .
 
-:s :p "abc"@EN;
-
-## :s1 rdfs:label "words" .
-## :s2 rdfs:label "more words" .
-## :s3 rdfs:label "other text" .
-## 
-## << :s1 rdfs:label "words1" >> :p 123 .
-## << :s1 rdfs:label "words2" >> :p 123 .
+<CodonOptimisationProtocol>
+ a prov:Plan ;
+ sbol:description "Optimisation protocol to improve the translation of mRNAs." ;
+ sbol:displayId "CodonOptimisationProtocol" ;
+ sbol:name "Codon Optimisation Protocol" .
+ 

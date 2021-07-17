@@ -33,7 +33,6 @@ import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionBuilder;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
@@ -118,7 +117,7 @@ public class ExFuseki_ServiceAuth
         // Local dataset.
         DatasetGraph empty = DatasetGraphFactory.createTxnMem();
         // QueryExecution with custom content that holds the SERVICE setup.
-        try ( QueryExecution qExec = QueryExecutionBuilder.create()
+        try ( QueryExecution qExec = QueryExecution.create()
                         .context(cxt)
                         .dataset(empty)
                         .query(query)

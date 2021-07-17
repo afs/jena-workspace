@@ -39,7 +39,7 @@ import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdfconnection.LibSec;
+import org.apache.jena.rdfconnection.LibSec_AHC;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
@@ -123,7 +123,7 @@ public class DevSecureNG {
 
         // NO Graph ACL.
         AuthSetup auth = new AuthSetup(HOST, 3030, USER, PASSWORD, REALM);
-        LibSec.withAuth("http://localhost:3030/database", auth, conn -> {
+        LibSec_AHC.withAuth("http://localhost:3030/database", auth, conn -> {
             query(conn, "SELECT * { GRAPH <urn:x-arq:UnionGraph> { ?s ?p ?o } }");
         });
 
@@ -139,7 +139,7 @@ public class DevSecureNG {
         // BASIC?
 
         // passwd file must agree.
-        LibSec.authMode = AuthScheme.DIGEST;
+        LibSec_AHC.authMode = AuthScheme.DIGEST;
         JettyLib.authMode = AuthScheme.DIGEST;
 
 // System.err.println("Client: "+LibSec.authMode);
@@ -281,7 +281,7 @@ public class DevSecureNG {
     private static void fill(String urlStr, String filename) {
         // -- Add data.
         // Server is password protected so we need to authenticate to access /plain.
-        LibSec.withAuth(urlStr, auth, conn -> {
+        LibSec_AHC.withAuth(urlStr, auth, conn -> {
             // Force digest auth setup.
             // [AuthScheme][Digest]
             // conn.query("ASK{}").execAsk();
@@ -308,7 +308,7 @@ public class DevSecureNG {
     public static void client(String dsName) {
         // ---- Try it.
         String urlStr = dsURL(auth, dsName);
-        LibSec.withAuth(urlStr, auth, connx -> {
+        LibSec_AHC.withAuth(urlStr, auth, connx -> {
 
             // Quads
             if ( false ) {

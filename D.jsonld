@@ -1,0 +1,11 @@
+{
+  "@id" : "x",
+  "p" : "o",
+  "@context" : {
+    "@base": "http://base/"vD,
+    "p" : {
+      "@id" : "http://base/p",
+      "@type" : "@id"
+    }
+  }
+}

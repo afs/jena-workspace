@@ -16,16 +16,28 @@
  * limitations under the License.
  */
 
-package run;
+package auth;
 
-import arq.rdftests;
-import org.apache.jena.query.ARQ;
+public class NotesJetty {
+  //EG:
+ // // The HTTP configuration object.
+//     HttpConfiguration httpConfig = new HttpConfiguration();
+ //
+//     // The ConnectionFactory for HTTP/1.1.
+//     HttpConnectionFactory http11 = new HttpConnectionFactory(httpConfig);
+ //
+//     // The ConnectionFactory for clear-text HTTP/2.
+//     HTTP2CServerConnectionFactory h2c = new HTTP2CServerConnectionFactory(httpConfig);
 
-public class RunTest {
+     // PROXY
+  // // The ConnectionFactory for the PROXY protocol.
+ //  ProxyConnectionFactory proxy = new ProxyConnectionFactory(http11.getProtocol());
 
-    public static void main(String[] argv) {
-        ARQ.setStrictMode();
-        rdftests.main("/home/afs/ASF/rdf-tests/sparql11/data-sparql11/functions/manifest.ttl");
-    }
+
+ //
+//     // The ServerConnector instance.
+//     ServerConnector connector = new ServerConnector(server, http11, h2c);
+//     connector.setPort(8080);
+
 
 }

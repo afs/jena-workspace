@@ -20,7 +20,7 @@ package dev;
 
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.StrUtils;
-import org.apache.jena.atlas.web.AuthScheme;
+import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.fuseki.ctl.ActionDumpRequest;
 import org.apache.jena.fuseki.ctl.ActionMetrics;
 import org.apache.jena.fuseki.main.FusekiServer;
@@ -31,17 +31,20 @@ import org.apache.jena.fuseki.validation.DataValidator;
 import org.apache.jena.fuseki.validation.IRIValidator;
 import org.apache.jena.fuseki.validation.QueryValidator;
 import org.apache.jena.fuseki.validation.UpdateValidator;
-import org.apache.jena.query.*;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.rdfconnection.RDFConnectionFuseki;
+import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
-import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.sparql.util.QueryExecUtils;
 
 public class RunFuseki
@@ -49,9 +52,9 @@ public class RunFuseki
     public static void main(String ... a) throws Exception {
         FusekiLogging.setLogging();
         try {
-            mainExternal();
-//            mainServer();
-//            runClient();
+            run_tdb2_complex();
+            //mainExternal();
+            //mainServer();
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
@@ -60,32 +63,66 @@ public class RunFuseki
     }
 
     private static void mainExternal() {
-        FusekiMainCmd.main("-v", "--mem", "/ds");
+        FusekiMainCmd.main
+        (
+         //"-v",
+         "--mem", "/ds"
+        );
     }
 
-    private static void runClient() {
+    private static void run_tdb2_complex() {
         DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
-        String queryString = "SELECT * { SERVICE <http://localhost:3030/ds> { GRAPH ?g { ?s ?p ?o }} }";
-        Query query = QueryFactory.create(queryString);
+        FusekiServer server = FusekiServer.create()
+                .parseConfigFile("config-complex.ttl")
+                .port(3030)
+                .build()
+                .start();
 
+        System.out.println("TDB1");
+        try ( RDFConnection conn = RDFConnectionRemote.newBuilder()
+                .destination("http://localhost:3030/ds1")
+                .build() ) {
 
-        try ( QueryExecution qExec = QueryExecutionFactory.create(query, dsg) ) {
+            QueryExecution qExec = conn.query("SELECT * { ?s ?p ?o }");
             QueryExecUtils.executeQuery(qExec);
         }
+
+        System.out.println("TDB2");
+        try ( RDFConnection conn = RDFConnectionRemote.newBuilder()
+                .destination("http://localhost:3030/ds2")
+                .build() ) {
+
+            try {
+                QueryExecution qExec = conn.query("SELECT * { ?s ?p ?o }");
+                QueryExecUtils.executeQuery(qExec);
+            } catch (HttpException ex) {
+                System.err.println(ex.getMessage());
+            }
+        }
+
     }
 
     public static void mainServer(String ... a) {
+        DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
+        FusekiServer server = FusekiServer.create()
+                .add("/ds", dsg)
+                .port(3030)
+                .build()
+                .start();
+    }
+
+    public static void mainServerOptions(String ... a) {
         //org.apache.jena.fuseki.ctl.ActionMetrics
 
         //FusekiMainCmd.main("--passwd=/home/afs/tmp/passwd", "--auth=basic", "--mem", "/ds");
 
 
         DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
-        dsg.add(SSE.parseQuad("(:g :s :p :o)"));
+//        dsg.add(SSE.parseQuad("(:g :s :p :o)"));
 
         FusekiServer server = FusekiServer.create()
-            .passwordFile("/home/afs/tmp/passwd")
-            .auth(AuthScheme.BASIC)
+//            .passwordFile("/home/afs/tmp/passwd")
+//            .auth(AuthScheme.BASIC)
 
 //            .enableMetrics(true)
 //            .parseConfigFile("/home/afs/ASF/Examples/config-1-mem.ttl")
@@ -102,9 +139,6 @@ public class RunFuseki
             //.staticFileBase("Files")
             .build();
         server.start();
-
-
-
 //        try { server.start().join(); }
 //        finally { server.stop(); }
     }

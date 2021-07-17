@@ -18,95 +18,84 @@
 
 package dev;
 
-
-import java.util.Set;
-
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.permissions.SecurityEvaluator;
-import org.apache.jena.rdf.model.Model;
-import org.apache.shiro.SecurityUtils ;
-import org.apache.shiro.subject.Subject ;
-import org.slf4j.Logger ;
-import org.slf4j.LoggerFactory ;
-
-
-/**
- * Class to use Shiro to provide credentials.
- *
- * An example evaluator that only provides access to messages in the graph that
- * are from or to the principal.
- *
- */
-public class ShiroEvaluator implements SecurityEvaluator {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ShiroEvaluator.class);
-
-    public ShiroEvaluator( Model model )
-    {}
-
-    @Override
-    public boolean evaluate(Object principal, Action action, Node graphIRI, Triple triple) {
-
-        return false;
-    }
-
-    @Override
-    public boolean evaluate(Object principal, Set<Action> actions, Node graphIRI, Triple triple) {
-
-        return false;
-
-    }
-
-    @Override
-    public boolean evaluateAny(Object principal, Set<Action> actions, Node graphIRI, Triple triple) {
-
-        return false;
-
-    }
-
-    @Override
-    public boolean evaluate(Object principal, Set<Action> actions, Node graphIRI) {
-
-        return false;
-    }
-
-    @Override
-    public boolean evaluate(Object principal, Action action, Node graphIRI) {
-
-        return false;
-    }
-
-    @Override
-    public boolean evaluateAny(Object principal, Set<Action> actions, Node graphIRI) {
-
-        return false;
-    }
-
-
-    @Override
-    public boolean evaluateUpdate(Object principal, Node graphIRI, Triple from, Triple to) {
-
-        return false;
-    }
-
-    /**
-     * Return the Shiro subject.  This is the subject that Shiro currently has logged in.
-     */
-    @Override
-    public Object getPrincipal() {
-        return SecurityUtils.getSubject();
-    }
-
-    /**
-     * Verify the Shiro subject is authenticated.
-     */
-    @Override
-    public boolean isPrincipalAuthenticated(Object principal) {
-        if (principal instanceof Subject)
-        {
-            return ((Subject)principal).isAuthenticated();
-        }
-        return false;
-    }
-}
+public class ShiroEvaluator {}
+//
+///**
+// * Class to use Shiro to provide credentials.
+// *
+// * An example evaluator that only provides access to messages in the graph that
+// * are from or to the principal.
+// *
+// */
+//public class ShiroEvaluator implements SecurityEvaluator {
+//
+//    private static final Logger LOG = LoggerFactory.getLogger(ShiroEvaluator.class);
+//
+//    public ShiroEvaluator( Model model )
+//    {}
+//
+//    @Override
+//    public boolean evaluate(Object principal, Action action, Node graphIRI, Triple triple) {
+//
+//        return false;
+//    }
+//
+//    @Override
+//    public boolean evaluate(Object principal, Set<Action> actions, Node graphIRI, Triple triple) {
+//
+//        return false;
+//
+//    }
+//
+//    @Override
+//    public boolean evaluateAny(Object principal, Set<Action> actions, Node graphIRI, Triple triple) {
+//
+//        return false;
+//
+//    }
+//
+//    @Override
+//    public boolean evaluate(Object principal, Set<Action> actions, Node graphIRI) {
+//
+//        return false;
+//    }
+//
+//    @Override
+//    public boolean evaluate(Object principal, Action action, Node graphIRI) {
+//
+//        return false;
+//    }
+//
+//    @Override
+//    public boolean evaluateAny(Object principal, Set<Action> actions, Node graphIRI) {
+//
+//        return false;
+//    }
+//
+//
+//    @Override
+//    public boolean evaluateUpdate(Object principal, Node graphIRI, Triple from, Triple to) {
+//
+//        return false;
+//    }
+//
+//    /**
+//     * Return the Shiro subject.  This is the subject that Shiro currently has logged in.
+//     */
+//    @Override
+//    public Object getPrincipal() {
+//        return SecurityUtils.getSubject();
+//    }
+//
+//    /**
+//     * Verify the Shiro subject is authenticated.
+//     */
+//    @Override
+//    public boolean isPrincipalAuthenticated(Object principal) {
+//        if (principal instanceof Subject)
+//        {
+//            return ((Subject)principal).isAuthenticated();
+//        }
+//        return false;
+//    }
+//}

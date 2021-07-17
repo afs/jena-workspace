@@ -16,16 +16,23 @@
  * limitations under the License.
  */
 
-package run;
+package z_archive;
 
-import arq.rdftests;
-import org.apache.jena.query.ARQ;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.sse.SSE;
 
-public class RunTest {
+public class Jena1857_tim_dsg_size {
 
-    public static void main(String[] argv) {
-        ARQ.setStrictMode();
-        rdftests.main("/home/afs/ASF/rdf-tests/sparql11/data-sparql11/functions/manifest.ttl");
+    public static void main(String ... a) {
+        DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
+        System.out.println(dsg.size());
+
+        Quad q1 = SSE.parseQuad("(:g :s :p :o1)");
+        Quad q2 = SSE.parseQuad("(:g :s :p :o2)");
+        dsg.add(q1);
+        dsg.add(q2);
+        System.out.println(dsg.size());
     }
-
 }

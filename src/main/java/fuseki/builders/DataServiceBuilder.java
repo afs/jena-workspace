@@ -111,7 +111,7 @@ public class DataServiceBuilder {
 
     public DataService build() {
         Objects.requireNonNull(dataset, "dataset not set");
-        DataService dSrv = new DataService(dataset);
+        DataService.Builder dSrv = DataService.newBuilder(dataset);
         if ( authPolicy != null )
             dSrv.setAuthPolicy(authPolicy);
 
@@ -139,6 +139,6 @@ public class DataServiceBuilder {
             }
             dSrv.addEndpoint(ep);
         });
-        return dSrv;
+        return dSrv.build();
     }
 }

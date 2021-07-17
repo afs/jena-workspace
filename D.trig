@@ -1,7 +1,4 @@
-PREFIX :     <http://example/>v~/X
+PREFIX : <http://example/>
 
-
-:g1 { :s1 :p :o }
-:g1 { :s2 :p :o }
-:g2 { :s1 :p :o }
-:g2 { :s2 :p :o }
+:g { :s :p :o1 }
+{ :s :p :o0 }

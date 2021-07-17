@@ -16,16 +16,28 @@
  * limitations under the License.
  */
 
-package run;
+package dev;
 
-import arq.rdftests;
-import org.apache.jena.query.ARQ;
+import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.riot.RIOT;
+import org.apache.jena.sys.JenaSystem;
 
-public class RunTest {
+public class ReportTest {
 
-    public static void main(String[] argv) {
-        ARQ.setStrictMode();
-        rdftests.main("/home/afs/ASF/rdf-tests/sparql11/data-sparql11/functions/manifest.ttl");
+    static {
+        JenaSystem.init();
+        LogCtl.setLog4j2();
+        RIOT.getContext().set(RIOT.symTurtleDirectiveStyle, "sparql");
+    }
+
+    public static void main(String...a) {
+        mainSPARQL();
+    }
+
+    public static void mainSPARQL() {
+        String FN = "/home/afs/W3C/rdf-star/tests/sparql/eval/manifest.ttl";
+        arq.rdftests.main(FN);
     }
 
 }
+

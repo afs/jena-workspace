@@ -88,7 +88,6 @@ public class BCD {
             int hi = (v >> 4) & 0xF;
             value = 100 * value + (lo + 10 * hi);
         }
-
         return value;
     }
 
@@ -136,7 +135,6 @@ public class BCD {
             int hi = (v >> 4) & 0xF;
             value = 100 * value + (lo + 10 * hi);
         }
-
         return value;
     }
 
@@ -151,5 +149,4 @@ public class BCD {
         }
         return sb.toString();
     }
-
 }

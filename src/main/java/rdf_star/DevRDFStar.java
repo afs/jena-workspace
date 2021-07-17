@@ -37,7 +37,8 @@ import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
-import org.apache.jena.sparql.engine.iterator.RX;
+import org.apache.jena.sparql.engine.main.solver.SolverRX3;
+import org.apache.jena.sparql.engine.main.solver.SolverRX4;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.sparql.util.QueryExecUtils;
 import org.apache.jena.sys.JenaSystem;
@@ -159,12 +160,12 @@ public class DevRDFStar {
 
             //Binding input = BindingFactory.binding(Var.alloc("p"), SSE.parseNode(":pz"));
             Binding input = BindingFactory.binding();
-            Binding b1 = RX.matchTriple(input, tData, tPattern);
+            Binding b1 = SolverRX3.matchTriple(input, tData, tPattern);
             System.out.println(b1);
             Quad qData = SSE.parseQuad("(:g <<:s :p :o >> :q :z)");
             Node qGraph = SSE.parseNode(":g");
             Triple qPattern = tPattern;
-            Binding b2 = RX.matchQuad(input, qData, qGraph, qPattern);
+            Binding b2 = SolverRX4.matchQuad(input, qData, qGraph, qPattern);
             System.out.println(b2);
             System.exit(0);
         }

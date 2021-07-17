@@ -32,12 +32,14 @@ import org.apache.jena.atlas.json.JsonValue;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.Lib;
 import org.apache.jena.atlas.lib.ThreadLib;
-import org.apache.jena.atlas.logging.LogCtl;
-import org.apache.jena.atlas.web.WebLib;
-import org.apache.jena.fuseki.Fuseki;
 import org.apache.jena.fuseki.cmd.FusekiCmd;
 import org.apache.jena.fuseki.ctl.JsonConstCtl;
 import org.apache.jena.fuseki.system.FusekiLogging;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.WebContent;
 import org.apache.jena.riot.web.HttpNames;
 import org.apache.jena.riot.web.HttpOp;
@@ -47,14 +49,21 @@ import org.slf4j.LoggerFactory;
 
 public class RunFusekiFull
 {
-    static { FusekiLogging.setLogging();
-        LogCtl.enable(Fuseki.requestLog);
+    static {
+        //System.setProperty("fuseki.loglogging", "true");
+        FusekiLogging.setLogging();
+        //LogCtl.enable(Fuseki.requestLog);
     }
     static Logger LOG = LoggerFactory.getLogger("APP");
 
     public static void main(String ... a) {
-        mainWebapp();
+        plainRun();
+        //mainWebapp();
         //curl --header 'Content-type: text/turtle'  -XPOST --data-binary @config-inf.ttl 'http://localhost:3030/$/datasets'
+    }
+
+    public static void plainRun() {
+        FusekiCmd.main("--update", "--tdb2", "--loc=/home/afs/tmp/DB2", "/ds");
     }
 
     public static void mainWebapp() {
@@ -89,7 +98,7 @@ public class RunFusekiFull
             System.exit(0);
         }
 
-        int port = WebLib.choosePort();
+        int port = 3030; //WebLib.choosePort();
         ThreadLib.async(()->
             FusekiCmd.main(
                 "--port="+port,
@@ -106,7 +115,17 @@ public class RunFusekiFull
                 ));
 
         Lib.sleep(2000);
-        String x = HttpOp.execHttpGetString("http://localhost:"+port+"/$/datasets/ds");
+
+        try ( RDFConnection conn = RDFConnectionFactory.connect("http://localhost:"+port+"/ds") ) {
+            String queryString = "CONSTRUCT WHERE { ?s ?p ?o}";
+            Model m = conn.queryConstruct(queryString);
+            RDFDataMgr.write(System.out, m, Lang.TTL);
+
+//            String queryString = "SELECT * { ?s ?p ?o }";
+//            conn.queryResultSet(queryString, rs->ResultSetFormatter.out(rs));
+
+        }
+
         System.exit(0);
    }
 
