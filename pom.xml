@@ -14,12 +14,11 @@
   <description>AFS workspace</description>
 
   <properties>
-    <ver.jena>4.2.0-SNAPSHOT</ver.jena>
+    <ver.jena>4.4.0-SNAPSHOT</ver.jena>
     <ver.fuseki>${ver.jena}</ver.fuseki>
-    <ver.jetty>9.4.26.v20200117</ver.jetty>  
 
-    <ver.slf4j>1.7.31</ver.slf4j>
-    <ver.log4j2>2.13.3</ver.log4j2>
+    <ver.slf4j>1.7.32</ver.slf4j>
+    <ver.log4j2>2.15.0</ver.log4j2>
 
   </properties>
 
@@ -43,6 +42,27 @@
       <artifactId>jena-base</artifactId>
       <version>${ver.jena}</version>
       <classifier>tests</classifier>
+    </dependency>
+
+    <!-- Titanium -->
+    <dependency>
+      <!-- Apache License -->
+      <groupId>com.apicatalog</groupId>
+      <artifactId>titanium-json-ld</artifactId>
+        <version>1.1.0</version>
+    </dependency>
+    
+    <!-- Eclipse Public License 2.0 -->
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>jakarta.json</artifactId>
+      <version>2.0.1</version>
+    </dependency>
+    <!-- Optional - use if another JSON Processing implementation is used -->
+    <dependency>
+      <groupId>jakarta.json</groupId>
+      <artifactId>jakarta.json-api</artifactId>
+      <version>2.0.1</version>
     </dependency>
 
     <!--
