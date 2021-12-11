@@ -26,8 +26,6 @@ import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionFactory;
-import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.util.QueryExecUtils;
 
@@ -71,15 +69,15 @@ public class RunDevFuseki
         try {
             server.start();
 
-            try ( RDFConnection conn = RDFConnectionFactory.connect("http://localhost:3030/ds") ) {
+            try ( RDFConnection conn = RDFConnection.connect("http://localhost:3030/ds") ) {
                 QueryExecution qExec = conn.query("ASK{}");
                 QueryExecUtils.executeQuery(qExec);
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
             }
 
-            String x = HttpOp.execHttpGetString("http://localhost:3030/$/stats");
-            System.out.println(x);
+            //String x = HttpOp.httpGetString("http://localhost:3030/$/stats");
+            //System.out.println(x);
 
         }
         finally {

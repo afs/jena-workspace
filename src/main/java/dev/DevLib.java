@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.jena.atlas.io.IndentedWriter ;
-import org.apache.jena.atlas.lib.ProgressMonitor ;
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.atlas.lib.Timer ;
 import org.apache.jena.atlas.lib.cache.CacheInfo ;
@@ -51,7 +50,7 @@ import org.apache.jena.sparql.util.QueryExecUtils ;
 public class DevLib {
 
     public static void queryExec() {
-      String DIR = "/home/afs/ws/jena-1121-perf-regress/" ; 
+      String DIR = "/home/afs/ws/jena-1121-perf-regress/" ;
       Query query = QueryFactory.read(DIR+"Q2.rq") ;
       //Query query = QueryFactory.create("SELECT * { ?s ?p ?o }") ;
       Dataset ds = RDFDataMgr.loadDataset(DIR+"D.ttl") ;
@@ -59,7 +58,7 @@ public class DevLib {
       QueryExecUtils.executeQuery(qExec);
       System.exit(0);
     }
-    
+
     public static void transform() {
         Query query = QueryFactory.create("PREFIX : <http://example/> SELECT * { ?s ?p ?o . ?x ?q :o. ?s :key :value . }") ;
         Op op = Algebra.compile(query) ;
@@ -67,24 +66,24 @@ public class DevLib {
         WriterOp.output(IndentedWriter.stdout, op1, query.getPrefixMapping());
         IndentedWriter.stdout.flush() ;
     }
-    
+
     public static void transformOp(String inputStr) {
         Op op = SSE.parseOp(inputStr) ;
         //Op op1 = Algebra.optimize(op) ;
         Op op1 = Optimize.apply(new TransformFilterPlacement(), op) ;
         }
-    
+
     public static long time(Runnable action) {
         Timer t = new Timer() ;
         t.startTimer();
         action.run();
         return t.endTimer() ;
     }
-    
+
     public static void timePrint(Runnable action) {
         timePrint(null, action) ;
     }
-    
+
     public static void timePrint(String label, Runnable action) {
         long z = time(action) ;
         if ( label != null ) {
@@ -98,16 +97,16 @@ public class DevLib {
     public static long memory() {
         return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
     }
-    
+
     public static long space(Runnable action) {
         Runtime.getRuntime().gc() ;
         long before = memory();
-        action.run();   
+        action.run();
         Runtime.getRuntime().gc() ;
         long after = memory();
         return after-before ;
     }
-    
+
     public static void printReport(String label, ActionReport report) {
         if ( label != null ) {
             System.out.print(label) ;
@@ -117,7 +116,7 @@ public class DevLib {
         System.out.printf("  Space=%.2f MB\n", report.spaceUsed/(1000*1000.0)) ;
         System.out.printf("  Time=%.2fs\n",  report.timeUsed/1000.0) ;
     }
-    
+
     public static ActionReport spaceTime(String label, Runnable action) {
         Timer t = new Timer() ;
         gc() ;
@@ -130,19 +129,6 @@ public class DevLib {
         long mem = after-before ;
         return new ActionReport(label, mem, time) ;
     }
-    
-    public static void monitor(ProgressMonitor monitor, Runnable action) {
-        if ( monitor != null ) {
-            monitor.startMessage(null) ;
-            monitor.start() ;
-        }
-        action.run(); 
-        if ( monitor != null ) {
-            monitor.finish() ;
-            monitor.finishMessage() ;
-        }
-    }
-
 
     public static void run(String queryFile, String dataFile) {
         Query q = QueryFactory.read(queryFile) ;
@@ -150,25 +136,25 @@ public class DevLib {
         QueryExecution qExec = QueryExecutionFactory.create(q, ds) ;
         QueryExecUtils.executeQuery(q, qExec);
     }
-    
+
     public static String filename(String dir, String file) {
-        if ( dir.endsWith("/") ) 
+        if ( dir.endsWith("/") )
             return dir+file ;
         else
-            return dir+"/"+file ; 
+            return dir+"/"+file ;
     }
-    
+
     public static void algebra(String DIR, String queryFile) {
         algebra(filename(DIR, queryFile));
     }
-    
+
     public static void varfind(String z) {
         Op op = SSE.parseOp(z);
         System.out.println(op);
         VarFinder vf = VarFinder.process(op);
         System.out.println(vf);
     }
-    
+
     public static Op algebra(String queryFile) {
         Query query = QueryFactory.read(queryFile) ;
         System.out.println(query);
@@ -177,12 +163,12 @@ public class DevLib {
         System.out.println(op1) ;
         return op1 ;
     }
-    
+
     public static void joinClassification(String... args) {
         String qs = StrUtils.strjoinNL("");
         Query query = QueryFactory.create(qs);
         Op op = Algebra.compile(query);
-        
+
         System.out.println(op);
         if ( op instanceof OpJoin ) {
             JoinClassifier.print = true ;
@@ -196,7 +182,7 @@ public class DevLib {
             System.out.println("Not a join Join");
         System.exit(0);
     }
-    
+
     public static void joinClassification(Query query) {
         Op op = Algebra.compile(query);
         System.out.println(op);
@@ -212,11 +198,11 @@ public class DevLib {
         qsm.asMap().forEach((vstr, rdfnode) -> map.put(Var.alloc(vstr), rdfnode.asNode()));
         return QueryTransformOps.transform(query, map);
     }
-    
+
     public static void spacePrint(Runnable action) {
         spacePrint(null, action) ;
     }
-    
+
     public static void spacePrint(String label, Runnable action) {
         long z = space(action) ;
         if ( label != null ) {
@@ -226,17 +212,17 @@ public class DevLib {
         }
         System.out.printf("Space=%.2f MB\n", z/(1000*1000.0)) ;
     }
-    
+
     public static void gc() {
         Runtime.getRuntime().gc() ;
     }
-    
+
     public static class ActionReport {
         public final long spaceUsed ;
         public final long timeUsed ;
         public final String label;
         public CacheInfo stats = null ;
-        
+
         public ActionReport(String label, long spaceUsed, long timeUsed) {
             this.label = label ;
             this.spaceUsed = spaceUsed ;

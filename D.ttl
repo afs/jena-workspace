@@ -1,13 +1,2 @@
-##BASE <http://base/>
-## <x> <p> <o> .
- @base <https://sbolstandard.org/examples/> .
-
-@prefix sbol: <http://sbols.org/v3#> .
- @prefix prov: <http://www.w3.org/ns/prov#> .
-
-<CodonOptimisationProtocol>
- a prov:Plan ;
- sbol:description "Optimisation protocol to improve the translation of mRNAs." ;
- sbol:displayId "CodonOptimisationProtocol" ;
- sbol:name "Codon Optimisation Protocol" .
- 
+BASE <http://base/>
+<x> <p> <o> .

@@ -72,6 +72,7 @@ public class Jena1855_TrigDftGraph {
         {
             System.out.println("RDFDataMgr.createIteratorQuads");
             Lang lang = RDFLanguages.filenameToLang(dataFilename);
+            @SuppressWarnings("deprecation")
             Iterator<Quad> it = RDFDataMgr.createIteratorQuads(IO.openFile(dataFilename), lang, null);
             while (it.hasNext()) {
                 Quad q = it.next();

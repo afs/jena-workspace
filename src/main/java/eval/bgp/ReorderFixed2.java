@@ -24,13 +24,12 @@ import static org.apache.jena.sparql.engine.optimizer.reorder.PatternElements.VA
 import org.apache.jena.sparql.engine.optimizer.Pattern ;
 import org.apache.jena.sparql.engine.optimizer.StatsMatcher ;
 import org.apache.jena.sparql.engine.optimizer.reorder.PatternTriple ;
-import org.apache.jena.sparql.graph.NodeConst ;
 import org.apache.jena.sparql.sse.Item ;
-import org.apache.jena.sys.JenaSystem;
+import org.apache.jena.vocabulary.RDF;
 
 /*
  * Changes:
- *    None yest. But uses old style "type" not "type()"
+ *    None yet. But uses old style "type" not "type()"
  */
 
 /** Fixed scheme for choosing based on the triple patterns, without
@@ -63,9 +62,11 @@ public class ReorderFixed2 extends ReorderTransformationSubstitution2 {
 
     public ReorderFixed2() {}
 
-    static { JenaSystem.init(); }
+    // During initialization.
+    private static Item type()
+    { return Item.createNode(RDF.Init.type().asNode()); }
 
-    private static Item              type                = Item.createNode(NodeConst.nodeRDFType) ;
+    private static final Item rdfType = type();
 
     /** The number of triples used for the base scale */
     public static final int                MultiTermSampleSize = 100 ;
@@ -78,7 +79,8 @@ public class ReorderFixed2 extends ReorderTransformationSubstitution2 {
     static { init() ; }
 
     private static void init() {
-        //type = Item.createNode(NodeConst.nodeRDFType) ;
+        // Set constant late.
+
         // rdf:type can be a bad choice e.g rdf:type rdf:Resource
         // with inference enabled.
         // Weight use of rdf:type worse then the general pattern
@@ -88,15 +90,15 @@ public class ReorderFixed2 extends ReorderTransformationSubstitution2 {
 
         // 1 : TERM type TERM is builtin (SPO).
         // matcherRdfType.addPattern(new Pattern(1, TERM, TERM, TERM)) ;
-        matcherRdfType.addPattern(new Pattern(5, VAR, type, TERM)) ;
-        matcherRdfType.addPattern(new Pattern(50, VAR, type, VAR)) ;
+        matcherRdfType.addPattern(new Pattern(5, VAR, rdfType, TERM)) ;
+        matcherRdfType.addPattern(new Pattern(50, VAR, rdfType, VAR)) ;
 
         // SPO - built-in - not needed as a rule
         // matcher.addPattern(new Pattern(1, TERM, TERM, TERM)) ;
 
         matcher.addPattern(new Pattern(2, TERM, TERM, VAR)) ;                   // SP?
         matcher.addPattern(new Pattern(3, VAR, TERM, TERM)) ;                   // ?PO
-        matcher.addPattern(new Pattern(2, TERM, TERM, TERM)) ;                  // S?O
+        matcher.addPattern(new Pattern(2, TERM, VAR, TERM)) ;                   // S?O
 
         matcher.addPattern(new Pattern(10, TERM, VAR, VAR)) ;                   // S??
         matcher.addPattern(new Pattern(20, VAR, VAR, TERM)) ;                   // ??O
@@ -109,7 +111,7 @@ public class ReorderFixed2 extends ReorderTransformationSubstitution2 {
     public double weight(PatternTriple pt) {
         // Special case rdf:type first to make it lower(worse) than
         // VAR, TERM, TERM which would otherwise be used.
-        if ( type.equals(pt.predicate) ) {
+        if ( rdfType.equals(pt.predicate) ) {
             double w = matcherRdfType.match(pt) ;
             if ( w > 0 )
                 return w ;

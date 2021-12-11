@@ -22,8 +22,11 @@ package bcd;
 // https://en.wikipedia.org/wiki/Chen%E2%80%93Ho_encoding
 // https://en.wikipedia.org/wiki/Densely_packed_decimal
 // Ten values in 4 bits (16 symbols)
+// 8 bytes = 64/4 = 16 digits, no scale.
+// whereas
+// TDB2 : 7 bytes = 7*8/4 = 14 digits, no scale.
 
-// 64 bit ; TDB2 : DecimalNode56
+// TDB2 : DecimalNode56 : binary
 // signed 8 bits of scale, signed 48 bits of value.
 // Decimal precision is 47 bits (it's signed) or around 14 places.
 

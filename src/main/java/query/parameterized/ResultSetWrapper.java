@@ -69,4 +69,9 @@ class ResultSetWrapper implements ResultSet {
         return get().getResourceModel() ;
     }
 
+    @Override
+    public void close() {
+        get().close();
+    }
+
 }

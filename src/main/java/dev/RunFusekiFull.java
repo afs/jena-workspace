@@ -18,32 +18,17 @@
 
 package dev;
 
-import static org.apache.jena.fuseki.mgt.ServerMgtConst.opCompact;
-import static org.apache.jena.riot.web.HttpOp.execHttpPost;
+import java.nio.file.Path;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
-
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.jena.atlas.json.JSON;
-import org.apache.jena.atlas.json.JsonValue;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.Lib;
 import org.apache.jena.atlas.lib.ThreadLib;
 import org.apache.jena.fuseki.cmd.FusekiCmd;
-import org.apache.jena.fuseki.ctl.JsonConstCtl;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.WebContent;
-import org.apache.jena.riot.web.HttpNames;
-import org.apache.jena.riot.web.HttpOp;
-import org.apache.jena.riot.web.HttpResponseHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +48,13 @@ public class RunFusekiFull
     }
 
     public static void plainRun() {
-        FusekiCmd.main("--update", "--tdb2", "--loc=/home/afs/tmp/DB2", "/ds");
+        String fusekiHome = "/home/afs/ASF/afs-jena/jena-fuseki2/jena-fuseki-webapp" ;
+        String fusekiBase = "/home/afs/tmp/run" ;
+
+        System.setProperty("FUSEKI_HOME", fusekiHome) ;
+        System.setProperty("FUSEKI_BASE", fusekiBase) ;
+        //FusekiCmd.main("--update", "--tdb2", "--loc=/home/afs/tmp/DB2", "/ds");
+        FusekiCmd.main("-v", "--mem", "/ds");
     }
 
     public static void mainWebapp() {
@@ -77,26 +68,9 @@ public class RunFusekiFull
         System.setProperty("FUSEKI_HOME", fusekiHome) ;
         System.setProperty("FUSEKI_BASE", fusekiBase) ;
 
-        String runArea = Paths.get(fusekiBase).toAbsolutePath().toString() ;
+        String runArea = Path.of(fusekiBase).toAbsolutePath().toString() ;
         FileOps.ensureDir(runArea) ;
         FileOps.clearAll(runArea);
-
-        // FusekiCmd.main("--loc=/home/afs/tmp/DB", "/ds");
-
-        if ( false ) {
-            // Text dataset.
-            ThreadLib.async(()->
-            FusekiCmd.main("--conf=/home/afs/ASF/afs-jena/jena-fuseki2/examples/config-text-tdb2.ttl")
-                );
-            Lib.sleep(5000);
-            // Compact
-            JsonResponseHandler x = new JsonResponseHandler();
-            execHttpPost("http://localhost:3030/$/" + opCompact + "/dataset", null, WebContent.contentTypeJSON, x);
-            JsonValue v = x.getJSON();
-            String id = v.getAsObject().getString(JsonConstCtl.taskId);
-            Lib.sleep(5000);
-            System.exit(0);
-        }
 
         int port = 3030; //WebLib.choosePort();
         ThreadLib.async(()->
@@ -116,7 +90,7 @@ public class RunFusekiFull
 
         Lib.sleep(2000);
 
-        try ( RDFConnection conn = RDFConnectionFactory.connect("http://localhost:"+port+"/ds") ) {
+        try ( RDFConnection conn = RDFConnection.connect("http://localhost:"+port+"/ds") ) {
             String queryString = "CONSTRUCT WHERE { ?s ?p ?o}";
             Model m = conn.queryConstruct(queryString);
             RDFDataMgr.write(System.out, m, Lang.TTL);
@@ -128,42 +102,4 @@ public class RunFusekiFull
 
         System.exit(0);
    }
-
-    private static String execSleepTask(String serveURL, int millis) {
-        String url = serveURL+"$/sleep";
-
-        JsonResponseHandler x = new JsonResponseHandler();
-        HttpOp.execHttpPost(url+"?interval="+millis, null, WebContent.contentTypeJSON, x);
-        JsonValue v = x.getJSON();
-        String id = v.getAsObject().get("taskId").getAsString().value();
-        return id;
-    }
-
-    private static void execTaskList(String serveURL) {
-        String url = serveURL+"$/tasks";
-
-        JsonResponseHandler x = new JsonResponseHandler();
-        HttpOp.execHttpGet(url, WebContent.contentTypeJSON, x);
-        JsonValue v = x.getJSON();
-        System.out.println(v);
-    }
-
-    static class JsonResponseHandler implements HttpResponseHandler {
-
-        private JsonValue result = null;
-
-        public JsonValue getJSON() {
-            return result;
-        }
-
-        @Override
-        public void handle(String baseIRI, HttpResponse response) throws IOException {
-            Header location = response.getFirstHeader(HttpNames.hLocation);
-//            if ( location != null )
-//                System.out.printf("Location: %s\n", location.getValue());
-            try ( InputStream in = response.getEntity().getContent() ) {
-                result = JSON.parseAny(in);
-            }
-        }
-    }
 }

@@ -38,6 +38,8 @@ import org.apache.jena.riot.system.* ;
 import org.apache.jena.sparql.core.DatasetGraph ;
 import org.apache.jena.sparql.core.DatasetGraphFactory ;
 import org.apache.jena.sys.JenaSystem ;
+import org.apache.jena.system.progress.*;
+import org.apache.jena.system.progress.ProgressMonitor;
 import org.apache.jena.tdb.TDBFactory ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
@@ -45,7 +47,7 @@ import org.slf4j.LoggerFactory ;
 /** tools to load data into memory and report space taken */
 class RunMemTimeSpace extends CmdGeneral {
 
-    static ProgressMonitor.Output output = (fmt, args) -> { System.out.printf(fmt, args) ; System.out.println() ; } ;
+    static MonitorOutput output = (fmt, args) -> { System.out.printf(fmt, args) ; System.out.println() ; } ;
 
     // Add caching to results
     // Add sizes to results.
@@ -318,7 +320,7 @@ class RunMemTimeSpace extends CmdGeneral {
             .base(IRILib.filenameToIRI(FN))
             .build();
 
-        ProgressMonitor progress = new ProgressMonitor(label, tick, superTick, output) ;
+        ProgressMonitor progress = ProgressMonitorOutput.create(output, label, tick, superTick) ;
         StreamRDF stream0 = new ProgressStreamRDF(dest, progress) ;
         StreamRDFCounting stream = StreamRDFLib.count(stream0);
 
@@ -364,7 +366,7 @@ class RunMemTimeSpace extends CmdGeneral {
         action.run();
         if ( monitor != null ) {
             monitor.finish() ;
-            monitor.finishMessage() ;
+            monitor.finishMessage(null) ;
         }
     }
 

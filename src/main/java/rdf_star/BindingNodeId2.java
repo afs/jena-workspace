@@ -29,6 +29,7 @@ import org.apache.jena.tdb.TDBException;
 import org.apache.jena.tdb2.store.NodeId;
 import org.apache.jena.tdb2.store.nodetable.NodeTable;
 
+// BindingNodeId as inline slots, not a map.
 public class BindingNodeId2 extends BindingBase {
     // Combine  in BindingTDB with BindingNodeId
     private final NodeTable nodeTable;

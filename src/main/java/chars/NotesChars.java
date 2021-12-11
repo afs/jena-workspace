@@ -27,6 +27,16 @@ import org.apache.jena.atlas.lib.Bytes;
 
 public class NotesChars {
 
+    /*
+
+       RIOC in jena-base(core) or module/package or a few classs to copy.
+          RiotChars
+          Tokenizertext has it's own:
+          isUcsChar
+       iri4ld:Chars3986
+       SplitIRI has RIOTChars copies.
+     */
+
     // https://unicode.org/charts/PDF/UFFF0.pdf
     // 0xFFFE, 0xFFFF not a character
 

@@ -24,7 +24,6 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.core.DatasetGraph;
@@ -41,57 +40,57 @@ public class DevUnionDSG {
     // Imperfect for things that dive inside implementation.
     // *** What about Context setting? Universal.
     // Push down to storage, but also in OpExecutor.
-    
+
     // Symbol:  tdb:unionDefaultGraph, tdb2:unionDefaultGraph
     //  arq:unionDefaultGraph : isUnionDftQuery.
     // Build into OpExecutor.
     //   OpExecutor.executeUnion(OpBGP opBGP, QueryIterator input).
     //   And/Or rewrite to GRAPH <union> quads
     //   Default to quadded, not graph?
-    
+
     /* TDB1:
-     * Quads: 
+     * Quads:
      * OpExecutorTDB.decideGraphNode
      * BGP:
      * decideGraphNode => Union graph -> Node.ANY
-     * 
-     * 
-     * 
+     *
+     *
+     *
      * SolverLib:
-     * public executes: 
+     * public executes:
      *     graph.getNodeTupleTable()  or ds.chooseNodeTupleTable
      * private SolverLib.execute/NodeTupleTable
      *  if ( Quad.isUnionGraph(graphNode) )
      *       graphNode = Node.ANY ;
      *   if ( Quad.isDefaultGraph(graphNode) )
      *       graphNode = null ;
-     * 
+     *
      * boolean anyGraph = (graphNode==null ? false : (Node.ANY.equals(graphNode))) ;
      * GRAPH <union>
      */
-    
+
     /* TDB2: same in TDB1 OpExecutor2.
      */
-    
+
     // QueryEngineFactoryWrapper.accept
     static class DatasetGraphMorph extends DatasetGraphWrapper implements DatasetGraphWrapperView {
         public DatasetGraphMorph(DatasetGraph dsg) {
             super(dsg);
         }
     }
-    
+
     // JENA-1668.
     public static void main(String...args) {
-        
+
         // This is Morph.
-        
+
         // DatasetGraphMapLink
         DatasetGraph dsg = DatasetGraphFactory.createGeneral();
         RDFDataMgr.read(dsg, "D.trig");
         //RDFDataMgr.write(System.out, dsg, Lang.NQ);
-        
+
 //        DatasetGraphMapLink dsgm = (DatasetGraphMapLink)dsg;
-//        
+//
 //        // BUT NOT UPDATEABLE.
 //        dsgm.setDefaultGraph(dsg.getUnionGraph());
 
@@ -108,15 +107,15 @@ public class DevUnionDSG {
                 };
             }
         };
-        
+
         RDFDataMgr.write(System.out, dsg1, Lang.NQ);
-        
-        try(RDFConnection conn = RDFConnectionFactory.connect(DatasetFactory.wrap(dsg1))) {
+
+        try(RDFConnection conn = RDFConnection.connect(DatasetFactory.wrap(dsg1))) {
             conn.queryResultSet("SELECT * { ?s ?p ?o }",
                 rs->ResultSetFormatter.out(rs));
             conn.update("INSERT DATA { <x:s> <x:p> 'new'}");
         }
-        
+
         RDFDataMgr.write(System.out, dsg, Lang.NQ);
     }
 }

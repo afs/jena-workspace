@@ -26,7 +26,6 @@ import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
 
@@ -46,22 +45,22 @@ public class tdbdumpnodesRecover {
     public static void main(String[] args) throws Exception {
         String FN0 = "nodes.dat";
         String FN = "target.dat";
-        
 
-        Path file0 = Paths.get(FN0);
-        Path file = Paths.get(FN);
-        
+
+        Path file0 = Path.of(FN0);
+        Path file = Path.of(FN);
+
         Files.copy(file0, file, StandardCopyOption.REPLACE_EXISTING);
-        
+
         long size = Files.size(file);
-        
+
         Nodec nodec = new NodecSSE();
         BufferChannel chan = BufferChannelFile.create(FN);
         ObjectIterator iter = new ObjectIterator(chan, 0, size);
         boolean resyncing = false;
         long locn = 0;
         long locn1 = 0;
-        
+
         PrintStream out = System.out;
 
         if ( true ) {
@@ -71,7 +70,7 @@ public class tdbdumpnodesRecover {
             out = out2;
         }
         out.printf("File length: %,d [0x%16X]\n", size, size);
-        
+
         for ( ; iter.hasNext() ; ) {
 //            Pair<Long, ByteBuffer> p = iter.next();
 //            locn1 = p.getLeft();
@@ -79,7 +78,7 @@ public class tdbdumpnodesRecover {
 //            Node n = nodec.decode(bb, null);
 //            out.printf("[0x%16X] %s\n",locn1, FmtUtils.stringForNode(n));
 
-            try { 
+            try {
                 Pair<Long, ByteBuffer> p = iter.next();
                 locn1 = p.getLeft();
                 ByteBuffer bb = p.getRight();
@@ -104,7 +103,7 @@ public class tdbdumpnodesRecover {
                     locn2++;
                     chan.position(locn2);
 
-                    try { 
+                    try {
                         Pair<Long, ByteBuffer> p = iter.next();
                         long locn3 = p.getLeft();
                         ByteBuffer bb = p.getRight();
@@ -122,7 +121,7 @@ public class tdbdumpnodesRecover {
             }
         }
     }
-        
+
     public static ByteBuffer read(BufferChannel file, long loc,long filesize) {
         // No - it's in the underlying file storage.
         ByteBuffer lengthBuffer = ByteBuffer.allocate(SizeOfInt);
@@ -155,7 +154,7 @@ public class tdbdumpnodesRecover {
             throw new FileException("read: Failed to read the object (" + len + " bytes) : got " + x + " bytes");
         return bb;
     }
-    
+
     static class ObjectIterator implements Iterator<Pair<Long, ByteBuffer>> {
         final private long start;
         final private long finish;
@@ -185,8 +184,8 @@ public class tdbdumpnodesRecover {
             return new Pair<>(x, bb);
         }
 
-        
-        
+
+
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
@@ -212,8 +211,8 @@ public class tdbdumpnodesRecover {
 ////}
 ////locn = locn1;
 //
-//  
-//  try { 
+//
+//  try {
 //      Pair<Long, ByteBuffer> p = iter.next();
 //      locn1 = p.getLeft();
 //      ByteBuffer bb = p.getRight();
@@ -238,9 +237,9 @@ public class tdbdumpnodesRecover {
 //          ByteBuffer bb = p.getRight();
 //          Node n = nodec.decode(bb, null);
 //      }
-//      
-//      
-//      
+//
+//
+//
 //  }
 //}
 //}

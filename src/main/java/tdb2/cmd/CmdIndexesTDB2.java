@@ -24,8 +24,8 @@ public abstract class CmdIndexesTDB2 extends CmdTDB {
 
     //BPlusTreeTools
     // TDB1: dump*
-    
-    protected CmdIndexesTDB2(String[] argv) {
+
+    protected CmdIndexesTDB2(int x, String[] argv) {
         super(argv);
     }
 

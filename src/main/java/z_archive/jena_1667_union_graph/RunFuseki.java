@@ -21,7 +21,7 @@ package z_archive.jena_1667_union_graph;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionFactory;
+import org.apache.jena.rdfconnection.RDFConnectionFuseki;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 
 public class RunFuseki
@@ -53,7 +53,7 @@ public class RunFuseki
             .start();
 
         // Use it.
-        try ( RDFConnection conn = RDFConnectionFactory.connectFuseki("http://localhost:3030/ds") ) {
+        try ( RDFConnection conn = RDFConnectionFuseki.connect("http://localhost:3030/ds") ) {
             conn.querySelect("SELECT * { ?s ?p ?o }", qs->System.out.println(qs));
         }
         finally { server.stop(); }

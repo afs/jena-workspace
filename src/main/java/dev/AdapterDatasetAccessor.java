@@ -18,11 +18,9 @@
 
 package dev;
 
-import org.apache.jena.query.DatasetAccessor;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdfconnection.RDFDatasetConnection;
 
-@SuppressWarnings("deprecation")
 public class AdapterDatasetAccessor implements DatasetAccessor {
     private final RDFDatasetConnection conn;
 
@@ -39,4 +37,42 @@ public class AdapterDatasetAccessor implements DatasetAccessor {
     @Override public void deleteModel(String name)              { conn.delete(name); }
     @Override public void add(Model model)                      { conn.load(model); }
     @Override public void add(String name, Model model)         { conn.load(name, model); }
+}
+
+@Deprecated
+interface DatasetAccessor
+{
+    // Copied from Jena.
+    /** Get the default model of a Dataset */
+    public Model getModel() ;
+
+    /** Get a named model of a Dataset */
+    public Model getModel(String graphUri) ;
+
+//    /** Does the Dataset contain a default graph? */
+//    public boolean containsDefault() ;
+
+    /** Does the Dataset contain a named graph? */
+    public boolean containsModel(String graphURI) ;
+
+    /** Put (replace) the default model of a Dataset */
+    public void putModel(Model data) ;
+
+    /** Put (create/replace) a named model of a Dataset */
+    public void putModel(String graphUri, Model data) ;
+
+    /** Delete (which means clear) the default model of a Dataset */
+    public void deleteDefault() ;
+
+    /** Delete a named model of a Dataset */
+    public void deleteModel(String graphUri) ;
+
+//    /** Clear the default graph, delete all the named models */
+//    public void reset() ;
+
+    /** Add statements to the default model of a Dataset */
+    public void add(Model data) ;
+
+    /** Add statements to a named model of a Dataset */
+    public void add(String graphUri, Model data) ;
 }

@@ -39,9 +39,7 @@ public class DatabaseBuilder {
         StoreParams params1 = TDBInternal.getDatasetGraphTDB(dsg).getStoreParams();
 
         System.out.println(params1);
-
     }
-
 
     private StoreParamsBuilder paramBuilder;
     private Location location;
@@ -62,6 +60,15 @@ public class DatabaseBuilder {
 
     public DatabaseBuilder location(Location location) {
         this.location = location;
+        return this;
+    }
+
+    /**
+     * Replace the current {@link StoreParamsBuilder} and use the given argument as
+     * the basis for the {@link StoreParamsBuilder}.
+     */
+    public DatabaseBuilder storeParams(StoreParams storeParams) {
+        paramBuilder = StoreParamsBuilder.create(storeParams);
         return this;
     }
 
@@ -112,6 +119,9 @@ public class DatabaseBuilder {
     public DatasetGraph build() {
         // Check if exists.
         // Check if same params.
+//        if ( DatabaseConnection.alreadyBuilt ) {
+//            error.
+//        }
         DatabaseConnection dbConn = DatabaseConnection.connectCreate(location, paramBuilder.build());
         return dbConn.getDatasetGraph();
     }
