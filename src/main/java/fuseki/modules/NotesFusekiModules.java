@@ -16,8 +16,23 @@
  * limitations under the License.
  */
 
-package dev;
+package fuseki.modules;
 
-public class Notes
-{
+public class NotesFusekiModules {
+    // ** Moving modules into core.
+    // But "FusekiServer.Builder"
+    // core->kernel; main->core; add ->main (cmd)
+    // Would like FusekiServer.Builder "addModule".
+    // Then InitSecurity can "add module"?
+
+    // FusekiServer.Builder.buildFusekiContext
+
+    // Manual and automatic modules --> services/
+    //   Can code-add in JenaSystem init.
+
+    // FusekiServer.Builder.addModule
+
+    // Naming: "name()" and "instanceId()"
+
+    //Rename in jena-fuseki-access -  SecurityContext -> SecurityGraphContext
 }

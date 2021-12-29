@@ -28,7 +28,8 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import arq.qexpr;
-import org.apache.jena.atlas.lib.StrUtils;
+import org.apache.jena.atlas.io.AWriter;
+import org.apache.jena.atlas.io.IO;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.graph.Graph;
@@ -37,13 +38,15 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.*;
-import org.apache.jena.sparql.core.DatasetGraphZero;
-import org.apache.jena.sparql.exec.QueryExec;
+import org.apache.jena.riot.out.NodeFormatter;
+import org.apache.jena.riot.out.NodeFormatterTTL;
+import org.apache.jena.riot.out.NodeFormatterTTL_MultiLine;
+import org.apache.jena.riot.system.PrefixMap;
+import org.apache.jena.riot.system.PrefixMapFactory;
 import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.expr.nodevalue.XSDFuncOp;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.sparql.util.DateTimeStruct;
@@ -88,21 +91,96 @@ public class Report {
      * [ ] gYear difference = years
      */
 
-    public static void main(String... args) throws DatatypeConfigurationException {
-        String qStr1 = StrUtils.strjoinNL
-                ("PREFIX : <http://example/>"
-                ,"    SELECT ?x ?o {"
-                ,"       #VALUES ?x { 1 2 3 }"
-                ,"        ?x ?p ?o"
-                ,"    }"
-                        );
-        Query query = QueryFactory.create(qStr1);
-        //Query query2 = QueryTransformOps.transform(query, Map.of(Var.alloc("x"), SSE.parseNode("'abc'")));
+    public static void main(String... args) {
+        Lang lang = Lang.TTL;
+        String s1 = lang.getContentType().getContentTypeStr();
 
-        Query query3 = QueryExec.dataset(DatasetGraphZero.create()).query(qStr1).substitution("x", SSE.parseNode("'abc'")).build().getQuery();
+        //lang.getHeaderString() should be
+        //public String getHeaderString()
+        // { return contentType.getContentTypeStr() ; }
+        // Not .toHeaderStr()
 
-        System.out.println(query3);
-        System.out.println("DONE");
+        //String s2 = lang.getHeaderString();
+        String s2 = lang.getContentType().toHeaderString(); // q factors.
+
+        System.out.println(s1);
+        System.out.println(s2);
+    }
+
+
+    public static void mainDataTimeCompare() {
+        /*
+        Values of the date/time datatypes xs:time, xs:gMonthDay, xs:gMonth, and xs:gDay, can be considered
+        to represent a sequence of recurring time instants or time periods.
+        An xs:time occurs every day. An xs:gMonth occurs every year.
+        Comparison operators on these datatypes compare the starting instants of equivalent occurrences in the recurring series.
+        These xs:dateTime values are calculated as described below.
+
+        Comparison operators on xs:date, xs:gYearMonth and xs:gYear compare their starting instants.
+        These xs:dateTime values are calculated as described below.
+         */
+        /*
+         * XMLGregorianDateTime works well including indeterminate for overlaps.
+         * e.g.
+         */
+
+        Node n1 = SSE.parseNode("'2021'^^xsd:gYear");
+        NodeValue nv1 = NodeValue.makeNode(n1);
+        Node n2 = SSE.parseNode("'2021-02'^^xsd:gYearMonth");
+        NodeValue nv2 = NodeValue.makeNode(n2);
+
+        // Make the time point zeros? No prob - the "undef" value is negative.
+
+        System.out.println(nv1);
+        System.out.println(nv1.isDate());
+        System.out.println(nv1.getDateTime());
+        System.out.println();
+        System.out.println(nv2);
+        System.out.println(nv2.isDate());
+        System.out.println(nv2.getDateTime());
+        System.out.println();
+        System.out.println("nv2.month: "+nv2.getDateTime().getMonth());
+        System.out.println("nv2.day:   "+nv2.getDateTime().getDay());
+        System.out.println();
+        System.out.println(Integer.MIN_VALUE);
+
+        //SystemARQ.StrictDateTimeFO = true;
+
+        System.out.println("Cmp: java: "+nv1.getDateTime().compare(nv2.getDateTime()));
+
+        System.out.println("Cmp: XSD: "+XSDFuncOp.compareDateTime(nv1, nv2));
+
+        //System.out.println(NodeValue.compare(nv1, nv2));
+        System.exit(0);
+    }
+
+    public static void mainNodeFormatter() {
+        PrefixMap prefixMap = PrefixMapFactory.create();
+        prefixMap.add(":", "http://example/");
+
+        NodeFormatter nFmt1 = new NodeFormatterTTL("http://base/", prefixMap);
+        NodeFormatter nFmt2 = new NodeFormatterTTL_MultiLine("http://base/", prefixMap);
+        AWriter aOut = IO.wrapUTF8(System.out);
+
+        String x[] = {
+            "'xyz\\ndef'^^:datatype",
+            "'123'^^:datatype",
+            "123",
+//            "'1abc'^^:datatype",
+//            "'2ab\"c'^^:datatype" ,
+//            "'3ab\\'c'^^:datatype" ,
+//            "\"4abc\\\"'\"^^:datatype"
+        };
+        for (String str : x) {
+            Node n = SSE.parseNode(str);
+            nFmt1.format(aOut, n);
+            aOut.println();
+            nFmt2.format(aOut, n);
+            aOut.println();
+            aOut.println();
+            aOut.flush();
+        }
+
         System.exit(0);
     }
 

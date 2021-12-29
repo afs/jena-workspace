@@ -112,7 +112,6 @@ public abstract class FusekiLoggingUpgrade
         return url ;
     }
 
-    // XXX
     static class FusekiLoggingLog4j2 extends FusekiLoggingUpgrade {
         // Set logging for Log4j v2
         // 1/ Use log4j.configurationFile if defined (standard log4j2 initialization)

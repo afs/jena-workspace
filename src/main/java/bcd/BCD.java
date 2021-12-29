@@ -18,7 +18,7 @@
 
 package bcd;
 
-// Mode dense:
+// More dense:
 // https://en.wikipedia.org/wiki/Chen%E2%80%93Ho_encoding
 // https://en.wikipedia.org/wiki/Densely_packed_decimal
 // Ten values in 4 bits (16 symbols)

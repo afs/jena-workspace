@@ -18,17 +18,16 @@
 
 package eval;
 
-import java.util.Collection;
-
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
-import org.apache.jena.sparql.algebra.*;
+import org.apache.jena.sparql.algebra.Algebra;
+import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.Transform;
+import org.apache.jena.sparql.algebra.Transformer;
 import org.apache.jena.sparql.algebra.optimize.OptimizerStd;
 import org.apache.jena.sparql.algebra.optimize.TransformFilterPlacement;
-import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.sparql.util.Context;
 
 public class DevJoin {
@@ -36,30 +35,6 @@ public class DevJoin {
     // Filter not pushed into joins.
     // OpVars fixes.
     //ends up in OpVarsPattern?
-
-    public static void main1(String[] args) {
-
-        //Op op = SSE.parseOp("(join (triple ?s :p ?o )(triple ?s :q ?x))");
-        Op op = SSE.parseOp("(triple ?s :q ?x)");
-        Collection<Var> c = OpVars.fixedVars(op);
-        System.out.println(c);
-        System.exit(0);
-
-
-//        Op op = SSE.parseOp("(join (triple ?s :p ?o )(triple ?s :q ?x))");
-//        OpJoin opj = (OpJoin)op;
-//
-//        Op left = opj.getLeft();
-//        OpVars.fixedVars(left);
-//        System.out.println(OpVars.fixedVars(left));
-//
-//        System.exit(0);
-//
-//        Set<Var> x = OpVars.fixedVars(opj.getLeft());
-//        Set<Var> y = OpVars.fixedVars(opj.getRight());
-//        System.out.println(x);
-//        System.out.println(y);
-    }
 
     public static void main(String[] args) {
         String QS = StrUtils.strjoinNL
@@ -73,7 +48,7 @@ public class DevJoin {
             ,"}");
 
         // Sequence.
-        // Filter - can push two ways or wone because a join is an equality test.
+        // Filter - can push two ways or one because a join is an equality test.
 
         Query query = QueryFactory.create(QS);
         Op op = Algebra.compile(query);
