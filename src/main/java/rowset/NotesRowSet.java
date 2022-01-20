@@ -19,11 +19,18 @@
 package rowset;
 
 public class NotesRowSet {
-    // ResultSetLang.init ->??
-    // ResultSetException
-
     // Tidy RowSetWriterText
 
-    // Thrift - need code changes.
-    // Protobuf
+    // -- Minor
+    // [x] RowSet.create() Builder.
+    //     Both: ResultsReader -> X_Reader, X_Writer
+
+    // [-] RowSetFactory - better boolean?
+
+    // [x] SSE -> RowSet
+    // [x] TestThriftResultSet
+
+    // [x] Thrift - need code changes. ThriftRDF
+    // [x] Protobuf
+    // [x] Deprecate old ResultSetReaders/Writer.
 }

@@ -29,7 +29,7 @@ import org.apache.jena.shared.PrefixMapping;
 
 public class BufferingFactory {
 
-    public static PrefixMapping create(StoragePrefixes storagePrefixes, Node graphNode) {
+    public static PrefixMapping xcreate(StoragePrefixes storagePrefixes, Node graphNode) {
         // Too many layers!
         // Dataset storage : storagePrefixes
 

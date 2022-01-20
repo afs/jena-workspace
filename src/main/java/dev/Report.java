@@ -18,10 +18,12 @@
 
 package dev;
 
+import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
+import java.util.Locale;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -39,25 +41,39 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.apache.jena.riot.*;
 import org.apache.jena.riot.out.NodeFormatter;
 import org.apache.jena.riot.out.NodeFormatterTTL;
 import org.apache.jena.riot.out.NodeFormatterTTL_MultiLine;
 import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.system.PrefixMapFactory;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.exec.QueryExec;
+import org.apache.jena.sparql.exec.RowSet;
+import org.apache.jena.sparql.exec.RowSetOps;
+import org.apache.jena.sparql.exec.http.QueryExecutionHTTP;
+import org.apache.jena.sparql.exec.http.UpdateExecutionHTTP;
+import org.apache.jena.sparql.exec.http.UpdateExecutionHTTPBuilder;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.expr.nodevalue.XSDFuncOp;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.sparql.util.DateTimeStruct;
 import org.apache.jena.sys.JenaSystem;
+import org.apache.jena.tdb2.TDB2Factory;
 import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateProcessor;
 import org.apache.jena.update.UpdateRequest;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public class Report {
     static {
+        try {
+            SLF4JBridgeHandler.removeHandlersForRootLogger();
+        } catch (Throwable th) {}
+
         JenaSystem.init();
         FusekiLogging.setLogging();
         //LogCtl.setLog4j2();
@@ -92,13 +108,47 @@ public class Report {
      */
 
     public static void main(String... args) {
+
+        RDFConnectionRemote.service("").build();
+
+        UpdateExecutionHTTPBuilder b = UpdateExecutionHTTP.service("");
+        b.httpHeader("", "");
+
+        QueryExecutionHTTP.service("").httpHeader("", "");
+
+        //RDFConnectionRemote.service("").
+
+        Locale.setDefault(Locale.FRANCE);
+//        Locale.setDefault(Locale.GERMANY);
+
+        NodeValue nv = NodeValue.makeFloat(1.23f);
+        System.out.println(nv.toString());
+        System.out.println(NodeValue.toNode(nv));
+        System.out.printf("%,d\n", 10000);
+
+        DecimalFormat myFormatter = new DecimalFormat("#,###.###");
+        System.out.println(myFormatter.format(1234.67e0));
+        System.exit(0);
+
+        String P = "PREFIX : <http://example/>";
+        DatasetGraph dsg = TDB2Factory.createDataset().asDatasetGraph();
+        dsg.executeWrite(()->
+            RDFParser.fromString(P+ ":x :p :o . :o :q :z .").lang(Lang.TTL).parse(dsg)
+                );
+        dsg.executeRead(()->{
+            RowSet rowSet = QueryExec.dataset(dsg).query(P+"SELECT * { ?x :p ?o . ?o :q ?z .}").select();
+            RowSetOps.out(rowSet);
+        });
+    }
+
+    public static void mainLang(String... args) {
         Lang lang = Lang.TTL;
         String s1 = lang.getContentType().getContentTypeStr();
 
         //lang.getHeaderString() should be
         //public String getHeaderString()
         // { return contentType.getContentTypeStr() ; }
-        // Not .toHeaderStr()
+        // Not .toHeaderStr() which includes "q="
 
         //String s2 = lang.getHeaderString();
         String s2 = lang.getContentType().toHeaderString(); // q factors.

@@ -18,101 +18,65 @@
 
 package dsg.union;
 
+import java.util.List;
+
+import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.query.ResultSetFormatter;
-import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdflink.RDFLink;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFParser;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
-import org.apache.jena.sparql.core.DatasetGraphWrapper;
-import org.apache.jena.sparql.core.DatasetGraphWrapperView;
-import org.apache.jena.sparql.graph.GraphWrapper;
-import org.apache.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.sparql.exec.RowSetOps;
+import org.apache.jena.sparql.sse.SSE;
 
-/** Union default graph for any dataset*/
 public class DevUnionDSG {
-    //DatasetGraphWrapperView
 
-    // Imperfect for things that dive inside implementation.
-    // *** What about Context setting? Universal.
-    // Push down to storage, but also in OpExecutor.
-
-    // Symbol:  tdb:unionDefaultGraph, tdb2:unionDefaultGraph
-    //  arq:unionDefaultGraph : isUnionDftQuery.
-    // Build into OpExecutor.
-    //   OpExecutor.executeUnion(OpBGP opBGP, QueryIterator input).
-    //   And/Or rewrite to GRAPH <union> quads
-    //   Default to quadded, not graph?
-
-    /* TDB1:
-     * Quads:
-     * OpExecutorTDB.decideGraphNode
-     * BGP:
-     * decideGraphNode => Union graph -> Node.ANY
-     *
-     *
-     *
-     * SolverLib:
-     * public executes:
-     *     graph.getNodeTupleTable()  or ds.chooseNodeTupleTable
-     * private SolverLib.execute/NodeTupleTable
-     *  if ( Quad.isUnionGraph(graphNode) )
-     *       graphNode = Node.ANY ;
-     *   if ( Quad.isDefaultGraph(graphNode) )
-     *       graphNode = null ;
-     *
-     * boolean anyGraph = (graphNode==null ? false : (Node.ANY.equals(graphNode))) ;
-     * GRAPH <union>
-     */
-
-    /* TDB2: same in TDB1 OpExecutor2.
-     */
-
-    // QueryEngineFactoryWrapper.accept
-    static class DatasetGraphMorph extends DatasetGraphWrapper implements DatasetGraphWrapperView {
-        public DatasetGraphMorph(DatasetGraph dsg) {
-            super(dsg);
-        }
+    public static void data(DatasetGraph dsg) {
+        String s = StrUtils.strjoinNL("PREFIX : <http://example/>"
+                                      ,":g1 { :s :p :o }"
+                                      ,":g2 { :s :p :o }");
+        RDFParser.fromString(s).lang(Lang.TRIG).parse(dsg);
     }
 
     // JENA-1668.
-    public static void main(String...args) {
+    public static void main(String... args) {
+        mainTIM();
+    }
+    public static void mainTIM() {
+        DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
+        data(dsg);
 
-        // This is Morph.
+        Graph g = dsg.getUnionGraph();
+        Node x = SSE.parseNode(":s");
 
+        // Does not hit indexes?
+        List<Triple> list =
+                g.find(x, null, null)
+                .toList();
+
+        System.exit(0);
+    }
+
+    public static void mainAltDft() {
         // DatasetGraphMapLink
         DatasetGraph dsg = DatasetGraphFactory.createGeneral();
-        RDFDataMgr.read(dsg, "D.trig");
-        //RDFDataMgr.write(System.out, dsg, Lang.NQ);
-
-//        DatasetGraphMapLink dsgm = (DatasetGraphMapLink)dsg;
-//
-//        // BUT NOT UPDATEABLE.
-//        dsgm.setDefaultGraph(dsg.getUnionGraph());
+        Graph ug = dsg.getUnionGraph();
 
         // Change the read-default graph.
-        DatasetGraph dsg1 = new DatasetGraphMorph(dsg) {
-            @Override public Graph getDefaultGraph() {
-                return new GraphWrapper(super.getDefaultGraph()) {
-                    @Override public ExtendedIterator<Triple> find(Triple t) {
-                        return getUnionGraph().find(t);
-                    }
-                    @Override public ExtendedIterator<Triple> find(Node s, Node p, Node o) {
-                        return getUnionGraph().find(s, p, o);
-                    }
-                };
-            }
-        };
+        // Union default graph + named graphs
+        DatasetGraph dsg1 = new DatasetGraphAltGraphs(ug, ug, dsg);
+        // Union default graph only.
+        DatasetGraph dsg2 = DatasetGraphFactory.wrap(ug);
 
         RDFDataMgr.write(System.out, dsg1, Lang.NQ);
 
-        try(RDFConnection conn = RDFConnection.connect(DatasetFactory.wrap(dsg1))) {
-            conn.queryResultSet("SELECT * { ?s ?p ?o }",
-                rs->ResultSetFormatter.out(rs));
+        try(RDFLink conn = RDFLink.connect(dsg1)) {
+            conn.queryRowSet("SELECT * { ?s ?p ?o }",
+                             rs->RowSetOps.out(rs));
             conn.update("INSERT DATA { <x:s> <x:p> 'new'}");
         }
 

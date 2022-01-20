@@ -18,8 +18,9 @@
 
 package dsg.buffering;
 
-import dsg.buffering.graph.TestBufferingGraph;
-import dsg.buffering.graph.TestBufferingPrefixMapping;
+import dsg.buffering.test.TestBufferingDatasetGraph;
+import dsg.buffering.test.TestBufferingGraph;
+import dsg.buffering.test.TestBufferingPrefixMapping;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 

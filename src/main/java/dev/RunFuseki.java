@@ -27,8 +27,10 @@ import org.apache.jena.fuseki.validation.DataValidator;
 import org.apache.jena.fuseki.validation.IRIValidator;
 import org.apache.jena.fuseki.validation.QueryValidator;
 import org.apache.jena.fuseki.validation.UpdateValidator;
+import org.apache.jena.http.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.sparql.exec.http.GSP;
 
 public class RunFuseki
 {
@@ -39,8 +41,8 @@ public class RunFuseki
         FusekiLogging.setLogging();
 
         try {
-            mainExternal();
-            //mainServer();
+            //mainExternal();
+            mainServer();
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
@@ -63,6 +65,10 @@ public class RunFuseki
                 .port(3030)
                 .build()
                 .start();
+        String URL = "http://localhost:"+server.getHttpPort();
+        GSP.service(URL+"/ds").defaultGraph().GET();
+        String x = HttpOp.httpGetString(URL+"/x");
+        System.out.println(x);
     }
 
     public static void mainWebapp() {

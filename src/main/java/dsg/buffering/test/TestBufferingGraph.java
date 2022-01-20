@@ -16,11 +16,12 @@
  * limitations under the License.
  */
 
-package dsg.buffering.graph;
+package dsg.buffering.test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import dsg.buffering.graph.BufferingGraph;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.graph.GraphFactory;
@@ -69,7 +70,7 @@ public class TestBufferingGraph {
         Triple t1 = SSE.parseTriple("(:s :p 1)");
         base.add(t1);
         BufferingGraph graph = buffered;
-        // New object
+        // New object, same triple.
         t1 = SSE.parseTriple("(:s :p 1)");
         graph.delete(t1);
         assertFalse(base.isEmpty());

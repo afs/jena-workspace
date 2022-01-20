@@ -27,8 +27,9 @@ import org.apache.jena.riot.system.PrefixLib;
 import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.system.PrefixMapBase;
 
-// Is there a PrefixMap that works over Map-like abstract methods.
-
+/**
+ *
+ */
 public class BufferingPrefixMap extends PrefixMapBase {
 
     private Map<String, String> addedMappings = new HashMap<>();

@@ -16,12 +16,13 @@
  * limitations under the License.
  */
 
-package dsg.buffering.graph;
+package dsg.buffering.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import dsg.buffering.graph.BufferingPrefixMapping;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.junit.FixMethodOrder;

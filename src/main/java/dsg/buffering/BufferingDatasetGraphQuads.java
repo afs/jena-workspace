@@ -48,7 +48,6 @@ import org.apache.jena.sparql.core.Quad;
  * See also {@code RDFPatch}, {@code DatasetGraphChanges} for a stream of changes.
  *
  * @see BufferingDatasetGraph
- *
  */
 public class BufferingDatasetGraphQuads extends DatasetGraphQuads2 implements BufferingCtl {
 

@@ -31,9 +31,10 @@ import org.apache.jena.query.TxnType;
 import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.sparql.core.*;
 
-/** BufferingDatasetGraph - decomposes operations in "triples" (default graph) and "quads" (named graphs)
+/**
+ * BufferingDatasetGraph - decomposes operations in "triples" (default graph) and "quads" (named graphs)
  *
- * Compare with with {@link BufferingDatasetGraphQuads} which keeps added/deleted by quads.
+ * Compare with {@link BufferingDatasetGraphQuads} which keeps added/deleted by quads.
  */
 public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements BufferingCtl {
 

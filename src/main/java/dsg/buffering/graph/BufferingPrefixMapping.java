@@ -27,13 +27,11 @@ import org.apache.jena.shared.impl.PrefixMappingImpl;
 
 /** A prefixMap that buffers changes until {@link #flush()} is called. */
 public class BufferingPrefixMapping extends PrefixMappingImpl implements BufferingCtl {
-    // **** See also BufferingFactory.create(StoragePrefixes, )
-
     private static final boolean CHECK = false;
     // Depends on the fact that PrefixMappingImpl maps everything get/set/remove.
-    private PrefixMapping added = new PrefixMappingImpl();
-    private Set<String> deleted = new HashSet<>();
-    private PrefixMapping other;
+    private final PrefixMapping added = new PrefixMappingImpl();
+    private final Set<String> deleted = new HashSet<>();
+    private final PrefixMapping other;
 
     public BufferingPrefixMapping(PrefixMapping other) {
         this.other = other;

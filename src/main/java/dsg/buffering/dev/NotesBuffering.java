@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package dsg.buffering;
+package dsg.buffering.dev;
 
 import java.util.Iterator;
 
@@ -32,31 +32,28 @@ public class NotesBuffering {
     // BufferingDatasetGraph vs BufferingDatasetGraphQuads. Is it worth it? just Quads version?
     //  ==> Do properly.
 
+    // [ ] Drop BufferingPrefixMapping and use adapter+BufferingPrefixMap
+    // [ ] Library for "plain" graph operations. Code in BufferingGraph to G
+    // [ ] G-ify BufferingGraph. (Is G complete for DSGs?)
+    // [ ] L to G.
+
     // **** Plan
 
     // 1 :: Add prefixes to DatasetGraph
-    //   How to make transactionally connected?:
-    //      Update GraphView
-    // See "prefixes" package
-
-    // ToDo BufferingDatasetPrefixes
 
     // 2 :: General.
     //   BufferingDatasetGraph
-    //   BufferingDatasetPrefixStorage
+    //   BufferingPrefixMap
     //     And when graph handed out? GraphView - comes for free.
-
 
     // ** Maybe: DBOE
     // BufferingStorageRDF
     // BufferingStoragePrefixMap
     //   Port TIM to DBOE?
 
-
     // Graph:
     // BufferingGraph
     // BufferingPrefixMapping
-
 
     // ---
 

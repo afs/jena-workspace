@@ -201,7 +201,8 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
         Graph base = get();
         if (deletedTriples.isEmpty())
             return base.isEmpty();
-        return find(Triple.ANY).hasNext();
+        // Go through the full machinery.
+        return ! contains(Triple.ANY);
     }
 
     @Override

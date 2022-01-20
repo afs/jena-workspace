@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package dsg.buffering;
+package dsg.buffering.dev;
 
 import org.apache.jena.dboe.storage.StoragePrefixes;
 import org.apache.jena.dboe.storage.prefixes.PrefixesDboeFactory;

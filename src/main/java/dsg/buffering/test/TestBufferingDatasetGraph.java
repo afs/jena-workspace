@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package dsg.buffering;
+package dsg.buffering.test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import dsg.buffering.BufferingCtl;
+import dsg.buffering.BufferingDatasetGraph;
+import dsg.buffering.BufferingDatasetGraphQuads;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
@@ -42,7 +45,7 @@ public class TestBufferingDatasetGraph {
         List<Object[]> x = new ArrayList<>() ;
 
         Function<DatasetGraph, DatasetGraph> f1 = BufferingDatasetGraphQuads::new;
-        x.add(new Object[] {"BufferingDSG_Quads", f1});
+        x.add(new Object[] {"BufferingDatasetGraphQuads", f1});
 
         Function<DatasetGraph, DatasetGraph> f2 = BufferingDatasetGraph::new;
         x.add(new Object[] {"BufferingDatasetGraph", f2});

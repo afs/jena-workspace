@@ -40,9 +40,11 @@ public class FMod_GraphAccessCtl implements FusekiModule {
         VocabSecurity.init();
     }
 
+    // MIGRATION:
     @Override
     public void configuration(FusekiServer.Builder builder, DataAccessPointRegistry dapRegistry, Model configModel) {
         dapRegistry.forEach((name, dap) -> {
+
             // Override for graph-level access control.
             if ( DataAccessCtl.isAccessControlled(dap.getDataService().getDataset()) ) {
                 dap.getDataService().forEachEndpoint(ep->
@@ -50,4 +52,12 @@ public class FMod_GraphAccessCtl implements FusekiModule {
             }
         });
     }
+
+//    @Override
+//    public void configDataAccessPoint(FusekiServer.Builder builder, DataAccessPoint dap, Model configModel) {
+//        if ( DataAccessCtl.isAccessControlled(dap.getDataService().getDataset()) ) {
+//            dap.getDataService().forEachEndpoint(ep->
+//                FusekiLib.modifyForAccessCtl(ep, DataAccessCtl.requestUserServlet));
+//        }
+//    }
 }
