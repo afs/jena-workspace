@@ -27,6 +27,7 @@ import org.apache.jena.shared.impl.PrefixMappingImpl;
 
 /** A prefixMap that buffers changes until {@link #flush()} is called. */
 public class BufferingPrefixMapping extends PrefixMappingImpl implements BufferingCtl {
+
     private static final boolean CHECK = false;
     // Depends on the fact that PrefixMappingImpl maps everything get/set/remove.
     private final PrefixMapping added = new PrefixMappingImpl();

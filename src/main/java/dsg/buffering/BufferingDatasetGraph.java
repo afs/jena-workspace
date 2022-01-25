@@ -36,7 +36,7 @@ import org.apache.jena.sparql.core.*;
  *
  * Compare with {@link BufferingDatasetGraphQuads} which keeps added/deleted by quads.
  */
-public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements BufferingCtl {
+public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements DatasetGraphBuffering {
 
     private DatasetGraph baseDSG;
     protected DatasetGraph get() { return baseDSG; }
@@ -60,17 +60,19 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements B
 
     @Override
     public void flush() {
-        Graph dftGraph = baseDSG.getDefaultGraph();
+        baseDSG.executeWrite(()->{
+            Graph dftGraph = baseDSG.getDefaultGraph();
 
-        addedTriples.forEach(dftGraph::add);
-        deletedTriples.forEach(dftGraph::delete);
-        addedQuads.forEach(baseDSG::add);
-        deletedQuads.forEach(baseDSG::delete);
+            addedTriples.forEach(dftGraph::add);
+            deletedTriples.forEach(dftGraph::delete);
+            addedQuads.forEach(baseDSG::add);
+            deletedQuads.forEach(baseDSG::delete);
 
-        addedTriples.clear();
-        deletedTriples.clear();
-        addedQuads.clear();
-        deletedQuads.clear();
+            addedTriples.clear();
+            deletedTriples.clear();
+            addedQuads.clear();
+            deletedQuads.clear();
+        });
     }
 
     @Override

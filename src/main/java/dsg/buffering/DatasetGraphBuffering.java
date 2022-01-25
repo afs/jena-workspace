@@ -16,7 +16,15 @@
  * limitations under the License.
  */
 
-package geosparql_assem;
+package dsg.buffering;
 
-public class Notes {
-}
+import org.apache.jena.sparql.core.DatasetGraph;
+
+/**
+ * BufferingDatasetGraph interface
+ * <p>
+ * The usual implementation is {@link BufferingDatasetGraph}.
+ * <p>
+ * A "Quads only" version is {@link BufferingDatasetGraphQuads}.
+ */
+public interface DatasetGraphBuffering extends BufferingCtl, DatasetGraph {}

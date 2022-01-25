@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package geosparql_assem;
+package z_archive;
 
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.fuseki.main.FusekiServer;

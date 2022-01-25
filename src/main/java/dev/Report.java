@@ -18,54 +18,36 @@
 
 package dev;
 
-import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
-import java.util.Locale;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import arq.qexpr;
-import org.apache.jena.atlas.io.AWriter;
-import org.apache.jena.atlas.io.IO;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.ontology.OntModel;
-import org.apache.jena.ontology.OntModelSpec;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdfconnection.RDFConnectionRemote;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.riot.*;
-import org.apache.jena.riot.out.NodeFormatter;
-import org.apache.jena.riot.out.NodeFormatterTTL;
-import org.apache.jena.riot.out.NodeFormatterTTL_MultiLine;
-import org.apache.jena.riot.system.PrefixMap;
-import org.apache.jena.riot.system.PrefixMapFactory;
+import org.apache.jena.sparql.algebra.Algebra;
+import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.op.OpExtend;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.exec.QueryExec;
-import org.apache.jena.sparql.exec.RowSet;
-import org.apache.jena.sparql.exec.RowSetOps;
-import org.apache.jena.sparql.exec.http.QueryExecutionHTTP;
-import org.apache.jena.sparql.exec.http.UpdateExecutionHTTP;
-import org.apache.jena.sparql.exec.http.UpdateExecutionHTTPBuilder;
+import org.apache.jena.sparql.core.DatasetGraphZero;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.engine.ExecutionContext;
+import org.apache.jena.sparql.engine.QueryIterator;
+import org.apache.jena.sparql.engine.iterator.QueryIterRoot;
+import org.apache.jena.sparql.engine.main.OpExecutor;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.expr.nodevalue.XSDFuncOp;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.sse.SSE;
-import org.apache.jena.sparql.util.DateTimeStruct;
 import org.apache.jena.sys.JenaSystem;
-import org.apache.jena.tdb2.TDB2Factory;
-import org.apache.jena.update.UpdateExecutionFactory;
-import org.apache.jena.update.UpdateFactory;
-import org.apache.jena.update.UpdateProcessor;
-import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.tdb2.DatabaseMgr;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public class Report {
@@ -108,55 +90,59 @@ public class Report {
      */
 
     public static void main(String... args) {
-
-        RDFConnectionRemote.service("").build();
-
-        UpdateExecutionHTTPBuilder b = UpdateExecutionHTTP.service("");
-        b.httpHeader("", "");
-
-        QueryExecutionHTTP.service("").httpHeader("", "");
-
-        //RDFConnectionRemote.service("").
-
-        Locale.setDefault(Locale.FRANCE);
-//        Locale.setDefault(Locale.GERMANY);
-
-        NodeValue nv = NodeValue.makeFloat(1.23f);
-        System.out.println(nv.toString());
-        System.out.println(NodeValue.toNode(nv));
-        System.out.printf("%,d\n", 10000);
-
-        DecimalFormat myFormatter = new DecimalFormat("#,###.###");
-        System.out.println(myFormatter.format(1234.67e0));
+        DatasetGraph dsg = DatabaseMgr.createDatasetGraph();
+        Quad q = SSE.parseQuad("(_ :s :p :o)");
+        dsg.add(q);
+//        Triple t = SSE.parseTriple("(:s :p :o)");
+//        dsg.getDefaultGraph().add(t);
+        System.out.println("DONE");
         System.exit(0);
 
-        String P = "PREFIX : <http://example/>";
-        DatasetGraph dsg = TDB2Factory.createDataset().asDatasetGraph();
-        dsg.executeWrite(()->
-            RDFParser.fromString(P+ ":x :p :o . :o :q :z .").lang(Lang.TTL).parse(dsg)
-                );
-        dsg.executeRead(()->{
-            RowSet rowSet = QueryExec.dataset(dsg).query(P+"SELECT * { ?x :p ?o . ?o :q ?z .}").select();
-            RowSetOps.out(rowSet);
-        });
+        mainSSE();
     }
 
-    public static void mainLang(String... args) {
-        Lang lang = Lang.TTL;
-        String s1 = lang.getContentType().getContentTypeStr();
+    public static void mainSSE() {
 
-        //lang.getHeaderString() should be
-        //public String getHeaderString()
-        // { return contentType.getContentTypeStr() ; }
-        // Not .toHeaderStr() which includes "q="
+        // [x] Check unlift before write.
+        // [?] Tests for lift
 
-        //String s2 = lang.getHeaderString();
-        String s2 = lang.getContentType().toHeaderString(); // q factors.
+        // [-] Use ItemWalker
+        // [x] Item Transformer xform copy check - TransformerBase - keep stuff
 
-        System.out.println(s1);
-        System.out.println(s2);
+        // [x] One line (qtriple) printing.
+
+        dwimSSE("SELECT * { FILTER(?t = <<?s ?p ?o>>) }");
+        dwimSSE("SELECT * { BIND ( <<?s ?p ?o>> AS ?t) }");
+        dwimSSE("SELECT * { <<?s ?p <<?s ?p ?o>> >> ?q ?z }");
+        dwimSSE("SELECT * { BIND ( TRIPLE(?s, ?p, ?o) AS ?t) }");
+
+        System.exit(0);
+        System.exit(0);
+
+
     }
 
+    private static void dwimSSE(String string) {
+        System.out.println("== "+string);
+        Query query = QueryFactory.create(string);
+        Op op = Algebra.compile(query);
+        SSE.write(op);
+        System.out.println();
+    }
+
+    private static void eval(Op op) {
+        System.out.println(op);
+
+        if ( op instanceof OpExtend ) {
+            OpExtend opx = (OpExtend)op;
+            opx.getVarExprList().forEachVarExpr((v,e)->System.out.println(e));
+        }
+
+        ExecutionContext execCxt = new ExecutionContext(DatasetGraphZero.create());
+        QueryIterator qIter0 = QueryIterRoot.create(execCxt);
+        QueryIterator qIter = OpExecutor.stdFactory.create(execCxt).executeOp(op, qIter0);
+        Iter.print(qIter);
+    }
 
     public static void mainDataTimeCompare() {
         /*
@@ -202,110 +188,6 @@ public class Report {
 
         //System.out.println(NodeValue.compare(nv1, nv2));
         System.exit(0);
-    }
-
-    public static void mainNodeFormatter() {
-        PrefixMap prefixMap = PrefixMapFactory.create();
-        prefixMap.add(":", "http://example/");
-
-        NodeFormatter nFmt1 = new NodeFormatterTTL("http://base/", prefixMap);
-        NodeFormatter nFmt2 = new NodeFormatterTTL_MultiLine("http://base/", prefixMap);
-        AWriter aOut = IO.wrapUTF8(System.out);
-
-        String x[] = {
-            "'xyz\\ndef'^^:datatype",
-            "'123'^^:datatype",
-            "123",
-//            "'1abc'^^:datatype",
-//            "'2ab\"c'^^:datatype" ,
-//            "'3ab\\'c'^^:datatype" ,
-//            "\"4abc\\\"'\"^^:datatype"
-        };
-        for (String str : x) {
-            Node n = SSE.parseNode(str);
-            nFmt1.format(aOut, n);
-            aOut.println();
-            nFmt2.format(aOut, n);
-            aOut.println();
-            aOut.println();
-            aOut.flush();
-        }
-
-        System.exit(0);
-    }
-
-    static void foo() throws DatatypeConfigurationException {
-
-        OntModel data = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM_RULE_INF);
-        data.read("http://purl.org/iso25964/skos-thes");
-        System.out.println(data.size());
-        System.out.println("DONE");
-        System.exit(0);
-
-        Node n1 = NodeFactory.createLiteralByValue(42, XSDDatatype.XSDbyte);
-        Object obj1 = n1.getLiteral().getIndexingValue();
-        System.out.println(obj1);
-        if ( obj1 != null )
-            System.out.println(obj1.getClass().getSimpleName());
-
-
-        Node n2 = NodeFactory.createLiteral("42", XSDDatatype.XSDbyte);
-        Object obj2 = n1.getLiteral().getIndexingValue();
-        System.out.println(obj2);
-        if ( obj2 != null )
-            System.out.println(obj2.getClass().getSimpleName());
-
-        System.out.println("DONE");
-        System.exit(0);
-
-        //String x = "'3500000000-01-01T00:00:00Z'^^xsd:dateTime";
-        String lex = "3500000000";
-        String x = "'"+lex+"'^^xsd:gYear";
-
-        qexpr.main("'0001-01-01'^^xsd:date - '-0001-01-01'^^xsd:date");
-        qexpr.main("'0001-01-01'^^xsd:date - '0000-01-01'^^xsd:date");
-        System.exit(0);
-
-//        Node n = SSE.parseNode(x);
-//        Checker.check(n, ErrorHandlerFactory.errorHandlerStd, -1, -1);
-
-        DateTimeStruct dts1 = DateTimeStruct.parseDateTime("3500000000-01-01T00:00:00Z");
-        DateTimeStruct dts2 = DateTimeStruct.parseGMonth("--03Z");
-
-        XMLGregorianCalendar cal1 = DatatypeFactory.newInstance().newXMLGregorianCalendar("2021");
-        XMLGregorianCalendar cal2 = DatatypeFactory.newInstance().newXMLGregorianCalendar("2021Z");
-
-        System.out.println(cal1.equals(cal2));
-        System.out.println(cal1.compare(cal2));
-        System.exit(0);
-
-        // Invalid for partial
-        ZonedDateTime zdt = cal1.toGregorianCalendar().toZonedDateTime();
-        System.out.println(zdt);
-//        boolean b = XSDDatatype.XSDgYear.isValid("3500000000");
-//        System.out.println(b);
-
-//        dwim("TDB1", TDBFactory.createDataset());
-//        dwim("TDB2", TDB2Factory.createDataset());
-//        dwim("Dft", DatasetFactory.create());
-//        dwim("TIM", DatasetFactory.createTxnMem());
-        System.out.println("DONE");
-        System.exit(0);
-    }
-
-    public static void dwim(String label, Dataset dataset) {
-        System.out.println("== "+label);
-        dataset.executeWrite(()->{
-            String updateQuery = "PREFIX  mygraph:  <http://example.org#mygraph> " +
-                    "WITH mygraph: " +
-                    "INSERT { <x:s> <x:p> 'abc' } WHERE { BIND('x' AS ?x) }";
-
-            UpdateRequest update = UpdateFactory.create(updateQuery);
-            UpdateProcessor processor = UpdateExecutionFactory.create(update, dataset);
-            processor.execute();
-
-            RDFDataMgr.write(System.out,  dataset, Lang.NQ);
-        });
     }
 
     public static void main0000() throws Exception {

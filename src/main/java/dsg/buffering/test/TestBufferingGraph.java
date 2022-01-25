@@ -21,64 +21,115 @@ package dsg.buffering.test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+import dsg.buffering.L;
 import dsg.buffering.graph.BufferingGraph;
+import org.apache.jena.atlas.lib.Creator;
 import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.TransactionHandler;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.sse.SSE;
+import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.tdb2.DatabaseMgr;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
+@RunWith(Parameterized.class)
 public class TestBufferingGraph {
-    //More needed
 
-    private Graph base = GraphFactory.createGraphMem();
-    private BufferingGraph buffered = new BufferingGraph(base);
+    @Parameters(name = "{index}: {0}")
+    public static Iterable<Object[]> data() {
+        List<Object[]> x = new ArrayList<>() ;
+        Function<Graph, BufferingGraph> buffering = BufferingGraph::new;
+        Creator<Graph> base1 = ()->GraphFactory.createGraphMem();
+        Creator<Graph> base2 = ()->DatasetGraphFactory.createTxnMem().getDefaultGraph();
+        Creator<Graph> base3 = ()->TDBFactory.createDatasetGraph().getDefaultGraph();
+        Creator<Graph> base4 = ()->DatabaseMgr.createDatasetGraph().getDefaultGraph();
+
+        x.add(new Object[] {"Graph", base1, buffering});
+        x.add(new Object[] {"GraphView(TIM)", base2, buffering});
+        x.add(new Object[] {"GraphView(TDB2)", base3, buffering});
+        x.add(new Object[] {"GraphView(TDB1)", base4, buffering});
+        return x ;
+    }
+
+    private final Graph base;
+    private final BufferingGraph buffered;
+
+    public TestBufferingGraph(String name, Creator<Graph> factoryBase, Function<Graph, BufferingGraph> factoryBuffering) {
+        this.base = factoryBase.create();
+        this.buffered = factoryBuffering.apply(base);
+    }
 
     @Test public void basic_1() {
         BufferingGraph graph = buffered;
-        assertTrue(graph.isEmpty());
+        L.executeTxn(graph, ()->graph.isEmpty());
     }
 
     @Test public void basic_2() {
         BufferingGraph graph = buffered;
         Triple t = SSE.parseTriple("(:s :p :o)");
-        graph.add(t);
-        assertTrue(base.isEmpty());
-        assertFalse(graph.isEmpty());
+        L.executeTxn(graph, ()->{
+            graph.add(t);
+            assertTrue(base.isEmpty());
+            assertFalse(graph.isEmpty());
+        });
     }
 
     @Test public void basic_3() {
         BufferingGraph graph = buffered;
         Triple t = SSE.parseTriple("(:s :p :o)");
-        graph.add(t);
-        assertTrue(base.isEmpty());
-        assertFalse(graph.isEmpty());
-        graph.flush();
-        assertFalse(base.isEmpty());
-        assertFalse(graph.isEmpty());
+        Runnable action = ()->{
+            graph.add(t);
+            assertTrue(base.isEmpty());
+            assertFalse(graph.isEmpty());
+            graph.flushDirect(); // Does a graph txn which does not nest.
+            assertFalse(base.isEmpty());
+            assertFalse(graph.isEmpty());
+        };
+        if ( base.getTransactionHandler().transactionsSupported() ) {
+            TransactionHandler h = base.getTransactionHandler();
+            h.execute(action);
+        } else {
+            action.run();
+        }
     }
 
     @Test public void basic_4() {
         Triple t1 = SSE.parseTriple("(:s :p 1)");
-        base.add(t1);
-        BufferingGraph graph = buffered;
-        assertFalse(base.isEmpty());
-        assertFalse(graph.isEmpty());
+        L.executeTxn(base, ()->{
+            base.add(t1);
+            BufferingGraph graph = buffered;
+            assertFalse(base.isEmpty());
+            assertFalse(graph.isEmpty());
+        });
     }
 
     @Test public void basic_5() {
-        Triple t1 = SSE.parseTriple("(:s :p 1)");
-        base.add(t1);
+        {
+            Triple t1 = SSE.parseTriple("(:s :p 1)");
+            L.executeTxn(base, ()->base.add(t1));
+        }
         BufferingGraph graph = buffered;
         // New object, same triple.
-        t1 = SSE.parseTriple("(:s :p 1)");
-        graph.delete(t1);
-        assertFalse(base.isEmpty());
-        assertTrue(graph.isEmpty());
+        Triple t2 = SSE.parseTriple("(:s :p 1)");
+        L.executeTxn(base, ()->graph.delete(t2));
+        L.executeTxn(base, ()-> {
+            assertFalse(base.isEmpty());
+            assertTrue(graph.isEmpty());
+        });
 
         graph.flush();
-
-        assertTrue(base.isEmpty());
-        assertTrue(graph.isEmpty());
+        L.executeTxn(graph, ()->{
+            assertTrue(base.isEmpty());
+            assertTrue(graph.isEmpty());
+        });
     }
 }

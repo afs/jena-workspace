@@ -25,13 +25,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import dsg.buffering.BufferingCtl;
 import dsg.buffering.BufferingDatasetGraph;
 import dsg.buffering.BufferingDatasetGraphQuads;
+import dsg.buffering.DatasetGraphBuffering;
+import org.apache.jena.atlas.lib.Creator;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.sse.SSE;
+import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.tdb2.DatabaseMgr;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -44,76 +47,98 @@ public class TestBufferingDatasetGraph {
     public static Iterable<Object[]> data() {
         List<Object[]> x = new ArrayList<>() ;
 
-        Function<DatasetGraph, DatasetGraph> f1 = BufferingDatasetGraphQuads::new;
-        x.add(new Object[] {"BufferingDatasetGraphQuads", f1});
+        Creator<DatasetGraph> baseMem = ()->DatasetGraphFactory.createTxnMem();
+        Creator<DatasetGraph> baseTDB1 = ()->TDBFactory.createDatasetGraph();
+        Creator<DatasetGraph> baseTDB2 = ()->DatabaseMgr.createDatasetGraph();
 
-        Function<DatasetGraph, DatasetGraph> f2 = BufferingDatasetGraph::new;
-        x.add(new Object[] {"BufferingDatasetGraph", f2});
+        Function<DatasetGraph, DatasetGraphBuffering> buffering = BufferingDatasetGraph::new;
+        Function<DatasetGraph, DatasetGraphBuffering> bufferingQuads = BufferingDatasetGraphQuads::new;
+
+        x.add(new Object[] {"DatasetGraphBuffering(TIM)", baseMem, buffering});
+        x.add(new Object[] {"DatasetGraphBuffering(TIM)", baseMem, bufferingQuads});
+
+        x.add(new Object[] {"DatasetGraphBuffering(TDB1)", baseTDB1, buffering});
+        x.add(new Object[] {"DatasetGraphBuffering(TDB1)", baseTDB1, bufferingQuads});
+
+        x.add(new Object[] {"DatasetGraphBuffering(TDB2)", baseTDB2, buffering});
+        x.add(new Object[] {"DatasetGraphBuffering(TDB2)", baseTDB2, bufferingQuads});
 
         return x ;
     }
 
-    private final DatasetGraph base = DatasetGraphFactory.createTxnMem();
-    private final DatasetGraph buffered;
+    private final DatasetGraph base;
+    private final DatasetGraphBuffering buffered;
 
-    public TestBufferingDatasetGraph(String name, Function<DatasetGraph, DatasetGraph> factory) {
+    public TestBufferingDatasetGraph(String name, Creator<DatasetGraph> baseSupplier, Function<DatasetGraph, DatasetGraphBuffering> factory) {
+        base = baseSupplier.create();
         buffered = factory.apply(base);
     }
 
     @Test public void basic_1() {
-        DatasetGraph dsg = buffered;
-        assertTrue(dsg.isEmpty());
+        base.executeRead(()->
+            assertTrue(buffered.isEmpty())
+            );
     }
 
     @Test public void basic_2() {
-        DatasetGraph dsg = buffered;
         Quad q = SSE.parseQuad("(:g :s :p :o)");
-        dsg.add(q);
-        assertTrue(base.isEmpty());
-        assertFalse(dsg.isEmpty());
+        base.execute(()-> {
+            // Base read
+            buffered.add(q);
+            // Base read
+            assertTrue(base.isEmpty());
+            assertFalse(buffered.isEmpty());
+        });
     }
 
     @Test public void basic_3() {
         DatasetGraph dsg = buffered;
         Quad q = SSE.parseQuad("(:g :s :p :o)");
-        dsg.add(q);
-        assertTrue(base.isEmpty());
-        assertFalse(dsg.isEmpty());
-        ((BufferingCtl)dsg).flush();
-        assertFalse(base.isEmpty());
-        assertFalse(dsg.isEmpty());
+        base.execute(()-> {
+            buffered.add(q);
+            assertTrue(base.isEmpty());
+            assertFalse(buffered.isEmpty());
+            buffered.flush();
+            assertFalse(base.isEmpty());
+            assertFalse(buffered.isEmpty());
+        });
     }
 
     @Test public void basic_4() {
         DatasetGraph dsg = buffered;
         Quad q1 = SSE.parseQuad("(:g :s :p 1)");
-        base.add(q1);
-        assertFalse(base.isEmpty());
-        assertFalse(dsg.isEmpty());
+        base.executeWrite(() -> {
+            base.add(q1);
+            assertFalse(base.isEmpty());
+            assertFalse(buffered.isEmpty());
+        });
     }
 
     @Test public void basic_5() {
         DatasetGraph dsg = buffered;
         Quad q1 = SSE.parseQuad("(:g :s :p 1)");
-        base.add(q1);
-        dsg.delete(q1);
 
-        assertFalse(base.isEmpty());
-        assertTrue(dsg.isEmpty());
+        base.executeWrite(() -> {
+            base.add(q1);
+            buffered.delete(q1);
 
-        ((BufferingCtl)dsg).flush();
+            assertFalse(base.isEmpty());
+            assertTrue(buffered.isEmpty());
 
-        assertTrue(base.isEmpty());
-        assertTrue(dsg.isEmpty());
+            buffered.flush();
 
-        dsg.add(q1);
-        dsg.delete(q1);
-        ((BufferingCtl)dsg).flush();
+            assertTrue(base.isEmpty());
+            assertTrue(buffered.isEmpty());
 
-        base.isEmpty();
+            buffered.add(q1);
+            buffered.delete(q1);
+            buffered.flush();
 
-        assertTrue(base.isEmpty());
-        assertTrue(dsg.isEmpty());
+            base.isEmpty();
+
+            assertTrue(base.isEmpty());
+            assertTrue(buffered.isEmpty());
+        });
     }
 
 

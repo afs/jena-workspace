@@ -18,147 +18,43 @@
 
 package dsg.buffering.dev;
 
-import java.util.Iterator;
-
-import org.apache.jena.dboe.storage.StoragePrefixes;
-import org.apache.jena.dboe.storage.StorageRDF;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.riot.system.PrefixEntry;
-import org.apache.jena.sparql.core.Quad;
-
 public class NotesBuffering {
+    // ** Graph case
+    // [ ] ** Transactions! Need planning for the contract on the underlying graph.
+    //  Cases:
+    //     No DSG -> raw. Single threaded, no need for TXN.
+    //     Companion DSG
+    //   And flush points.
+    //   e.g. start no txn or start PROMOTE-READ-COMMITED when first used.
+    //        or run READ then stop-WRITE-begine(READ) in flush.
+    //   On flush, end transaction and restart.
 
-    // BufferingDatasetGraph vs BufferingDatasetGraphQuads. Is it worth it? just Quads version?
-    //  ==> Do properly.
+    // ** DatasetGraph case
 
-    // [ ] Drop BufferingPrefixMapping and use adapter+BufferingPrefixMap
-    // [ ] Library for "plain" graph operations. Code in BufferingGraph to G
+    // [ ] Graph TransactionHandler adapter not reentrant?
+
+    // [ ] GraphTxn is an interface.
+    //   Implemented by GraphView.
+    //   GraphTxnWrapper(other graph) Standalone mode = MRSW
+
+    // [ ] flushDirect and flushDirect - different cases!
+    //     BufferingGraph to use graph txnhandler? Transactional.
+
+
+    // ----
+    // [ ] Library for "plain" graph operations. Code in BufferingGraph.containsByEquals to G
     // [ ] G-ify BufferingGraph. (Is G complete for DSGs?)
-    // [ ] L to G.
-
-    // **** Plan
-
-    // 1 :: Add prefixes to DatasetGraph
-
-    // 2 :: General.
-    //   BufferingDatasetGraph
-    //   BufferingPrefixMap
-    //     And when graph handed out? GraphView - comes for free.
-
-    // ** Maybe: DBOE
-    // BufferingStorageRDF
-    // BufferingStoragePrefixMap
-    //   Port TIM to DBOE?
+    // [ ] L.executeTxn to G.
+    // [ ] test e.g. graph from DSG.
+    // [ ] TestBufferingDatasetGraph - no flush tests
+    // [ ] TestBufferingGraph - more tests.
 
     // Graph:
     // BufferingGraph
     // BufferingPrefixMapping
 
-    // ---
-
-    // What about BufferingGraph and a DSG of BufferingGraphs?
-    // BufferingPrefixes.
-
-    // BufferingGraphView needed? Prefixes?
-
-    //test for a graph.
-
-    // StorageRDF, StoragePrefixes ??
-
-    /* DatasetGraphTriplesQuads
-     *
-     */
-
-    // Yes - having the default graph kept as triples is useful.
-    // XXX GraphView to take a PrefixMapping object.
-
-    // G S P O
-    // Algorithmically determine index.
-    // Ask each index to weight a choice, choose best.
-    // BufferingDatasetGraph/_Q for now (pure quads) tests test working.
-
-    static class BufferingStorageRDF implements StorageRDF {
-
-        @Override
-        public void add(Triple triple) {}
-
-        @Override
-        public void add(Node s, Node p, Node o) {}
-
-        @Override
-        public void add(Quad quad) {}
-
-        @Override
-        public void add(Node g, Node s, Node p, Node o) {}
-
-        @Override
-        public void delete(Triple triple) {}
-
-        @Override
-        public void delete(Node s, Node p, Node o) {}
-
-        @Override
-        public void delete(Quad quad) {}
-
-        @Override
-        public void delete(Node g, Node s, Node p, Node o) {}
-
-
-        @Override
-        public Iterator<Quad> find(Node g, Node s, Node p, Node o) {
-            return null;
-        }
-
-        @Override
-        public Iterator<Triple> find(Node s, Node p, Node o) {
-            return null;
-        }
-
-        @Override
-        public boolean contains(Node s, Node p, Node o) {
-            return false;
-        }
-
-        @Override
-        public boolean contains(Node g, Node s, Node p, Node o) {
-            return false;
-        }
-    }
-
-    static class BufferingStoragePrefixes implements StoragePrefixes {
-
-        @Override
-        public String get(Node graphNode, String prefix) {
-            return null;
-        }
-
-        @Override
-        public Iterator<PrefixEntry> get(Node graphNode) {
-            return null;
-        }
-
-        @Override
-        public Iterator<Node> listGraphNodes() {
-            return null;
-        }
-
-        @Override
-        public void add(Node graphNode, String prefix, String iriStr) {}
-
-        @Override
-        public void delete(Node graphNode, String prefix) {}
-
-        @Override
-        public void deleteAll(Node graphNode) {}
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-
-        @Override
-        public int size() {
-            return 0;
-        }}
+    // ** Maybe: DBOE
+    // BufferingStorageRDF
+    // BufferingStoragePrefixMap
+    //   Port TIM to DBOE?
 }

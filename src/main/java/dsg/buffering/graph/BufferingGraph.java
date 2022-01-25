@@ -42,11 +42,9 @@ import org.apache.jena.util.iterator.WrappedIterator;
  */
 public class BufferingGraph extends GraphWrapper implements BufferingCtl {
 
-    // TODO
-    //   Detailed tests.
-    //   TransactionHandler.
-
-    private boolean UNIQUE = true; // Untested for false ATM - e.g. contains.
+    // Controls whether to check the underlying graph to check whether to record a change or not.
+    // It takes more memory but means teh underlying grap is not touched for add() delete().
+    private final static boolean CHECK = true;  // Untested for false ATM - e.g. contains.
 
     private final Graph addedGraph;
     private final Set<Triple> deletedTriples = new HashSet<>();
@@ -105,7 +103,7 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
         deletedTriples.remove(triple);
         if (containsByEquals(addedGraph, triple) )
             return ;
-        if ( UNIQUE && containsByEquals(base, triple) )
+        if ( CHECK && containsByEquals(base, triple) )
             // Already in base gaph
             // No action.
             return;
@@ -116,7 +114,7 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
         Graph base = get();
         addedGraph.delete(triple);
 
-        if ( UNIQUE && ! containsByEquals(base, triple) )
+        if ( CHECK && ! containsByEquals(base, triple) )
             return;
         deletedTriples.add(triple);
     }
@@ -169,7 +167,7 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
             Iter.iter(get().find(s, p, o))
                 .filter(t->! deletedTriples.contains(t))
                 .append(extra);
-        if ( ! UNIQUE )
+        if ( ! CHECK )
             iter = iter.distinct();
         return WrappedIterator.create(iter);
     }
@@ -207,7 +205,7 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
 
     @Override
     public int size() {
-        if ( UNIQUE )
+        if ( CHECK )
             return super.size() - deletedTriples.size() + addedGraph.size();
         // If we have been recording actions, not changes, need to be more careful.
         return (int)(Iter.count(find(Triple.ANY)));
