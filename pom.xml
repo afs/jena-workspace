@@ -14,7 +14,7 @@
   <description>AFS workspace</description>
 
   <properties>
-    <ver.jena>4.4.0-SNAPSHOT</ver.jena>
+    <ver.jena>4.4.0</ver.jena>
     <ver.fuseki>${ver.jena}</ver.fuseki>
 
     <ver.slf4j>1.7.35</ver.slf4j>
