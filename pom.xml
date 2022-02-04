@@ -14,7 +14,7 @@
   <description>AFS workspace</description>
 
   <properties>
-    <ver.jena>4.4.0-SNAPSHOT</ver.jena>
+    <ver.jena>4.5.0-SNAPSHOT</ver.jena>
     <ver.fuseki>${ver.jena}</ver.fuseki>
 
     <ver.slf4j>1.7.35</ver.slf4j>
@@ -42,6 +42,12 @@
       <artifactId>jena-base</artifactId>
       <version>${ver.jena}</version>
       <classifier>tests</classifier>
+    </dependency>
+
+    <dependency>
+	    <groupId>org.apache.lucene</groupId>
+	    <artifactId>lucene-misc</artifactId>
+	    <version>8.11.1</version>
     </dependency>
 
 	<!--
