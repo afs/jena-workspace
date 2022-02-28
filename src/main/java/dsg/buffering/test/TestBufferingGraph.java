@@ -25,11 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import dsg.buffering.L;
+import dsg.buffering.G2;
 import dsg.buffering.graph.BufferingGraph;
 import org.apache.jena.atlas.lib.Creator;
 import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.TransactionHandler;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.graph.GraphFactory;
@@ -70,13 +69,13 @@ public class TestBufferingGraph {
 
     @Test public void basic_1() {
         BufferingGraph graph = buffered;
-        L.executeTxn(graph, ()->graph.isEmpty());
+        G2.execTxn(graph, ()->graph.isEmpty());
     }
 
     @Test public void basic_2() {
         BufferingGraph graph = buffered;
         Triple t = SSE.parseTriple("(:s :p :o)");
-        L.executeTxn(graph, ()->{
+        G2.execTxn(graph, ()->{
             graph.add(t);
             assertTrue(base.isEmpty());
             assertFalse(graph.isEmpty());
@@ -86,25 +85,19 @@ public class TestBufferingGraph {
     @Test public void basic_3() {
         BufferingGraph graph = buffered;
         Triple t = SSE.parseTriple("(:s :p :o)");
-        Runnable action = ()->{
+        G2.execTxn(base, ()->{
             graph.add(t);
             assertTrue(base.isEmpty());
             assertFalse(graph.isEmpty());
             graph.flushDirect(); // Does a graph txn which does not nest.
             assertFalse(base.isEmpty());
             assertFalse(graph.isEmpty());
-        };
-        if ( base.getTransactionHandler().transactionsSupported() ) {
-            TransactionHandler h = base.getTransactionHandler();
-            h.execute(action);
-        } else {
-            action.run();
-        }
+        });
     }
 
     @Test public void basic_4() {
         Triple t1 = SSE.parseTriple("(:s :p 1)");
-        L.executeTxn(base, ()->{
+        G2.execTxn(base, ()->{
             base.add(t1);
             BufferingGraph graph = buffered;
             assertFalse(base.isEmpty());
@@ -115,19 +108,19 @@ public class TestBufferingGraph {
     @Test public void basic_5() {
         {
             Triple t1 = SSE.parseTriple("(:s :p 1)");
-            L.executeTxn(base, ()->base.add(t1));
+            G2.execTxn(base, ()->base.add(t1));
         }
         BufferingGraph graph = buffered;
         // New object, same triple.
         Triple t2 = SSE.parseTriple("(:s :p 1)");
-        L.executeTxn(base, ()->graph.delete(t2));
-        L.executeTxn(base, ()-> {
+        G2.execTxn(base, ()->graph.delete(t2));
+        G2.execTxn(base, ()-> {
             assertFalse(base.isEmpty());
             assertTrue(graph.isEmpty());
         });
 
         graph.flush();
-        L.executeTxn(graph, ()->{
+        G2.execTxn(graph, ()->{
             assertTrue(base.isEmpty());
             assertTrue(graph.isEmpty());
         });

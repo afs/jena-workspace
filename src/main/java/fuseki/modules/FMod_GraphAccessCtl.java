@@ -23,9 +23,8 @@ import java.util.UUID;
 import org.apache.jena.fuseki.access.DataAccessCtl;
 import org.apache.jena.fuseki.access.VocabSecurity;
 import org.apache.jena.fuseki.main.FusekiLib;
-import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.main.sys.FusekiModule;
-import org.apache.jena.fuseki.server.DataAccessPointRegistry;
+import org.apache.jena.fuseki.server.DataAccessPoint;
 import org.apache.jena.rdf.model.Model;
 
 public class FMod_GraphAccessCtl implements FusekiModule {
@@ -40,24 +39,11 @@ public class FMod_GraphAccessCtl implements FusekiModule {
         VocabSecurity.init();
     }
 
-    // MIGRATION:
     @Override
-    public void configuration(FusekiServer.Builder builder, DataAccessPointRegistry dapRegistry, Model configModel) {
-        dapRegistry.forEach((name, dap) -> {
-
-            // Override for graph-level access control.
-            if ( DataAccessCtl.isAccessControlled(dap.getDataService().getDataset()) ) {
-                dap.getDataService().forEachEndpoint(ep->
-                    FusekiLib.modifyForAccessCtl(ep, DataAccessCtl.requestUserServlet));
-            }
-        });
+    public void configDataAccessPoint(DataAccessPoint dap, Model configModel) {
+        if ( DataAccessCtl.isAccessControlled(dap.getDataService().getDataset()) ) {
+            dap.getDataService().forEachEndpoint(ep->
+                FusekiLib.modifyForAccessCtl(ep, DataAccessCtl.requestUserServlet));
+        }
     }
-
-//    @Override
-//    public void configDataAccessPoint(FusekiServer.Builder builder, DataAccessPoint dap, Model configModel) {
-//        if ( DataAccessCtl.isAccessControlled(dap.getDataService().getDataset()) ) {
-//            dap.getDataService().forEachEndpoint(ep->
-//                FusekiLib.modifyForAccessCtl(ep, DataAccessCtl.requestUserServlet));
-//        }
-//    }
 }

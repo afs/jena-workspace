@@ -25,7 +25,7 @@ import org.apache.jena.sparql.graph.GraphWrapper;
 import org.apache.jena.util.iterator.ExtendedIterator;
 
 /**
- * A Graph that provides value semantics event if the base graph is term-semantics
+ * A Graph that provides value semantics even if the base graph is term-semantics
  */
 public class GraphBaseValue extends GraphWrapper {
 
@@ -56,7 +56,6 @@ public class GraphBaseValue extends GraphWrapper {
 
     @Override
     public ExtendedIterator<Triple> find(Node s, Node p, Node o) {
-
         return get().find(s, p, o);
     }
 

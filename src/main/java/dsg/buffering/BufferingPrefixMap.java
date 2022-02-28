@@ -136,5 +136,13 @@ public class BufferingPrefixMap extends PrefixMapBase {
         return base.size() + addedMappings.size() - deletedMappings.size();
     }
 
+    public void flush() {
+        addedMappings.forEach(base::add);
+        deletedMappings.forEach(base::delete);
+        addedMappings.clear();
+        deletedMappings.clear();
+
+    }
+
 }
 

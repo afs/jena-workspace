@@ -16,17 +16,31 @@
  * limitations under the License.
  */
 
-package dsg.buffering;
+package tdb2.mmap;
 
-import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.TransactionHandler;
+import java.io.IOException;
 
-public class L {
-    public static void executeTxn(Graph graph, Runnable action) {
-        TransactionHandler th = graph.getTransactionHandler();
-        if ( th.transactionsSupported() )
-            th.execute(action);
-        else
-            action.run();
+public class MMapUtils {
+    /*
+<dependency>
+    <groupId>org.apache.lucene</groupId>
+    <artifactId>lucene-misc</artifactId>
+    <version>...</version>
+</dependency>
+
+ and locally compiled
+ NativePosixUtil.cpp
+
+/usr/java/packages/lib:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib
+
+     */
+
+    public static void main(String... args) throws IOException {
+        try {
+            int RANDOM = org.apache.lucene.store.NativePosixUtil.RANDOM;
+            org.apache.lucene.store.NativePosixUtil.madvise(null, RANDOM);
+        } catch (java.lang.UnsatisfiedLinkError ule) {
+            System.err.println(ule.getMessage());
+        }
     }
 }

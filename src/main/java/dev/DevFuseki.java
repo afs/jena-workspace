@@ -23,40 +23,67 @@ import java.nio.file.Path;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.fuseki.cmd.FusekiCmd;
 import org.apache.jena.fuseki.main.FusekiServer;
+import org.apache.jena.fuseki.server.DataService;
+import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.fuseki.system.FusekiLogging;
-import org.apache.jena.graph.Factory;
-import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
-import org.apache.jena.util.iterator.ExtendedIterator;
-import org.apache.jena.util.iterator.WrappedIterator;
 
 public class DevFuseki {
 
     public static void main(String...a) {
-//        FusekiMainCmd.main("--port=", "--https=certs/https-details", "--mem", "/ds");
-//        System.exit(0);
 
-        System.exit(0);
-        Graph graph = Factory.createDefaultGraph();
-        ExtendedIterator<Triple> x1 = graph.find(null,null,null);
-        ExtendedIterator<Triple> x2 = WrappedIterator.create(x1.toList().iterator());
+        mainGeneral();
     }
 
     public static void mainGeneral() {
         try {
+            // What about "/" and "/sparql"?
+
+            /* cases:
+             *   /dataset
+             *   /dataset/sparql
+             *   /dataset/does-not-exist
+             *
+             *   /
+             *   /sparql
+             *   /does-not-exist
+             *
+             *   /path/dataset
+             *   /path/dataset/sparql
+             *   /path/dataset/does-not-exist
+             *
+             *   /path1/path2/dataset
+             *   /path1/path2/dataset/sparql
+             *   /path1/path2/dataset/does-not-exist
+             */
+
+            // TestDispatch: request URI + registry -> result.
+
+            //String ROOT = "/path/dataset";
+            String ROOT = "/";
+            //String ROOT = "/sparql";
+            DataService dataService = DataService
+                    .newBuilder(DatasetGraphFactory.createTxnMem())
+                    .addEndpoint(Operation.Query)
+                    .addEndpoint(Operation.Query, "query2")
+                    .build();
+
             FusekiLogging.setLogging();
             FusekiServer server = FusekiServer.create()
                                               // .jettyServerConfig("jetty.xml")
-                                              .add("/ds", DatasetGraphFactory.createTxnMem())
-                                              .port(3333)
-                                              .build();
+                                              //.add("/ds", DatasetGraphFactory.createTxnMem())
+                    .add(ROOT, dataService)
+                    .port(3333)
+                    .build();
             server.start();
-            String URL = server.datasetURL("/ds");
+
+            //String URL = "http://localhost:"+server.getHttpPort()+ROOT;
+            String URL = "http://localhost:"+server.getHttpPort()+ROOT+"query2";
+
             try (RDFConnection conn = RDFConnection.connect(URL)) {
                 boolean b = conn.queryAsk("ASK{}");
-                System.out.println("ASK=" + b);
+                System.out.println("\nASK=" + b);
             }
         } catch (Exception ex) {
             ex.printStackTrace();

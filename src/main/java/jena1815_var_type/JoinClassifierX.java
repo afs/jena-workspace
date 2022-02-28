@@ -29,7 +29,7 @@ import org.apache.jena.sparql.algebra.op.* ;
 import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.engine.main.VarFinder;
 
-public class JoinClassifier
+public class JoinClassifierX
 {
     static /*final*/ public  boolean print = false ;
 

@@ -30,6 +30,10 @@ public class NotesBuffering {
     //   On flush, end transaction and restart.
 
     // ** DatasetGraph case
+    // Create (nothing)
+    //   DatasetGraphBuffering.get() = getR
+    // First mutate - start-read-transaction
+    // flush: end-read-start Txn.write (nothing).
 
     // [ ] Graph TransactionHandler adapter not reentrant?
 

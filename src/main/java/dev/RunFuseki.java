@@ -21,16 +21,20 @@ package dev;
 import org.apache.jena.fuseki.ctl.ActionDumpRequest;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.main.cmds.FusekiMainCmd;
+import org.apache.jena.fuseki.server.Operation;
+import org.apache.jena.fuseki.server.OperationRegistry;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryGeneral;
+import org.apache.jena.fuseki.servlets.UploadRDF;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.fuseki.validation.DataValidator;
 import org.apache.jena.fuseki.validation.IRIValidator;
 import org.apache.jena.fuseki.validation.QueryValidator;
 import org.apache.jena.fuseki.validation.UpdateValidator;
-import org.apache.jena.http.HttpOp;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
-import org.apache.jena.sparql.exec.http.GSP;
+import org.apache.jena.sparql.exec.http.DSP;
 
 public class RunFuseki
 {
@@ -42,12 +46,27 @@ public class RunFuseki
 
         try {
             //mainExternal();
-            mainServer();
+            //mainServer();
+
+            maingeo();
+
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
             System.exit(0);
         }
+    }
+
+    private static void maingeo() {
+        // Fails when jena-geosparql is not on the classpath
+        //  but if it is, the server prints warnings including for SIS_DATA.
+
+        FusekiServer server = FusekiServer.create()
+                .verbose(true)
+                .parseConfigFile("/home/afs/tmp/c.ttl")
+                .port(3030)
+                .build()
+                .start();
     }
 
     private static void mainExternal() {
@@ -59,16 +78,20 @@ public class RunFuseki
     }
 
     public static void mainServer(String ... a) {
+        OperationRegistry.get().register(Operation.Upload, new UploadRDF());
+
         DatasetGraph dsg = DatasetGraphFactory.createTxnMem();
         FusekiServer server = FusekiServer.create()
+                .verbose(true)
                 .add("/ds", dsg)
+                .addEndpoint("/ds", "upload", Operation.Upload)
                 .port(3030)
                 .build()
                 .start();
-        String URL = "http://localhost:"+server.getHttpPort();
-        GSP.service(URL+"/ds").defaultGraph().GET();
-        String x = HttpOp.httpGetString(URL+"/x");
-        System.out.println(x);
+        String URL = "http://localhost:"+server.getPort();
+        DSP.service(URL+"/ds/upload").POST("D.trig");
+        DatasetGraph dsg2 = DSP.service(URL+"/ds/").GET();
+        RDFDataMgr.write(System.out, dsg2,  Lang.TRIG);
     }
 
     public static void mainWebapp() {

@@ -42,6 +42,7 @@ public class RunFusekiFull
     static Logger LOG = LoggerFactory.getLogger("APP");
 
     public static void main(String ... a) {
+
         plainRun();
         //mainWebapp();
         //curl --header 'Content-type: text/turtle'  -XPOST --data-binary @config-inf.ttl 'http://localhost:3030/$/datasets'

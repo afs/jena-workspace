@@ -34,6 +34,8 @@ public class M {
 //            .filter(q-> match(q, g,s,p,o));
 //    }
 
+    //==> org.apache.jena.sparql.core.Match
+
     public static boolean match(Quad quad, Node g, Node s, Node p, Node o) {
         return
             match(quad.getGraph(), g) &&

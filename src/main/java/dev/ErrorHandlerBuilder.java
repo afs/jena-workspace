@@ -32,10 +32,6 @@ public class ErrorHandlerBuilder {
     Action errorAction = null;
     Action fatalAction = null;
 
-    // Error
-    // false
-
-
     public ErrorHandlerBuilder() {
 
     }

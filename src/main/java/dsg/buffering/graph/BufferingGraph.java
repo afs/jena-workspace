@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import dsg.buffering.BufferingCtl;
-import dsg.buffering.L;
+import dsg.buffering.G2;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.logging.Log;
 import org.apache.jena.graph.Factory;
@@ -31,7 +31,10 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.graph.impl.GraphPlain;
+import org.apache.jena.query.TxnType;
 import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.core.Transactional;
+import org.apache.jena.sparql.core.TransactionalLock;
 import org.apache.jena.sparql.graph.GraphWrapper;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
@@ -43,13 +46,15 @@ import org.apache.jena.util.iterator.WrappedIterator;
 public class BufferingGraph extends GraphWrapper implements BufferingCtl {
 
     // Controls whether to check the underlying graph to check whether to record a change or not.
-    // It takes more memory but means teh underlying grap is not touched for add() delete().
-    private final static boolean CHECK = true;  // Untested for false ATM - e.g. contains.
+    // It takes more memory but means the underlying graph is not touched for add() and delete().
+    private final static boolean CHECK = true;  // Untested for false ATM
 
     private final Graph addedGraph;
     private final Set<Triple> deletedTriples = new HashSet<>();
 
     private final BufferingPrefixMapping prefixMapping;
+
+    private Transactional transactional = TransactionalLock.createMRSW();
 
     public static BufferingGraph create(Graph graph) {
         if ( graph instanceof BufferingGraph )
@@ -70,14 +75,17 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
     @Override
     public void flush() {
         Graph base = get();
-        L.executeTxn(base, ()-> flushDirect(base));
+        G2.execTxn(base, ()-> flushDirect(base));
     }
 
     /** Flush the changes directly to the base graph. */
     public void flushDirect() {
+        transactional.begin(TxnType.WRITE);
         // So that get() is called exactly once per call.
         Graph base = get();
         flushDirect(base);
+        transactional.commit();
+        transactional.end();
     }
 
     private void flushDirect(Graph base) {
@@ -87,6 +95,13 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
         addedGraph.clear();
         prefixMapping.flush();
     }
+
+    private void updateOperation() {
+    }
+
+    private void readOperation() {
+    }
+
 
     @Override
     public void add(Triple t) {
@@ -99,6 +114,7 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
     }
 
     private void execAdd(Triple triple) {
+        updateOperation();
         Graph base = get();
         deletedTriples.remove(triple);
         if (containsByEquals(addedGraph, triple) )
@@ -111,6 +127,7 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
     }
 
     private void execDelete(Triple triple) {
+        updateOperation();
         Graph base = get();
         addedGraph.delete(triple);
 
@@ -134,6 +151,7 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
 
     @Override
     public boolean contains(Triple triple) {
+        readOperation();
         if ( addedGraph.contains(triple) )
             return true;
         Graph base = get();
@@ -161,6 +179,8 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
 
     @Override
     public ExtendedIterator<Triple> find(Node s, Node p, Node o) {
+        readOperation();
+        // XXX Materialize?
         // addedGraph has the same value/term equality as the base graph.
         Iterator<Triple> extra = findInAdded(s, p, o);
         Iter<Triple> iter =
@@ -194,6 +214,7 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
 
     @Override
     public boolean isEmpty() {
+        readOperation();
         if (!addedGraph.isEmpty())
             return false;
         Graph base = get();
@@ -205,6 +226,7 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
 
     @Override
     public int size() {
+        readOperation();
         if ( CHECK )
             return super.size() - deletedTriples.size() + addedGraph.size();
         // If we have been recording actions, not changes, need to be more careful.

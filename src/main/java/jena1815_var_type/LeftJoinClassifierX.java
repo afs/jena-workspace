@@ -30,7 +30,7 @@ import org.apache.jena.sparql.algebra.op.OpModifier ;
 import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.engine.main.VarFinder;
 
-public class LeftJoinClassifier
+public class LeftJoinClassifierX
 {
     static /*final*/ public boolean print = false ;
 
@@ -63,6 +63,7 @@ public class LeftJoinClassifier
 
         Set<Var> leftVars = OpVars.visibleVars(left) ;
         if ( print ) {
+            System.err.println("== Left JoinClassifier");
             System.err.println("Left") ;
             System.err.println("  Visible: "+leftVars) ;
         }

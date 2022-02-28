@@ -38,10 +38,46 @@ import org.apache.jena.sparql.core.*;
  */
 public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements DatasetGraphBuffering {
 
+    // When a buffering dataset is created, it is in state NONE.
+    // When operations start (add, delete or any read operation like find())} starts
+    // a PROMOTE_READ_COMMITTED on the underlying dataset
+    // When flush is called, it goes into WRITE and does a graph transaction. Then it
+    // commits the transaction and goes into state NONE again.
+
+    private enum AccessState {
+        NONE,
+        READ,
+        WRITE
+    }
+
     private DatasetGraph baseDSG;
     protected DatasetGraph get() { return baseDSG; }
+    protected DatasetGraph getT() { return baseDSG; }
 
-    private Set<Triple> addedTriples   = new HashSet<>(); //ConcurrentHashMap.newKeySet();
+    private void updateOperation() {}
+    private void readOperation() {}
+
+    private boolean readPhase = false;
+
+    protected DatasetGraph getR() {
+        DatasetGraph base = getT();
+        if ( ! readPhase )
+            base.begin(TxnType.READ);
+        return base;
+    }
+
+    // e.g.
+    private void flush2() {
+        DatasetGraph base = getT();
+        if ( readPhase ) {
+            base.end();
+            readPhase = false;
+        }
+        flush();
+    }
+
+    // ConcurrentHashMap as set<T,T>?? to get computeIf
+    private Set<Triple> addedTriples   = new HashSet<>();
     private Set<Triple> deletedTriples = new HashSet<>();
 
     private Set<Quad>   addedQuads     = new HashSet<>();
@@ -72,11 +108,15 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
             deletedTriples.clear();
             addedQuads.clear();
             deletedQuads.clear();
+
+            // Write to base prefix map and also clears the buffering.
+            prefixes.flush();
         });
     }
 
     @Override
     protected void addToDftGraph(Node s, Node p, Node o) {
+        updateOperation();
         Triple triple = Triple.create(s,p,o);
         DatasetGraph base = get();
         deletedTriples.remove(triple);
@@ -87,6 +127,7 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
 
     @Override
     protected void addToNamedGraph(Node g, Node s, Node p, Node o) {
+        updateOperation();
         Quad quad = Quad.create(g,s,p,o);
         DatasetGraph base = get();
         deletedQuads.remove(quad);
@@ -97,6 +138,7 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
 
     @Override
     protected void deleteFromDftGraph(Node s, Node p, Node o) {
+        updateOperation();
         Triple triple = Triple.create(s,p,o);
         DatasetGraph base = get();
         addedTriples.remove(triple);
@@ -107,6 +149,7 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
 
     @Override
     protected void deleteFromNamedGraph(Node g, Node s, Node p, Node o) {
+        updateOperation();
         Quad quad = Quad.create(g,s,p,o);
         DatasetGraph base = get();
         addedQuads.remove(quad);
@@ -117,7 +160,9 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
 
     // Via find() if not implemented
     @Override
-    public boolean contains(Quad quad) { return contains$(quad, quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject()) ; }
+    public boolean contains(Quad quad) {
+        return contains$(quad, quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject());
+    }
 
     // Via find() if not implemented
     @Override
@@ -127,6 +172,7 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
 
     // Avoid recreating quads
     private boolean contains$(Quad quad, Node g, Node s, Node p, Node o) {
+        readOperation();
         // The find() pattern.
         if ( Quad.isDefaultGraph(g))
             return containedInDftGraph(g, s, p, o) ;
@@ -162,6 +208,7 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
 
     @Override
     protected Iterator<Quad> findInDftGraph(Node s, Node p, Node o) {
+        readOperation();
         DatasetGraph base = get();
         Iterator<Quad> extra = findInAddedTriples(s, p, o);
         Iter<Quad> iter =
@@ -181,11 +228,13 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
 
     @Override
     protected Iterator<Quad> findInSpecificNamedGraph(Node g, Node s, Node p, Node o) {
+        readOperation();
         return findQuads(g, s, p, o);
     }
 
     @Override
     protected Iterator<Quad> findInAnyNamedGraphs(Node s, Node p, Node o) {
+        readOperation();
         return findQuads(Node.ANY, s, p, o);
     }
 
@@ -236,12 +285,12 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
 
     @Override
     public PrefixMap prefixes() {
+        // XXX Needs to share access state?
         return prefixes;
     }
 
-
     private final Transactional txn                     = TransactionalLock.createMRSW() ;
-    protected final Transactional txn()                 { return get(); }
+    protected final Transactional txn()                 { return getT(); }
     @Override public void begin()                       { txn().begin(); }
     @Override public void begin(TxnType txnType)        { txn().begin(txnType); }
     @Override public void begin(ReadWrite mode)         { txn().begin(mode); }

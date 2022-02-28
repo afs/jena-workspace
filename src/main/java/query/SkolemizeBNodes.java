@@ -32,15 +32,15 @@ import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.sse.SSE;
 
 public class SkolemizeBNodes {
-    
+
     static {
         //JenaSystem.init();
         LogCtl.setLogging();
     }
-    
+
     public static void main(String...args) {
         LabelToNode mapping = LabelToNode.createScopeByDocumentHash();
-        
+
         // Relabel.
         Function<Node, Node> fRelabel = (n) -> {
             if ( ! n.isBlank() ) return n;
@@ -57,26 +57,25 @@ public class SkolemizeBNodes {
             if ( ! n.isURI() ) return n;
             return encodedToBlankNode(n);
         };
-        
+
         Graph g = SSE.parseGraph("(graph" + "(:s1 :p   _:a)" + "(:s1 :p1 <_:a>)" + ")");
         StreamRDF out = StreamRDFLib.writer(System.out);
         out.start();
         StreamRDF skol = new StreamRDFNodeExec(out, fSkolemize);
         StreamRDFOps.graphToStream(g, skol);
         out.finish();
-        }
+    }
 
-    
     // -> NodeFunctions
     static private Node encodedToBlankNode(Node n) {
         if ( ! n.isURI() )
             return n;
         return RiotLib.createIRIorBNode(n.getURI());
     }
-    
+
     /**
-     * Execution a function on nodes in triples and quads. 
-     * If the function returns null, drop the triple or 
+     * Execution a function on nodes in triples and quads.
+     * If the function returns null, drop the triple or
      * quad being processed.
      */
     static class StreamRDFNodeExec extends StreamRDFWrapper {
@@ -135,12 +134,12 @@ public class SkolemizeBNodes {
     }
 
     public static void skolem() throws Exception {
-        
+
         //Skolemizer
         Graph g = GraphFactory.createDefaultGraph();
         Triple t = SSE.parseTriple("(:s :p _:a)");
         g.add(t) ;
-        
+
         StreamRDF stream0 = StreamRDFWriter.getWriterStream(System.out, Lang.TTL) ;
         StreamRDF stream = new StreamRDFWrapper(stream0) {
             @Override
