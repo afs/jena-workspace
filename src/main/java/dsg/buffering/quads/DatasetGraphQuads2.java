@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package dsg.buffering.old;
+package dsg.buffering.quads;
 
 import java.util.Iterator;
 
@@ -30,6 +30,7 @@ import org.apache.jena.sparql.core.Quad;
  * A DatasetGraph base class for pure quad-centric storage.
  */
 public abstract class DatasetGraphQuads2 extends DatasetGraphBase {
+    // Replaceement for DatasetGraphQuads
     @Override
     public Iterator<Node> listGraphNodes() {
         Iter<Quad> iter = Iter.iter(find(Node.ANY, Node.ANY, Node.ANY, Node.ANY));

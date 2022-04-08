@@ -16,14 +16,15 @@
  * limitations under the License.
  */
 
-package dsg.buffering;
+package dsg.buffering.quads;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import dsg.buffering.old.DatasetGraphQuads2;
+import dsg.buffering.DatasetGraphBuffering;
+import dsg.buffering.M;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.lib.NotImplemented;
 import org.apache.jena.graph.Graph;
@@ -71,6 +72,8 @@ public class BufferingDatasetGraphQuads extends DatasetGraphQuads2 implements Da
     public BufferingDatasetGraphQuads(DatasetGraph dsg) {
          this.base = dsg;
     }
+
+    public DatasetGraph base() { return base; }
 
     // True  -> read-optimized.
     // False -> write-optimized

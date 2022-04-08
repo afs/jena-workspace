@@ -207,7 +207,7 @@ public class DevDateTimeCompare {
 
         Graph graph = GraphFactory.createDefaultGraph();
         RDFParser.source("/home/afs/tmp/shapes.ttl").parse(graph);
-        RDFWriter.create(graph).format(RDFFormat.TURTLE_BLOCKS).output(System.out);
+        RDFWriter.source(graph).format(RDFFormat.TURTLE_BLOCKS).output(System.out);
         System.exit(0);
     }
 }

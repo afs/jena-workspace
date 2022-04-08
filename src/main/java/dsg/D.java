@@ -23,6 +23,8 @@ import java.util.Objects;
 
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Node;
+import org.apache.jena.riot.other.RDFDataException;
+import org.apache.jena.riot.out.NodeFmtLib;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.graph.NodeConst;
@@ -71,10 +73,10 @@ public class D {
     public static boolean containsNode(DatasetGraph dsg, Node node) {
         Objects.requireNonNull(dsg, "dataset");
         Objects.requireNonNull(node, "node");
-        return // Order : S-O-P
+        return // Order for looking : S-O-P
             contains(dsg, Node.ANY, node, Node.ANY, Node.ANY) ||
             contains(dsg, Node.ANY, Node.ANY, Node.ANY, node) ||
-            contains(dsg, Node.ANY, Node.ANY, node, Node.ANY) ;
+            contains(dsg, Node.ANY, Node.ANY, node, Node.ANY);
     }
 
 //    isOfType(Graph, Node, Node)
@@ -97,5 +99,19 @@ public class D {
         } finally { Iter.close(iter); }
     }
 
+    /** Find one triple matching subject-predicate-object. Return quad or throw {@link RDFDataException}. */
+    private static Quad findUniqueQuad(DatasetGraph dsg, Node graph, Node subject, Node predicate, Node object) {
+        // Better stack trace and error messages if done explicitly.
+        Iterator<Quad> iter = dsg.find(graph, subject, predicate, object);
+        if ( ! iter.hasNext() )
+            throw new RDFDataException("No match : "+matchStr(graph, subject, predicate, object));
+        Quad x = iter.next();
+        if ( iter.hasNext() )
+            throw new RDFDataException("More than one match : "+matchStr(graph, subject, predicate, object));
+        return x;
+    }
 
+    private static String matchStr(Node graph, Node subject, Node predicate, Node object) {
+        return "("+NodeFmtLib.strNodesTTL(graph, subject, predicate, object)+")";
+    }
 }

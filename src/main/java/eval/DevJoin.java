@@ -37,15 +37,19 @@ public class DevJoin {
     //ends up in OpVarsPattern?
 
     // DevJoin
-    public static void main(String[] args) {
+    public static void main(String... args) {
+        mainJoin();
+    }
+
+    public static void mainJoin() {
         String QS = StrUtils.strjoinNL
             ("PREFIX : <http://example/>"
             ,"SELECT * {"
             ,"  ?s :p1 ?o ."
             ,"  ?s :p2 ?o ."
             ,"  ?o :q ?x ."
-            ,"FILTER(?x < 5 )"
-            ,"FILTER(?o > 9)"
+//            ,"FILTER(?x < 5 )"
+//            ,"FILTER(?o > 9)"
             ,"}");
 
         // Sequence.

@@ -38,10 +38,11 @@ public class BufferingPrefixMapping extends PrefixMappingImpl implements Bufferi
         this.other = other;
     }
 
+    public PrefixMapping base() { return other; }
+
     @Override
     public void flush() {
         deleted.forEach(prefix->other.removeNsPrefix(prefix));
-        // Copy :-(
         other.setNsPrefixes(added);
 
         deleted.clear();

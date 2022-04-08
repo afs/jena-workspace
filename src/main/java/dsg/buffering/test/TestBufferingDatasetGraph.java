@@ -26,9 +26,10 @@ import java.util.List;
 import java.util.function.Function;
 
 import dsg.buffering.BufferingDatasetGraph;
-import dsg.buffering.BufferingDatasetGraphQuads;
 import dsg.buffering.DatasetGraphBuffering;
+import dsg.buffering.quads.BufferingDatasetGraphQuads;
 import org.apache.jena.atlas.lib.Creator;
+import org.apache.jena.sparql.JenaTransactionException;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
@@ -54,14 +55,16 @@ public class TestBufferingDatasetGraph {
         Function<DatasetGraph, DatasetGraphBuffering> buffering = BufferingDatasetGraph::new;
         Function<DatasetGraph, DatasetGraphBuffering> bufferingQuads = BufferingDatasetGraphQuads::new;
 
+        // Quads needs the txn machinery from normal.
+
         x.add(new Object[] {"DatasetGraphBuffering(TIM)", baseMem, buffering});
-        x.add(new Object[] {"DatasetGraphBuffering(TIM)", baseMem, bufferingQuads});
+        //x.add(new Object[] {"DatasetGraphBuffering(TIM) Quads", baseMem, bufferingQuads});
 
         x.add(new Object[] {"DatasetGraphBuffering(TDB1)", baseTDB1, buffering});
-        x.add(new Object[] {"DatasetGraphBuffering(TDB1)", baseTDB1, bufferingQuads});
+        //x.add(new Object[] {"DatasetGraphBuffering(TDB1) Quads", baseTDB1, bufferingQuads});
 
         x.add(new Object[] {"DatasetGraphBuffering(TDB2)", baseTDB2, buffering});
-        x.add(new Object[] {"DatasetGraphBuffering(TDB2)", baseTDB2, bufferingQuads});
+        //x.add(new Object[] {"DatasetGraphBuffering(TDB2) Quads", baseTDB2, bufferingQuads});
 
         return x ;
     }
@@ -75,14 +78,14 @@ public class TestBufferingDatasetGraph {
     }
 
     @Test public void basic_1() {
-        base.executeRead(()->
+        buffered.executeRead(()->
             assertTrue(buffered.isEmpty())
             );
     }
 
     @Test public void basic_2() {
         Quad q = SSE.parseQuad("(:g :s :p :o)");
-        base.execute(()-> {
+        buffered.execute(()-> {
             // Base read
             buffered.add(q);
             // Base read
@@ -92,9 +95,8 @@ public class TestBufferingDatasetGraph {
     }
 
     @Test public void basic_3() {
-        DatasetGraph dsg = buffered;
         Quad q = SSE.parseQuad("(:g :s :p :o)");
-        base.execute(()-> {
+        buffered.execute(()-> {
             buffered.add(q);
             assertTrue(base.isEmpty());
             assertFalse(buffered.isEmpty());
@@ -105,9 +107,8 @@ public class TestBufferingDatasetGraph {
     }
 
     @Test public void basic_4() {
-        DatasetGraph dsg = buffered;
         Quad q1 = SSE.parseQuad("(:g :s :p 1)");
-        base.executeWrite(() -> {
+        buffered.executeWrite(() -> {
             base.add(q1);
             assertFalse(base.isEmpty());
             assertFalse(buffered.isEmpty());
@@ -115,10 +116,9 @@ public class TestBufferingDatasetGraph {
     }
 
     @Test public void basic_5() {
-        DatasetGraph dsg = buffered;
         Quad q1 = SSE.parseQuad("(:g :s :p 1)");
 
-        base.executeWrite(() -> {
+        buffered.executeWrite(() -> {
             base.add(q1);
             buffered.delete(q1);
 
@@ -138,6 +138,49 @@ public class TestBufferingDatasetGraph {
 
             assertTrue(base.isEmpty());
             assertTrue(buffered.isEmpty());
+        });
+    }
+
+    @Test public void buffered_1() {
+        Quad q1 = SSE.parseQuad("(:g :s :p 1)");
+        buffered.add(q1);
+        buffered.flush();
+        boolean b = buffered.contains(q1);
+        assertTrue(b);
+        base.executeRead(()->{
+            assertFalse(base.isEmpty());
+        });
+    }
+
+    @Test public void buffered_2() {
+        Quad q1 = SSE.parseQuad("(:g :s :p 1)");
+        Quad q2 = SSE.parseQuad("(:g :s :p 2)");
+        base.executeWrite(()->base.add(q1));
+        boolean b = buffered.contains(q1);
+        buffered.add(q2);
+        assertTrue(b);
+    }
+
+    @Test public void buffered_3() {
+        Quad q1 = SSE.parseQuad("(:g :s :p 1)");
+        Quad q2 = SSE.parseQuad("(:g :s :p 2)");
+
+        // Promotable
+        base.execute(()->{
+            buffered.add(q2);
+            buffered.flush();
+        });
+    }
+
+    @Test(expected=JenaTransactionException.class)
+    public void buffered_4() {
+        Quad q1 = SSE.parseQuad("(:g :s :p 1)");
+        Quad q2 = SSE.parseQuad("(:g :s :p 2)");
+
+        // Not promotable. Read then attempt to update.
+        base.executeRead(()->{
+            buffered.add(q2);
+            buffered.flush();
         });
     }
 

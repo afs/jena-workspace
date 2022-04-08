@@ -42,19 +42,26 @@ public class RunFuseki
         //System.setProperty("fuseki.loglogging", "true");
         // Warning - this can pick up log4j.properties files from test jars.
         // Skip test-classes
+
         FusekiLogging.setLogging();
 
         try {
-            //mainExternal();
-            //mainServer();
-
-            maingeo();
+            mainExternal();
+            //maingeo();
 
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
             System.exit(0);
         }
+    }
+
+    private static void mainExternal() {
+        FusekiMainCmd.main
+        (
+         //"-v",
+         "--mem", "/ds"
+        );
     }
 
     private static void maingeo() {
@@ -67,14 +74,6 @@ public class RunFuseki
                 .port(3030)
                 .build()
                 .start();
-    }
-
-    private static void mainExternal() {
-        FusekiMainCmd.main
-        (
-         //"-v",
-         "--mem", "/ds"
-        );
     }
 
     public static void mainServer(String ... a) {

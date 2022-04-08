@@ -18,22 +18,55 @@
 
 package dsg.buffering.dev;
 
+import dsg.buffering.BufferingDatasetGraph;
 import org.apache.jena.dboe.storage.StoragePrefixes;
 import org.apache.jena.dboe.storage.prefixes.PrefixesDboeFactory;
 import org.apache.jena.dboe.storage.prefixes.StoragePrefixMap;
 import org.apache.jena.dboe.storage.prefixes.StoragePrefixesView;
 import org.apache.jena.dboe.storage.simple.StoragePrefixesSimpleMem;
 import org.apache.jena.graph.Graph;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFWriter;
 import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.system.Prefixes;
 import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.sparql.sse.SSE;
 
 public class DevBuffering {
+
+    // Std tests
+//    AbstractTestPrefixMap t1;
+//    AbstractDatasetGraphTests t2;
+
+    public static void main(String ... argv ) {
+        DatasetGraph dsg0 = DatasetGraphFactory.createTxnMem();
+        BufferingDatasetGraph dsg = new BufferingDatasetGraph(dsg0, 2);
+        dsg.executeWrite(()-> {
+            dsg.add(SSE.parseQuad("(_ :s1 :p :o1)"));
+            dsg.prefixes().add("", "http://example/");
+        });
+        dsg.executeWrite(()-> dsg.add(SSE.parseQuad("(_ :s2 :p :o2)")));
+        dsg.executeWrite(()-> dsg.add(SSE.parseQuad("(_ :s3 :p :o3)")));
+
+        System.out.print(dsg.state());
+
+        dump(dsg);
+    }
+
+    private static void dump(BufferingDatasetGraph dsg) {
+        DatasetGraph dsg0 = dsg.base();
+        System.out.println("-- Buffered");
+        RDFWriter.source(dsg).lang(Lang.TRIG).output(System.out);
+        System.out.println("-- Base");
+        RDFWriter.source(dsg0).lang(Lang.TRIG).output(System.out);
+        System.out.println("--");
+    }
 
     // NotesBuffering
 
     public static PrefixMapping create() {
-
         Graph graph;
 
         // Too many layers!
@@ -55,5 +88,4 @@ public class DevBuffering {
         PrefixMap pm = PrefixesDboeFactory.newPrefixMap(spv);
         return Prefixes.adapt(pm);
     }
-
 }

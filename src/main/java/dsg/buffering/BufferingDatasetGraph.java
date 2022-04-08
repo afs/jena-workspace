@@ -21,7 +21,9 @@ package dsg.buffering;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import dsg.buffering.quads.BufferingDatasetGraphQuads;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
@@ -29,6 +31,7 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.query.TxnType;
 import org.apache.jena.riot.system.PrefixMap;
+import org.apache.jena.sparql.JenaTransactionException;
 import org.apache.jena.sparql.core.*;
 
 /**
@@ -51,30 +54,14 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
     }
 
     private DatasetGraph baseDSG;
-    protected DatasetGraph get() { return baseDSG; }
+    protected DatasetGraph get()  { return baseDSG; }
     protected DatasetGraph getT() { return baseDSG; }
 
-    private void updateOperation() {}
-    private void readOperation() {}
+    // Track where we are in the none-read/write-none cycle.
+    private AccessState accessState = AccessState.NONE;
 
-    private boolean readPhase = false;
-
-    protected DatasetGraph getR() {
-        DatasetGraph base = getT();
-        if ( ! readPhase )
-            base.begin(TxnType.READ);
-        return base;
-    }
-
-    // e.g.
-    private void flush2() {
-        DatasetGraph base = getT();
-        if ( readPhase ) {
-            base.end();
-            readPhase = false;
-        }
-        flush();
-    }
+    private int writeTxnCount = 0;
+    private final int writeTxnLimit;
 
     // ConcurrentHashMap as set<T,T>?? to get computeIf
     private Set<Triple> addedTriples   = new HashSet<>();
@@ -90,14 +77,81 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
     private static final boolean UNIQUE = true;
 
     public BufferingDatasetGraph(DatasetGraph dsg) {
+        this(dsg, 1);
+    }
+
+    public BufferingDatasetGraph(DatasetGraph dsg, int txnBuffering) {
         baseDSG = dsg;
         prefixes = new BufferingPrefixMap(dsg.prefixes());
+        writeTxnLimit = txnBuffering;
     }
+
+    public DatasetGraph base() { return baseDSG; }
+
+    private void readOperation() {
+        switch (accessState) {
+            case NONE :
+                if ( txn().isInTransaction() ) {
+                    switch (txn().transactionMode()) {
+                        case READ : accessState = AccessState.READ;
+                            break;
+                        case WRITE :  accessState = AccessState.WRITE;
+                            break;
+                    }
+                    return ;
+
+                }
+                // Start, outside a transaction. Start one, assuming updates will happen.
+                base().begin(TxnType.READ_COMMITTED_PROMOTE);
+                accessState = AccessState.READ;
+                break;
+            case READ :
+            case WRITE :
+                break;
+        }
+    }
+
+    private void updateOperation() {
+        switch (accessState) {
+            case NONE :
+                if ( txn().isInTransaction() ) {
+                        accessState = AccessState.WRITE;
+                    return ;
+                }
+                // Start, outside a transaction. Start one.
+                base().begin(TxnType.WRITE);
+                accessState = AccessState.WRITE;
+                break;
+            case READ :
+                boolean b = base().promote();
+                if ( !b )
+                    throw new JenaTransactionException("Failed to promote transaction");
+                accessState = AccessState.WRITE;
+                break;
+            case WRITE :
+                break;
+        }
+    }
+
+    public AccessState sytate() { return accessState; }
 
     @Override
     public void flush() {
-        baseDSG.executeWrite(()->{
-            Graph dftGraph = baseDSG.getDefaultGraph();
+        switch(accessState) {
+            case NONE :
+                return;
+            case READ :
+                getT().end();
+                break;
+            case WRITE :
+                flushToDB();
+        }
+        accessState = AccessState.NONE;
+    }
+
+    public void flushToDB() {
+        base().executeWrite(()->{
+            Graph dftGraph = base().getDefaultGraph();
 
             addedTriples.forEach(dftGraph::add);
             deletedTriples.forEach(dftGraph::delete);
@@ -108,10 +162,22 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
             deletedTriples.clear();
             addedQuads.clear();
             deletedQuads.clear();
-
-            // Write to base prefix map and also clears the buffering.
             prefixes.flush();
+            writeTxnCount = 0;
         });
+    }
+
+    public String state() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Triples").append("\n");
+        sb.append("  Added:   "+addedTriples).append("\n");
+        sb.append("  Deleted: "+deletedTriples).append("\n");
+        sb.append("Quads").append("\n");
+        sb.append("  Added:   "+addedQuads).append("\n");
+        sb.append("  Deleted: "+addedQuads).append("\n");
+        String x = prefixes.state();
+        sb.append(x);
+        return sb.toString();
     }
 
     @Override
@@ -161,18 +227,19 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
     // Via find() if not implemented
     @Override
     public boolean contains(Quad quad) {
+        readOperation();
         return contains$(quad, quad.getGraph(), quad.getSubject(), quad.getPredicate(), quad.getObject());
     }
 
     // Via find() if not implemented
     @Override
     public boolean contains(Node g, Node s, Node p, Node o) {
+        readOperation();
         return contains$(null, g, s, p, o);
     }
 
     // Avoid recreating quads
     private boolean contains$(Quad quad, Node g, Node s, Node p, Node o) {
-        readOperation();
         // The find() pattern.
         if ( Quad.isDefaultGraph(g))
             return containedInDftGraph(g, s, p, o) ;
@@ -238,7 +305,7 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
         return findQuads(Node.ANY, s, p, o);
     }
 
-    protected Iterator<Quad> findQuads(Node g, Node s, Node p, Node o) {
+    private Iterator<Quad> findQuads(Node g, Node s, Node p, Node o) {
         DatasetGraph base = get();
         Iterator<Quad> extra = findInAddedQuads(g, s, p, o);
         Iter<Quad> iter =
@@ -263,6 +330,7 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
                     .filter(t->M.match(t,g,s,p,o));
     }
 
+    // Graphs: read/write operations wil come back to the dataset.
     @Override
     public Graph getDefaultGraph() {
         return GraphView.createDefaultGraph(this);
@@ -280,7 +348,10 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
 
     @Override
     public Iterator<Node> listGraphNodes() {
-        return null;
+        // Imperfect : contains "empty" graphs.
+        Iterator<Node> iter1 = base().listGraphNodes();
+        Set<Node> deleted = deletedQuads.stream().map(q->q.getGraph()).distinct().collect(Collectors.toSet());
+        return Iter.iter(addedQuads).map(q->q.getGraph()).distinct();
     }
 
     @Override
@@ -294,7 +365,19 @@ public class BufferingDatasetGraph extends DatasetGraphTriplesQuads implements D
     @Override public void begin()                       { txn().begin(); }
     @Override public void begin(TxnType txnType)        { txn().begin(txnType); }
     @Override public void begin(ReadWrite mode)         { txn().begin(mode); }
-    @Override public void commit()                      { txn().commit(); }
+
+    @Override public void commit()                      {
+        if ( txn().isInTransaction() && txn().transactionMode() == ReadWrite.WRITE )
+            commitW();
+        txn().commit();
+    }
+
+    private void commitW() {
+        writeTxnCount++;
+        if ( writeTxnCount >= writeTxnLimit ) {
+            flush();
+        }
+    }
     @Override public boolean promote(Promote mode)      { return txn().promote(mode); }
     @Override public void abort()                       { txn().abort(); }
     @Override public boolean isInTransaction()          { return txn().isInTransaction(); }

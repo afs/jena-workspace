@@ -83,7 +83,7 @@ public class TestBufferingPrefixMapping {
         assertEquals(1, base.numPrefixes());
     }
 
-    @Test public void buffering_prefix_05_flush() {
+    @Test public void buffering_prefix_06_flush() {
         PrefixMapping base = new PrefixMappingImpl();
         base.setNsPrefix("x1", "http://example/1#");
         BufferingPrefixMapping pmap = new BufferingPrefixMapping(base);

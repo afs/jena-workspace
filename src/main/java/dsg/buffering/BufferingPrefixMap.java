@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
+import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.riot.system.PrefixEntry;
 import org.apache.jena.riot.system.PrefixLib;
 import org.apache.jena.riot.system.PrefixMap;
@@ -42,20 +43,29 @@ public class BufferingPrefixMap extends PrefixMapBase {
 
     @Override
     public Map<String, String> getMapping() {
-        return null;
+        return getMappingCopy();
     }
 
     @Override
     public Map<String, String> getMappingCopy() {
-        return null;
+        Map<String, String> map = new HashMap<>();
+        map.putAll(base.getMapping());
+        map.putAll(addedMappings);
+        deletedMappings.forEach(map::remove);
+        return map;
     }
 
     @Override
-    public void forEach(BiConsumer<String, String> action) {}
+    public void forEach(BiConsumer<String, String> action) {
+        base.stream().filter(entry->!deletedMappings.contains(entry.getPrefix())).forEach(e->action.accept(e.getPrefix(), e.getUri()));
+        addedMappings.forEach((p,u)->action.accept(p, u));
+    }
 
     @Override
     public Stream<PrefixEntry> stream() {
-        return null;
+        Stream<PrefixEntry> stream1 = base.stream().filter(entry->!deletedMappings.contains(entry.getPrefix()));
+        Stream<PrefixEntry> stream2 = addedMappings.entrySet().stream().map(e->PrefixEntry.create(e.getKey(), e.getValue()));
+        return Streams.concat(stream1, stream2);
     }
 
     @Override
@@ -83,15 +93,6 @@ public class BufferingPrefixMap extends PrefixMapBase {
         deletedMappings.remove(prefix);
     }
 
-//    @Override
-//    public void putAll(PrefixMap pmap) {}
-//
-//    @Override
-//    public void putAll(PrefixMapping pmap) {}
-//
-//    @Override
-//    public void putAll(Map<String, String> mapping) {}
-
     @Override
     public void delete(String prefix) {
         prefix = PrefixLib.canonicalPrefix(prefix);
@@ -103,27 +104,15 @@ public class BufferingPrefixMap extends PrefixMapBase {
     }
 
     @Override
-    public void clear() {}
+    public void clear() {
+        addedMappings.clear();
+        deletedMappings = new HashSet<>(base.getMapping().keySet());
+    }
 
     @Override
     public boolean containsPrefix(String prefix) {
-        return false;
+        return stream().anyMatch(e->Objects.equals(e.getPrefix(), prefix));
     }
-
-//    @Override
-//    public String abbreviate(String uriStr) {
-//        return null;
-//    }
-//
-//    @Override
-//    public Pair<String, String> abbrev(String uriStr) {
-//        return null;
-//    }
-//
-//    @Override
-//    public String expand(String prefixedName) {
-//        return null;
-//    }
 
     @Override
     public boolean isEmpty() {
@@ -133,8 +122,10 @@ public class BufferingPrefixMap extends PrefixMapBase {
     @Override
     public int size() {
         // XXX Wrong for added same prefix, different iri.
-        return base.size() + addedMappings.size() - deletedMappings.size();
+        return (int)stream().count();
     }
+
+    public PrefixMap base() { return base; }
 
     public void flush() {
         addedMappings.forEach(base::add);
@@ -144,5 +135,12 @@ public class BufferingPrefixMap extends PrefixMapBase {
 
     }
 
+    public String state() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Prefixes").append("\n");
+        sb.append("  Added:   "+addedMappings).append("\n");
+        sb.append("  Deleted: "+deletedMappings).append("\n");
+        return sb.toString();
+    }
 }
 

@@ -21,6 +21,12 @@ package dsg.buffering.dev;
 public class NotesBuffering {
     // ** Graph case
     // [ ] ** Transactions! Need planning for the contract on the underlying graph.
+    //   PROMOTE in BufferingDatasetGraph
+    // Access cyclein BufferingDatsetGraph
+    // [ ] ??"Buffering" = "Buffered"
+
+    // Else ready.
+
     //  Cases:
     //     No DSG -> raw. Single threaded, no need for TXN.
     //     Companion DSG
@@ -30,10 +36,6 @@ public class NotesBuffering {
     //   On flush, end transaction and restart.
 
     // ** DatasetGraph case
-    // Create (nothing)
-    //   DatasetGraphBuffering.get() = getR
-    // First mutate - start-read-transaction
-    // flush: end-read-start Txn.write (nothing).
 
     // [ ] Graph TransactionHandler adapter not reentrant?
 

@@ -18,33 +18,87 @@
 
 package dev;
 
-import static org.apache.jena.atlas.iterator.Iter.iter;
+import java.io.InputStream;
 
-import org.apache.jena.atlas.iterator.Iter;
+import org.apache.jena.atlas.io.IO;
+import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.Node;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.ResultSetFactory;
+import org.apache.jena.query.ResultSetFormatter;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFParser;
 import org.apache.jena.riot.RDFWriter;
 import org.apache.jena.riot.RIOT;
-import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.riot.resultset.ResultSetLang;
+import org.apache.jena.riot.resultset.ResultSetReaderRegistry;
+import org.apache.jena.sparql.algebra.Algebra;
+import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.exec.QueryExec;
+import org.apache.jena.sparql.exec.RowSet;
 import org.apache.jena.sparql.graph.GraphFactory;
+import org.apache.jena.sparql.resultset.SPARQLResult;
 import org.apache.jena.sys.JenaSystem;
-import org.slf4j.bridge.SLF4JBridgeHandler;
+import org.apache.jena.util.JenaXMLInput;
 
 public class Report {
     static {
         try {
-            SLF4JBridgeHandler.removeHandlersForRootLogger();
+            // GeoSPARQL
+            //org.slf4j.bridge.SLF4JBridgeHandler.removeHandlersForRootLogger();
         } catch (Throwable th) {}
         // JenaSystem.DEBUG_INIT = true;
         JenaSystem.init();
+        LogCtl.setLog4j2();
         FusekiLogging.setLogging();
-        // LogCtl.setLog4j2();
         RIOT.getContext().set(RIOT.symTurtleDirectiveStyle, "sparql");
     }
+
+    public static void main(String...args) {
+        // Integrate error handling. Or
+        // RowSetReaderXML.init and others.
+
+        JenaXMLInput.allowLocalDTDs = true;
+
+        try {
+            Model model = ModelFactory.createDefaultModel();
+            model.read("file:CVE/malicious1.xml");
+            System.out.println("1: model.read returned normally");
+        } catch (Throwable ex) {
+            System.out.println("1: "+ex.getMessage());
+        }
+        System.out.println();
+
+        try {
+            Model model = ModelFactory.createDefaultModel();
+            model.read("file:CVE/malicious2.xml");
+            System.out.println("2: model.read returned normally");
+        } catch (Throwable ex) {
+            System.out.println("2: "+ex.getMessage());
+        }
+        System.out.println();
+
+        try {
+            ResultSetFactory.load("file:CVE/bad1-srx.srx");
+            System.out.println("3: ResultSetFactory.load returned normally");
+        } catch (Throwable ex) {
+            System.out.println("3: "+ex.getMessage());
+        }
+        System.out.println();
+
+        try {
+            ResultSetFactory.load("file:CVE/bad2-srx.srx");
+            System.out.println("4: ResultSetFactory.load returned normally");
+        } catch (Throwable ex) {
+            System.out.println("4: "+ex.getMessage());
+        }
+
+    }
+
 
     // [ ] Iter.first ; Leave the iterator usable. -- change to terminating.
     // findFirst - remove?
@@ -52,12 +106,7 @@ public class Report {
     // GRAPH ( iri() | DEFAULT | NAMED | ALL | UNION ) pattern
     // --> Target in modify.
 
-    // tdbloader2
-    // Data load phase
-    // CmdNodeTableBuilder --> ProcNodeTableBuilder
-    // Tree write phase
-    // CmdIndexBuild --> ProcIndexBuild
-    // New data phase.
+    // Big years.
 
     /* gYear, gYearMonth, xs:dateTime template "asDateTime" Leave API as-is and
      * change SPARQL
@@ -67,14 +116,32 @@ public class Report {
      * [ ] Year 0 and calculations [ ] New test suite [ ] gYear difference = years
      */
 
-    // RDFS
-    private static Iter<Quad> findOneGraph(DatasetGraph dsg, Node g, Node s, Node p, Node o) {
-        if ( ! g.isConcrete()  )
-            throw new IllegalStateException();
-        return iter(dsg.getGraph(g).find(s,p,o)).map(t->Quad.create(g, t));
-    }
+    public static void mainSRJ(String...args) {
+        {
+            int x = Integer.MAX_VALUE+1;
+            System.out.printf("%d 0x%08X\n", x , x );
+            System.exit(0);
+        }
+        RowSet rowSet = QueryExec.service("http://localhost:3030/ds")
+                .query("SELECT * { ?s ?p ?o }")
+                .select();
+        rowSet.forEachRemaining(b->{
+           System.out.println(b);
+        });
+        System.exit(0);
 
-    public static void main(String...args) {
+        //arq.qparse.main("--print=opt", "--file=/home/afs/tmp/Q1.rq");
+        Query query = QueryFactory.read("/home/afs/tmp/Q1.rq");
+        Op op = Algebra.compile(query);
+        System.out.println(op);
+
+        InputStream in = IO.openFileBuffered("/home/afs/tmp/R.srj");
+        SPARQLResult result = ResultSetReaderRegistry.getFactory(ResultSetLang.RS_JSON).create(ResultSetLang.RS_JSON).readAny(in, null);
+        if ( result.isBoolean() )
+            System.out.println("ASK => "+result.getBooleanResult());
+        else
+            ResultSetFormatter.out(result.getResultSet());
+        System.exit(0);
     }
 
     public static void ttlFormat() {
@@ -116,7 +183,7 @@ public class Report {
 
         Graph graph = GraphFactory.createDefaultGraph();
         RDFParser.source("/home/afs/tmp/shapes.ttl").parse(graph);
-        RDFWriter.create(graph).format(RDFFormat.TURTLE_BLOCKS).output(System.out);
+        RDFWriter.source(graph).format(RDFFormat.TURTLE_BLOCKS).output(System.out);
         System.exit(0);
     }
 }

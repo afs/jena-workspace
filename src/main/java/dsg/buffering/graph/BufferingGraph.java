@@ -71,6 +71,8 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
             addedGraph = GraphPlain.plain();
     }
 
+    public Graph base() { return get(); }
+
     /** Flush the changes to the base graph, using a Graph transaction if possible. */
     @Override
     public void flush() {
@@ -117,9 +119,9 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
         updateOperation();
         Graph base = get();
         deletedTriples.remove(triple);
-        if (containsByEquals(addedGraph, triple) )
+        if (G3.containsByEquals(addedGraph, triple) )
             return ;
-        if ( CHECK && containsByEquals(base, triple) )
+        if ( CHECK && G3.containsByEquals(base, triple) )
             // Already in base gaph
             // No action.
             return;
@@ -131,7 +133,7 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
         Graph base = get();
         addedGraph.delete(triple);
 
-        if ( CHECK && ! containsByEquals(base, triple) )
+        if ( CHECK && ! G3.containsByEquals(base, triple) )
             return;
         deletedTriples.add(triple);
     }
@@ -158,23 +160,6 @@ public class BufferingGraph extends GraphWrapper implements BufferingCtl {
         ExtendedIterator<Triple> iter = base.find(triple).filterDrop(t->deletedTriples.contains(t));
         try { return iter.hasNext(); }
         finally { iter.close(); }
-    }
-
-    // XXX REPLACE by *Plain
-    // contains by "same term" not "same value".
-    private static boolean containsByEquals(Graph graph, Triple triple) {
-        return containsByEquals(graph, triple.getSubject(), triple.getPredicate(), triple.getObject());
-    }
-
-    private static boolean containsByEquals(Graph graph, Node s, Node p, Node o) {
-        // Do direct for efficiency.
-        if ( ! graph.contains(s,p,o) )
-            return false;
-        // May have matched by value.  Do a term test find to restrict to RDF terms.
-        ExtendedIterator<Triple> iter = graph.find(s, p, o);
-        try {
-            return iter.hasNext();
-        } finally { iter.close(); }
     }
 
     @Override

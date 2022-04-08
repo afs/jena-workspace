@@ -16,17 +16,15 @@
  * limitations under the License.
  */
 
-package dsg.buffering;
+package dsg.buffering.test;
 
-import dsg.buffering.test.TestBufferingDatasetGraph;
-import dsg.buffering.test.TestBufferingGraph;
-import dsg.buffering.test.TestBufferingPrefixMapping;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses( {
-    TestBufferingDatasetGraph.class
+    TestBufferingPrefixMap.class
+    , TestBufferingDatasetGraph.class
     , TestBufferingGraph.class
     , TestBufferingPrefixMapping.class
 })

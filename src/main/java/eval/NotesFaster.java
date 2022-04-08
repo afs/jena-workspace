@@ -16,16 +16,29 @@
  * limitations under the License.
  */
 
-package dsg.buffering;
+package eval;
 
-import dsg.buffering.quads.BufferingDatasetGraphQuads;
-import org.apache.jena.sparql.core.DatasetGraph;
+public class NotesFaster {
 
-/**
- * BufferingDatasetGraph interface
- * <p>
- * The usual implementation is {@link BufferingDatasetGraph}.
- * <p>
- * A "Quads only" version is {@link BufferingDatasetGraphQuads}.
- */
-public interface DatasetGraphBuffering extends BufferingCtl, DatasetGraph {}
+    // Filter-BGP reorder. JENA-2317.
+
+    /*
+     * [ ] Better BPT Iterator with jump ahead. "Cursor"
+     * [ ] Bytes off disk faster?? (Better, avoid needing access)
+     * [ ] ** Rocks For node tables
+     * [ ] Co-fetch (?s (:p1 ?v1) (:p2 ?v2) (:p3 ?v3)) then expand.
+     * [ ] All joins.
+     * [ ] Push in filters to TDB2
+     * [ ] (filter variable value)
+     */
+
+    // Possible ops: Decomposing bgp+filters
+    // * (access s p o . filter depending on only the triple)
+    // * "Inline filter" -- a filter except no subop.
+
+    /*
+     * ** (bgp s p o . filter of one var ) -- includes range.
+     * Partial reorder - pull 2-term  first always then
+     * 2-term triple patterns vs 1 term + filter.
+     */
+}
