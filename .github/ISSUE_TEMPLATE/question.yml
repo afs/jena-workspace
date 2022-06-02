@@ -1,0 +1,24 @@
+name: Question
+description: "Ask a question"
+title: "[Q]: "
+labels: ["question"]
+body:
+  - type: input
+    id: jena-version
+    attributes:
+      label: Version
+      description: Which version of Apache Jena are you running?
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        
+        ### Code of Conduct
+        [Apache Software Foundation Code of Conduct](https://github.com/apache/.github/blob/main/.github/CODE_OF_CONDUCT.md)
