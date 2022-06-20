@@ -37,8 +37,8 @@ public class MMapUtils {
 
     public static void main(String... args) throws IOException {
         try {
-            int RANDOM = org.apache.lucene.store.NativePosixUtil.RANDOM;
-            org.apache.lucene.store.NativePosixUtil.madvise(null, RANDOM);
+//            int RANDOM = org.apache.lucene.store.NativePosixUtil.RANDOM;
+//            org.apache.lucene.store.NativePosixUtil.madvise(null, RANDOM);
         } catch (java.lang.UnsatisfiedLinkError ule) {
             System.err.println(ule.getMessage());
         }
