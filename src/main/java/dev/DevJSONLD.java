@@ -34,7 +34,8 @@ import org.apache.jena.riot.RDFWriter;
 public class DevJSONLD {
 
     public static void main(String[] args) throws JsonLdError {
-        run(Lang.JSONLD10);
+        http_Java11();
+        //run(Lang.JSONLD10);
         System.out.println();
 
 //        String c = """
@@ -65,7 +66,7 @@ public class DevJSONLD {
         RDFWriter.source(graph).lang(lang).output(System.out);
     }
 
-    public static void http_Java11(String...args) {
+    public static void http_Java11() {
         // https://stackoverflow.com/questions/71413050/jena-javascript-custom-functions-scriptengine-null-error
 
         //Graph graph = RDFParser.source("D.jsonld").lang(Lang.JSONLD11).toGraph();

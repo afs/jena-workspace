@@ -16,30 +16,8 @@
  * limitations under the License.
  */
 
-package test4;
+package reports;
 
-public class NotesNextTest {
+public class CompareLib {
 
-    // [2]
-    // Checking phase : SPARQL 1.1 tests
-    // + SPARQL 1.1 tests.
-    // Make sure the WG SPARQL 1.1 test that matter get run.
-    // Move test4.next  TextTestRunner
-
-    // -----
-
-    // 3: Get rid of core-TURTLE
-    //   JENA- old writer names,
-    //    Take out of readers and writers.
-    //    Delete from tests.
-    // Assembler uses Turtle - move tests to "integration"
-    // jena-core FileManager, LocationMapper
-    // JA -- convert schema to RDF/XML. Does it need it?
-
-    // ----
-
-    // Separate:
-    //   Issue old Turtle. Remove TURTLE from core?
-    //   core FileUtils. Deprecate constants. private?
 }
-

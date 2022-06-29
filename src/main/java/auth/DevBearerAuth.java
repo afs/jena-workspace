@@ -16,22 +16,46 @@
  * limitations under the License.
  */
 
-package dev;
+package auth;
 
-import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.riot.RIOT;
 import org.apache.jena.sys.JenaSystem;
 
-public class ReportTest {
+public class DevBearerAuth {
+    /*
+     * [x] Documentation
+     * [ ] Does not record the 401 because that is by the servlet filter.
+
+     * maven: io.jsonwebtoken / jjwt-root / 0.11.1
+     */
+    /*
+     * <dependency>
+     *   <groupId>io.jsonwebtoken</groupId>
+     *   <artifactId>jjwt</artifactId>
+     *   <version>0.9.1</version>
+     * </dependency>
+     */
+    /*
+    Nice:
+        fast determination of tokens.
+          RiotChars
+          boolean[256] indexed by char
+          example: jdk.internal.net.http.common.utils.tchar
+     */
 
     static {
+        // JenaSystem.DEBUG_INIT = true;
         JenaSystem.init();
-        LogCtl.setLog4j2();
+        //LogCtl.setLog4j2();
+        FusekiLogging.setLogging();
         RIOT.getContext().set(RIOT.symTurtleDirectiveStyle, "sparql");
     }
 
-    public static void main(String...a) {
+    public static void main(String...args) {
+        // [x] Base64 encoding - no padding.
+        // [ ] Filter, if no user, pass through untouched.
+
+        // [ ] Check : registration.
     }
-
 }
-

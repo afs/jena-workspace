@@ -28,21 +28,21 @@ import org.apache.jena.sparql.util.Symbol;
 
 /**
  * Extend another {@link Context}.
- * 
+ *
  * The extended context is assumed to be unchanging
  * (for tracking removed properties)
  */
-    
-class Context2 extends Context {
+
+public class Context2 extends Context {
     // Needs Tests.
     private final Context left = new Context();
     private final Context right;
     private final Set<Symbol> hidden = new HashSet<>();
-    
+
     public Context2(Context context) {
         right = context;
     }
-    
+
     @Override
     protected Object mapGet(Symbol property) {
         Object obj = left.get(property);

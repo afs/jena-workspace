@@ -16,22 +16,11 @@
  * limitations under the License.
  */
 
-package dev;
+package auth;
 
-import org.apache.jena.atlas.logging.LogCtl;
-import org.apache.jena.riot.RIOT;
-import org.apache.jena.sys.JenaSystem;
+/** Operations associated with JWT */
+public class JwtLib {
+    private JwtLib(){}
 
-public class ReportTest {
-
-    static {
-        JenaSystem.init();
-        LogCtl.setLog4j2();
-        RIOT.getContext().set(RIOT.symTurtleDirectiveStyle, "sparql");
-    }
-
-    public static void main(String...a) {
-    }
 
 }
-

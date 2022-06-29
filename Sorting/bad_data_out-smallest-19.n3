@@ -1,0 +1,81 @@
+@prefix bibo:         <http://purl.org/ontology/bibo/> .
+@prefix c4o:          <http://purl.org/spar/c4o/> .
+@prefix cito:         <http://purl.org/spar/cito/> .
+@prefix dcterms:      <http://purl.org/dc/terms/> .
+@prefix dynapi:       <https://vivoweb.org/ontology/vitro-dynamic-api#> .
+@prefix event:        <http://purl.org/NET/c4dm/event.owl#> .
+@prefix fabio:        <http://purl.org/spar/fabio/> .
+@prefix foaf:         <http://xmlns.com/foaf/0.1/> .
+@prefix geo:          <http://aims.fao.org/aos/geopolitical.owl#> .
+@prefix obo:          <http://purl.obolibrary.org/obo/> .
+@prefix ocrer:        <http://purl.org/net/OCRe/research.owl#> .
+@prefix ocresd:       <http://purl.org/net/OCRe/study_design.owl#> .
+@prefix ocresp:       <http://purl.org/net/OCRe/study_protocol.owl#> .
+@prefix ocresst:      <http://purl.org/net/OCRe/statistics.owl#> .
+@prefix owl:          <http://www.w3.org/2002/07/owl#> .
+@prefix p1:           <https://vivoweb.org/ontology/vitro-dynamic-api#> .
+@prefix rdf:          <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:         <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ro:           <http://purl.obolibrary.org/obo/ro.owl#> .
+@prefix scires:       <http://vivoweb.org/ontology/scientific-research#> .
+@prefix skos:         <http://www.w3.org/2004/02/skos/core#> .
+@prefix swo:          <http://www.ebi.ac.uk/efo/swo/> .
+@prefix swrl:         <http://www.w3.org/2003/11/swrl#> .
+@prefix swrlb:        <http://www.w3.org/2003/11/swrlb#> .
+@prefix vann:         <http://purl.org/vocab/vann/> .
+@prefix vcard:        <http://www.w3.org/2006/vcard/ns#> .
+@prefix vitro:        <http://vitro.mannlib.cornell.edu/ns/vitro/0.7#> .
+@prefix vitro-public: <http://vitro.mannlib.cornell.edu/ns/vitro/public#> .
+@prefix vivo:         <http://vivoweb.org/ontology/core#> .
+@prefix xsd:          <http://www.w3.org/2001/XMLSchema#> .
+
+<https:test>
+        rdfs:label  "South America"@en .
+<https:test>
+        rdfs:label  "Maß4Werk0481" .
+
+[ rdfs:label  "1!"@en-US ] .
+[ rdfs:label  "1!"@en-US ] .
+
+
+vivo:dateTimeValue  rdfs:label  "date/time value"@en , "date/time value"@en-US .
+
+<https:test>
+        rdfs:label  "Werk GR178" .
+
+<https:test>
+        rdfs:label  "Werk5092 [Buchdruck, Vignetten, Zierleisten]"@en-US .
+
+<https:test>
+        rdfs:label  "Anbringungsort der Sammlermarke"@de-DE , "mark location"@en-US .
+
+vivo:Consortium  rdfs:label "Consortium"@de-DE, "Consortium"@de, "Consortium"@en-US .
+
+<https:test>
+        rdfs:label  "Lomé"@de , "Lomé"@es , "Lomé"@fr , "Lomé"@it , "Lomé"@en .
+
+<https:test>
+        rdfs:label  "Georgetown"@fr , "Georgetown"@de , "Georgetown"@it , "Georgetown"@pt , "Georgetown"@en , "Georgetown"@es .
+
+obo:ERO_0001260  rdfs:label  "Data Maintenance Service"@en ,"Data Maintenance Service"@de ,"Data Maintenance Service"@de-DE , "Data Maintenance Service"@en-US .
+
+obo:ERO_0000033  rdfs:label  "hat Erfahrung in"@de-DE .
+
+c4o:hasGlobalCountValue
+        rdfs:label  "hat weltweiten Zählwert"@de-DE .
+
+<https:test>
+        rdfs:label  "Werk0956 "@en-US .
+
+<https:test>
+        rdfs:label  "89$140519319 image 00000003" .
+
+
+
+
+
+
+
+
+
+
