@@ -29,9 +29,9 @@ import org.apache.jena.sparql.core.Var ;
 import org.apache.jena.sparql.core.VarExprList ;
 import org.apache.jena.sparql.expr.Expr ;
 
-/** Transform <tt>{ BIND(const AS ?Var) ..}</tt>, i.e. 
- * <tt>(bind ((?var const) (table unit))</tt>
- * to a <tt>(table ...)</tt> 
+/** Transform {@code { BIND(const AS ?Var) ..}}, i.e. 
+ * {@code (bind ((?var const) (table unit))}
+ * to a {@code (table ...)} 
  *   
  */
 public class TransformBindData extends TransformCopy {

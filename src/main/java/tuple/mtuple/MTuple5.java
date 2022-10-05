@@ -22,20 +22,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import org.apache.jena.atlas.lib.tuple.Tuple4;
+import org.apache.jena.atlas.lib.tuple.Tuple5;
 import org.apache.jena.atlas.lib.tuple.TupleFactory;
 
-class MTuple4<X> extends MTupleBase<X> {
+class MTuple5<X> extends MTupleBase<X> {
     protected X x1 = null;
     protected X x2 = null;
     protected X x3 = null;
     protected X x4 = null;
+    protected X x5 = null;
 
-    public MTuple4(X x1, X x2, X x3, X x4) {
+    public MTuple5(X x1, X x2, X x3, X x4, X x5) {
         this.x1 = x1 ;
         this.x2 = x2 ;
         this.x3 = x3 ;
         this.x4 = x4 ;
+        this.x5 = x5 ;
+
     }
 
     @Override
@@ -45,6 +48,7 @@ class MTuple4<X> extends MTupleBase<X> {
             case 1: return x2 ;
             case 2: return x3 ;
             case 3: return x4 ;
+            case 4: return x5 ;
         }
         throw new IndexOutOfBoundsException() ;
     }
@@ -56,6 +60,7 @@ class MTuple4<X> extends MTupleBase<X> {
             case 1: x2 = n ; return;
             case 2: x3 = n ; return;
             case 3: x4 = n ; return;
+            case 4: x5 = n ; return;
         }
         throw new IndexOutOfBoundsException() ;
     }
@@ -67,35 +72,39 @@ class MTuple4<X> extends MTupleBase<X> {
 
     @Override
     public <Y> MTuple<Y> map(Function<X, Y> function) {
-        return new MTuple4<Y>(
+        return new MTuple5<Y>(
             function.apply(x1),
             function.apply(x2),
             function.apply(x3),
-            function.apply(x4));
+            function.apply(x4),
+            function.apply(x5)
+            );
     }
 
-    public Tuple4<X> tuple() {
-        return TupleFactory.create4(x1, x2, x3, x4);
+    public Tuple5<X> tuple() {
+        return TupleFactory.create5(x1, x2, x3, x4, x5);
     }
 
     @Override
     protected X[] asArray() {
         @SuppressWarnings("unchecked")
-        X[] a =  (X[])new Object[4];
+        X[] a =  (X[])new Object[5];
         a[0] = x1;
         a[1] = x2;
         a[2] = x3;
         a[3] = x4;
+        a[4] = x5;
         return a;
     }
 
     @Override
     public List<X> asList() {
-        List<X> x = new ArrayList<>(4);
+        List<X> x = new ArrayList<>(5);
         x.set(0, x1);
         x.set(1, x2);
         x.set(2, x3);
         x.set(3, x4);
+        x.set(4, x5);
         return x;
     }
 }

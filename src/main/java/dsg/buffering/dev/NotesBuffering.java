@@ -22,7 +22,7 @@ public class NotesBuffering {
     // ** Graph case
     // [ ] ** Transactions! Need planning for the contract on the underlying graph.
     //   PROMOTE in BufferingDatasetGraph
-    // Access cyclein BufferingDatsetGraph
+    // Access cycle in BufferingDatsetGraph
     // [ ] ??"Buffering" = "Buffered"
 
     // Else ready.

@@ -42,6 +42,10 @@ public class RunDevFuseki
         }
     }
 
+    public static void mainEvolution() {
+
+    }
+
     public static void run() {
         // New
         DataServiceBuilder builder = new DataServiceBuilder();

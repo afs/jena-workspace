@@ -42,7 +42,7 @@ public class DevBuffering {
 
     public static void main(String ... argv ) {
         DatasetGraph dsg0 = DatasetGraphFactory.createTxnMem();
-        BufferingDatasetGraph dsg = new BufferingDatasetGraph(dsg0, 2);
+        BufferingDatasetGraph dsg = new BufferingDatasetGraph(dsg0, 5);
         dsg.executeWrite(()-> {
             dsg.add(SSE.parseQuad("(_ :s1 :p :o1)"));
             dsg.prefixes().add("", "http://example/");

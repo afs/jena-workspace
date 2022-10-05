@@ -16,21 +16,8 @@
  * limitations under the License.
  */
 
-package rowset;
+package assembler2;
 
-public class NotesRowSet {
-    // Tidy RowSetWriterText
+public class AssemblerAdapater {
 
-    // -- Minor
-    // [x] RowSet.create() Builder.
-    //     Both: ResultsReader -> X_Reader, X_Writer
-
-    // [-] RowSetFactory - better boolean?
-
-    // [x] SSE -> RowSet
-    // [x] TestThriftResultSet
-
-    // [x] Thrift - need code changes. ThriftRDF
-    // [x] Protobuf
-    // [x] Deprecate old ResultSetReaders/Writer.
 }

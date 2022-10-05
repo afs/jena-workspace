@@ -26,7 +26,7 @@ import org.apache.jena.atlas.lib.tuple.Tuple1;
 import org.apache.jena.atlas.lib.tuple.TupleFactory;
 
 class MTuple1<X> extends MTupleBase<X> {
-    protected X x1 = null; 
+    protected X x1 = null;
 
     public MTuple1(X x1) {
         this.x1 = x1 ;
@@ -39,7 +39,7 @@ class MTuple1<X> extends MTupleBase<X> {
         }
         throw new IndexOutOfBoundsException() ;
     }
-    
+
     @Override
     public void set(int i, X n) {
         switch (i) {
@@ -47,20 +47,20 @@ class MTuple1<X> extends MTupleBase<X> {
         }
         throw new IndexOutOfBoundsException() ;
     }
-    
+
     @Override
     public final int len() {
         return 1 ;
     }
-    
+
     @Override
     public <Y> MTuple<Y> map(Function<X, Y> function) {
         return new MTuple1<Y>(
             function.apply(x1));
     }
 
-    public Tuple1<X> tuple() { 
-        return TupleFactory.create1(x1); 
+    public Tuple1<X> tuple() {
+        return TupleFactory.create1(x1);
     }
 
     @Override
@@ -76,5 +76,5 @@ class MTuple1<X> extends MTupleBase<X> {
         List<X> x = new ArrayList<>(1);
         x.set(0, x1);
         return x;
-    } 
+    }
 }

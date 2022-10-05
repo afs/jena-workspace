@@ -18,9 +18,18 @@
 
 package dev;
 
+import static org.junit.Assert.assertTrue;
+
 import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.riot.RIOT;
+import org.apache.jena.sparql.algebra.Algebra;
+import org.apache.jena.sparql.algebra.AlgebraGenerator;
+import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sys.JenaSystem;
+import org.junit.Test;
 
 public class ReportTest {
 
@@ -31,7 +40,23 @@ public class ReportTest {
     }
 
     public static void main(String...a) {
+        String qs = "SELECT ?a ?d WHERE { ?a <http://example.org/p> ?b . BIND(?b AS ?c) BIND(?c AS ?d) }";
+        Query q1 = QueryFactory.create(qs);
+        Op op1 = Algebra.compile(q1);
+        Query q2 = OpAsQuery.asQuery(op1);
+        Op op2 = Algebra.compile(q2);
+
+        System.out.println(q1);
+        System.out.println(q2);
+        System.out.println("Algebra equals: "+op1.equals(op2));
     }
 
+    @Test
+    public void retainVariables() {
+        String sparqlStrBeforOp = "SELECT ?a ?d WHERE { ?a <http://example.org/p> ?b . BIND(?b AS ?c) BIND(?c AS ?d) }";
+        String sparqlStrAfterOp = OpAsQuery.asQuery(new AlgebraGenerator().compile(QueryFactory.create(sparqlStrBeforOp))).toString();
+        System.out.println(sparqlStrAfterOp);
+        assertTrue(sparqlStrAfterOp.contains("(?b AS ?c)"));
+    }
 }
 

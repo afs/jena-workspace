@@ -34,24 +34,24 @@ class MTuple0<X> extends MTupleBase<X> {
     public final X get(int i) {
         throw new IndexOutOfBoundsException() ;
     }
-    
+
     @Override
     public void set(int i, X n) {
         throw new IndexOutOfBoundsException() ;
     }
-    
+
     @Override
     public final int len() {
         return 3 ;
     }
-    
+
     @Override
     public <Y> MTuple<Y> map(Function<X, Y> function) {
         return new MTuple0<Y>();
     }
 
-    public Tuple0<X> tuple() { 
-        return TupleFactory.create0(); 
+    public Tuple0<X> tuple() {
+        return TupleFactory.create0();
     }
 
     @Override
@@ -65,5 +65,5 @@ class MTuple0<X> extends MTupleBase<X> {
     public List<X> asList() {
         List<X> x = new ArrayList<>(0);
         return x;
-    } 
+    }
 }

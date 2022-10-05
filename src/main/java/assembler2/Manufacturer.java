@@ -16,10 +16,31 @@
  * limitations under the License.
  */
 
-package fuseki.modules;
+package assembler2;
 
-public class NotesFusekiModules {
-    // FusekiServer.Builder.addModule
-    // Naming: "name()" and "instanceId()"
-    //Rename in jena-fuseki-access -  SecurityContext -> SecurityGraphContext
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
+
+// Creator (already used)
+// Fabricator?
+// Manufacturer?
+// Originator?
+
+public interface Manufacturer<X> {
+
+    /**
+     * Return an {@code X}.
+     * <p>
+     * If a {@code X} has been built before for this reference node, return the
+     * previous object (i.e. it is shared in the network of constructed objects).
+     * Otherwise build a fresh object and also record it for later.
+     */
+    public default X construct(BuildContext cxt, Graph descriptionGraph, Node reference) {
+        return cxt.computeIfAbsent(reference, (d)->newItem(cxt, descriptionGraph, d));
+    }
+
+    /**
+     *  Create a fresh item every call.
+     */
+    public X newItem(BuildContext cxt, Graph descriptionGraph, Node reference);
 }

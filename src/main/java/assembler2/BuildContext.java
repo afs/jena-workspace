@@ -16,36 +16,21 @@
  * limitations under the License.
  */
 
-package fuseki;
+package assembler2;
 
-public class Other {
-    @FunctionalInterface
-    interface Call2<T1, T2> {
-        void call(T1 x1, T2 x2);
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+import org.apache.jena.graph.Node;
+
+public class BuildContext {
+
+    private Map<Node, Object> built = new HashMap<>();
+
+    @SuppressWarnings("unchecked")
+    <X> X computeIfAbsent(Node description, Function<? super Node, ? extends X> supplier) {
+        return (X)built.computeIfAbsent(description, supplier);
     }
 
-    @FunctionalInterface
-    interface Call3<T1, T2, T3> {
-        void call(T1 x1, T2 x2, T3 x3);
-    }
-
-    @FunctionalInterface
-    interface Call4<T1, T2, T3, T4> {
-        void call(T1 x1, T2 x2, T3 x3, T4 x4);
-    }
-
-    @FunctionalInterface
-    interface Function2<T1, T2, R> {
-        R call(T1 x1, T2 x2);
-    }
-
-    @FunctionalInterface
-    interface Function3<T1, T2, T3, R> {
-        R call(T1 x1, T2 x2, T3 x3);
-    }
-
-    @FunctionalInterface
-    interface Function4<T1, T2, T3, T4, R> {
-        R call(T1 x1, T2 x2, T3 x3, T4 x4);
-    }
 }

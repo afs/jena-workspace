@@ -18,9 +18,18 @@
 
 package dev;
 
+import org.apache.jena.cmd.ArgDecl;
+import org.apache.jena.cmd.ArgModuleGeneral;
+import org.apache.jena.cmd.CmdArgModule;
+import org.apache.jena.cmd.CmdGeneral;
+import org.apache.jena.fuseki.Fuseki;
 import org.apache.jena.fuseki.ctl.ActionDumpRequest;
+import org.apache.jena.fuseki.main.FusekiMainInfo;
 import org.apache.jena.fuseki.main.FusekiServer;
-import org.apache.jena.fuseki.main.cmds.FusekiMainCmd;
+import org.apache.jena.fuseki.main.cmds.FusekiMain;
+import org.apache.jena.fuseki.main.sys.FusekiModule;
+import org.apache.jena.fuseki.main.sys.FusekiModules;
+import org.apache.jena.fuseki.server.DataService;
 import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.fuseki.server.OperationRegistry;
 import org.apache.jena.fuseki.servlets.SPARQL_QueryGeneral;
@@ -35,9 +44,11 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.exec.http.DSP;
+import org.slf4j.Logger;
 
 public class RunFuseki
 {
+    // SEE ALSO fuseki.evolution.*
     public static void main(String ... a) throws Exception {
         //System.setProperty("fuseki.loglogging", "true");
         // Warning - this can pick up log4j.properties files from test jars.
@@ -46,22 +57,91 @@ public class RunFuseki
         FusekiLogging.setLogging();
 
         try {
-            mainExternal();
+            mainDetails();
+            //mainFModArgs();
+            //mainExternal();
             //maingeo();
 
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             ex.printStackTrace();
         } finally {
             System.exit(0);
         }
     }
 
-    private static void mainExternal() {
-        FusekiMainCmd.main
-        (
-         //"-v",
-         "--mem", "/ds"
-        );
+    private static void mainDetails() {
+        // Would like to have:
+        // * Command line to serverConfig
+        // * serviceConfig to FusekiServer.Builder
+        // * info(serviceConfig)
+        // or * info(server)
+
+        //ServerConfig serverConfig = FusekiMain.parseCommandLine("--admin=user:pw", "--mem", "/ds");
+        if ( false ) {
+            FusekiServer server = FusekiServer.construct("-v", "--mem", "/ds");
+            //Fuseki.setVerbose(server.getServletContext(), true);
+
+            System.out.println("** Server (cmd line)");
+            printDetails(server);
+        }
+        if ( true ) {
+            DataService dataSrv = DataService.newBuilder(DatasetGraphFactory.createTxnMem())
+                    .addEndpoint(Operation.Query)
+                    .addEndpoint(Operation.Shacl, "shacl")
+                    .build();
+            FusekiServer server = FusekiServer.create()
+                    .port(3456)
+                    .add("ds1",  DatasetGraphFactory.empty())
+                    .add("ds2",  DatasetGraphFactory.empty(), false)
+                    .add("/ds3", dataSrv)
+                    .staticFileBase("FilesGoHere")
+                    .build();
+            //Fuseki.setVerbose(server.getServletContext(), true);
+
+            System.out.println("** Server (builder)");
+            printDetails(server);
+        }
+    }
+
+    private static void printDetails(FusekiServer server) {
+        Logger log = Fuseki.serverLog;
+        FusekiMainInfo.logCode(log);
+        FusekiMainInfo.logServer(log, server, true);
+        System.out.println();
+        FusekiMainInfo.logServer(log, server, false);
+    }
+
+    private static void mainFModArgs() {
+
+        ArgModuleGeneral args = new ArgModuleGeneral() {
+            private ArgDecl argAdminPW = new ArgDecl(true, "--admin");
+
+            @Override
+            public void registerWith(CmdGeneral cmdLine) {
+                cmdLine.add(argAdminPW);
+            }
+
+            @Override
+            public void processArgs(CmdArgModule cmdLine) {
+                if ( cmdLine.hasArg(argAdminPW) )
+                    System.err.println("Argument: value = "+cmdLine.getValue(argAdminPW));
+                else
+                    System.err.println("No argument");
+            }
+        };
+
+        FusekiModule fmod = new FusekiModule() {
+            @Override
+            public String name() { return "args" ;}
+
+            @Override
+            public void start() {
+                FusekiMain.addArgModule(args);
+            }
+        };
+
+        FusekiModules.add(fmod);
+        FusekiServer server = FusekiMain.build("-v", "--admin=user:pw", "--mem", "/ds");
     }
 
     private static void maingeo() {

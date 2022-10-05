@@ -1,4 +1,0 @@
-PREFIX : <http://example/>
-
-:g { :s :p :o1 }
-{ :s :p :o0 }

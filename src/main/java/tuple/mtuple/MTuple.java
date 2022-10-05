@@ -28,7 +28,7 @@ import java.util.stream.StreamSupport;
 import org.apache.jena.atlas.lib.tuple.Tuple;
 
 /**
- * Mutable tuple.
+ * Mutable tuple. The tuple is fixed length - its slot values can be changed.
  * <p>
  * These are not an extension of {@link Tuple}. {@code Tuple}s have value-equality and can
  * be used in sets and as keys in maps. Mutable tuples can not be used in sets by-value
@@ -41,6 +41,12 @@ interface MTuple<X> extends Iterable<X> {
      * @throws IndexOutOfBoundsException for i out of range
      */
     public X get(int i);
+
+    /**
+     * Set the i'th element.
+     * @throws IndexOutOfBoundsException for i out of range
+     */
+    public void set(int i, X x);
 
     /** length : elements are 0 to len()-1 */
     public int len() ;
@@ -72,6 +78,4 @@ interface MTuple<X> extends Iterable<X> {
     /** Iterable */
     @Override
     public Iterator<X> iterator();
-
-    public void set(int index, X x);
 }

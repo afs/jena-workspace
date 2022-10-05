@@ -27,7 +27,6 @@ import java.util.function.Supplier;
 
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.TransactionHandler;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.other.G;
 import org.apache.jena.util.IteratorCollection;
@@ -68,28 +67,13 @@ public class G2 {
 //        }
     }
 
-    /**
-     * Execute a graph transaction if the graph supports transactions else apply
-     * without a transaction wrapper.
-     */
+    // Abbreviations
+
     public static void execTxn(Graph graph, Runnable action) {
-        TransactionHandler th = graph.getTransactionHandler();
-        if ( th.transactionsSupported() )
-            th.execute(action);
-        else
-            action.run();
+        graph.getTransactionHandler().executeAlways(action);
     }
 
-    /**
-     * Execute a graph transaction and result result if the graph supports
-     * transactions else execute and return without a transaction wrapper.
-     */
     public static <X> X calcTxn(Graph graph, Supplier<X> action) {
-        TransactionHandler th = graph.getTransactionHandler();
-        if ( th.transactionsSupported() )
-            return th.calculate(action);
-        else
-            return action.get();
+        return graph.getTransactionHandler().calculateAlways(action);
     }
-
 }

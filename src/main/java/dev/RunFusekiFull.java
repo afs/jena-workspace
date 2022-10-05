@@ -20,6 +20,7 @@ package dev;
 
 import java.nio.file.Path;
 
+import org.apache.jena.atlas.io.IOX;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.Lib;
 import org.apache.jena.atlas.lib.ThreadLib;
@@ -41,7 +42,26 @@ public class RunFusekiFull
     }
     static Logger LOG = LoggerFactory.getLogger("APP");
 
+    // RunFusekiFull
+    // [x] - not defaulting to read-only.
+    //     - switch at templates stage. WebappDSGSetup.setup(+update flag)
+    // [ ] Document in ANN
+    // [ ] Website : fuseki-security.md
+    // [x] Github issue
+    // [x] --localhost => update
+    // [ ] Drop legacy
+    // [ ] Test --desc. (check for service)
+    // [ ] Start up tests (shareable with main?)
+    // [ ] Make consistent with Fuseki Main.
+
+    // Main and ModAdmin.
+
+
     public static void main(String ... a) {
+
+        // Action datasets - read-only versions
+        //   Including plain file.
+
 
         plainRun();
         //mainWebapp();
@@ -50,12 +70,17 @@ public class RunFusekiFull
 
     public static void plainRun() {
         String fusekiHome = "/home/afs/ASF/afs-jena/jena-fuseki2/jena-fuseki-webapp" ;
-        String fusekiBase = "/home/afs/tmp/run" ;
+        String fusekiBase = "/home/afs/tmp/Fuseki/run" ;
+
+        IOX.deleteAll(fusekiBase);
+        FileOps.ensureDir(fusekiBase);
 
         System.setProperty("FUSEKI_HOME", fusekiHome) ;
         System.setProperty("FUSEKI_BASE", fusekiBase) ;
         //FusekiCmd.main("--update", "--tdb2", "--loc=/home/afs/tmp/DB2", "/ds");
-        FusekiCmd.main("-v", "--mem", "/ds");
+        FusekiCmd.main("--mem", "/db");
+
+        System.exit(0);
     }
 
     public static void mainWebapp() {

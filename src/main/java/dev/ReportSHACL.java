@@ -16,10 +16,14 @@
  * limitations under the License.
  */
 
-package fuseki.modules;
+package dev;
 
-public class NotesFusekiModules {
-    // FusekiServer.Builder.addModule
-    // Naming: "name()" and "instanceId()"
-    //Rename in jena-fuseki-access -  SecurityContext -> SecurityGraphContext
+import shacl.shacl;
+
+public class ReportSHACL {
+
+    public static void main(String[] args) {
+        shacl.main("validate", "/home/afs/tmp/shapes.ttl");
+    }
+
 }

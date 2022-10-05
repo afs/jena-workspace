@@ -16,7 +16,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <ver.jena>4.6.0-SNAPSHOT</ver.jena>
+    <ver.jena>4.7.0-SNAPSHOT</ver.jena>
     <ver.fuseki>${ver.jena}</ver.fuseki>
 
     <ver.slf4j>1.7.36</ver.slf4j>
@@ -26,6 +26,9 @@
   </properties>
 
   <dependencies>
+
+
+
     <!-- JWT -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
