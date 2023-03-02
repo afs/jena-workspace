@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!-- $Id: bugs.xml,v 1.1 2002/03/04 20:09:04 dfs Exp $ -->
+<document>
+
+  <properties>
+    <author>Daniel Savarese</author>
+    <title>Bug Reporting</title>
+  </properties>
+
+  <body>
+
+    <section name="Bug Reporting Guidelines">
+
+      <p>
+      Before you decide to report a bug, make sure you have adequately
+      verified that it is not a problem in your code.  For example, if
+      you are using the org.apache.oro.text.regex or
+      org.apache.oro.text.perl packages, double check your results
+      against Perl.  Right now, compatibility is only guaranteed with
+      Perl 5.003_07.  Eventually we will guarantee Perl 5.6
+      compatibility.  It may be that what you think is a problem is
+      just a difference in behavior between Perl 5.003_07 and 5.6.  In
+      that case pester the oro-dev mailing list to get on the case and
+      move faster toward 5.6 compatibility.
+      </p>
+      <p>
+      Before reporting any bug, inquire on either the oro-user or
+      oro-dev <a href="http://jakarta.apache.org/site/mail.html">
+      mailing lists.</a>  You will get a faster response.  Always
+      include sample code and input that reproduces your problem and
+      indicate what version of jakarta-oro you are using.  If you are
+      not using the latest stable release, download the latest release
+      and see if the problem is still there before submitting a
+      report.  If we cannot reproduce a problem, we can't help.
+      </p>
+      <p>
+      If after you've followed the guidelines above, it is either
+      confirmed or at least not refuted that your problem is caused by
+      a bug in jakarta-oro, you may submit a bug report through
+      <a href="http://nagoya.apache.org/bugzilla/">Bugzilla</a>
+      </p>
+    </section>
+
+  </body>
+
+</document>
+

@@ -1,0 +1,42 @@
+$Id: CHANGES 54285 2000-11-24 05:13:55Z  $
+
+Many small, but important, changes have been made to this software
+between its last release as ORO software and its first release as part
+of the Apache Jakarta project.  The last versions of the ORO software
+were:
+	OROMatcher 1.1 (com.oroinc.text.regex)
+	PerlTools  1.2 (com.oroinc.text.perl)
+	AwkTools   1.0 (com.oroinc.text.awk)
+	TextTools  1.1 (com.oroinc.io, com.oroinc.text, com.oroinc.util)
+
+OROMatcher 1.1 was fully compatible with Perl 5.003 regular expressions.
+Many changes have been made to the regular expression behavior in
+successive versions of Perl.  The goal is to update org.apache.oro.text.regex
+to the latest version of Perl (5.6 at this time), but only some of this
+work has been done.
+
+o Guaranteed compatibility with JDK 1.1 is discontinued.  JDK 1.2 features
+  may be used indiscriminately, even though they may not have been used
+  at this time.
+
+o Perl5StreamInput and methods manipulating Perl5StreamInput have been
+  removed.  For the technical reasons behind this decision see
+  "On the Use of Regular Expressions for Searching Text", Clark and Cormack,
+  ACM Transactions on Programming Languages and Systems, Vol 19, No. 3,
+  pp 413-426.
+
+o Default behavior of '^' and '$' as matched by Perl5Matcher has
+  changed to match as though in single line mode, which appears to be
+  the Perl default.  Previously if you did not specify single line or
+  multi-line mode, '^' and '$'  would act as though in multi-line mode.
+  Now they act as though in single line mode, unless you specify otherwise
+  with setMultiline() or by compiling the expression with an appropriate mask.
+  However, '.' acts as in multi-line mode by default and its behavior
+  can only be altered by compiling an expression with SINGLELINE_MASK.
+  setMultiline() emulates the Perl $* variable, whereas the MASK variables
+  emulate the ismx modifiers.
+
+o All deprecated methods have been removed.  This includes various
+  substitute() convenience methods from com.oroinc.text.regex.Util
+
+o Javadoc comments have been updated to use 1.2 standard doclet features.

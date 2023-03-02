@@ -1,0 +1,14 @@
+<!-- $Id: chapter-preface.xml 54356 2001-07-09 11:55:12Z dfs $ -->
+
+<chapter id="chapter-preface">
+  <title>Preface</title>
+
+  <para>This documentation is a work in progress.</para>
+
+</chapter>
+
+<!--
+   Local variables:
+    mode: sgml
+   End:
+-->

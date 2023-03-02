@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<!-- $Id: index.xml,v 1.2 2001/05/17 00:44:43 dfs Exp $ -->
+<document>
+
+  <properties>
+    <author>Jon S. Stevens</author>
+    <author>Daniel Savarese</author>
+    <title>Jakarta ORO</title>
+  </properties>
+
+  <body>
+
+    <section name="Jakarta ORO">
+
+      <p>
+      The Jakarta-ORO Java classes are a set of text-processing Java
+      classes that provide Perl5 compatible regular expressions,
+      AWK-like regular expressions, glob expressions, and utility
+      classes for performing substitutions, splits, filtering
+      filenames, etc.  This library is the successor to the
+      OROMatcher, AwkTools, PerlTools, and TextTools libraries from
+      ORO, Inc. (www.oroinc.com).  They have been donated to the
+      Jakarta Project by Daniel Savarese (www.savarese.org), the
+      copyright holder of the ORO libraries.  Daniel will continue to
+      participate in their development under the Jakarta Project.
+      </p>
+
+      <p>
+      The Jakarta Project is lucky to also be able to offer another
+      regexp <a href="http://jakarta.apache.org/regexp/">solution</a>
+      for you as well as this package.  Options are a good thing and we
+      will leave which one you choose to use up to you. :-)  They are
+      both perfectly good packages, we just consider the Jakarta ORO
+      package to be more a more complete regular expression package.
+      </p>
+
+      <p>
+      You can download the latest released version from the
+      <a href="http://jakarta.apache.org/builds/jakarta-oro/release/">
+      distribution</a> directory.
+      </p>
+
+      <p>
+      The Javadoc is <a href="http://jakarta.apache.org/oro/api/">
+      available online</a>. It is also included in the distribution download.
+      </p>
+
+      <p>
+      An online
+      <a href="http://jakarta.apache.org/jyve-faq/Turbine/screen/DisplayTopics/action/SetAll/project_id/2/faq_id/27">FAQ</a>
+      is available for commonly asked questions like, &quot;What is a
+      regular expression?&quot;, &quot;Why did you do this? There are
+      already other Java regexp packages available!&quot;, etc.
+      </p>
+
+      <p>
+      If you would like to get involved with this project in one way
+      or another (Mailing lists, CVS, Contributions), please see the
+      <a href="http://jakarta.apache.org/getinvolved/getinvolvedindex.html">
+      Getting Involved</a> section of the Jakarta Website.
+      </p>
+
+    </section>
+
+    <section name="Contributors">
+      <p>
+      <ul>
+	<li>Daniel F. Savarese wrote the original code.</li>
+	<li>Jon S. Stevens is responsible for helping prepare
+	    it for release.</li>
+      </ul>
+      </p>
+    </section>
+
+  </body>
+
+</document>
+

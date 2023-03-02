@@ -18,10 +18,15 @@
 
 package dev;
 
+import java.nio.file.Path;
+
+import org.apache.jena.atlas.io.IOX;
+import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.cmd.ArgDecl;
 import org.apache.jena.cmd.ArgModuleGeneral;
 import org.apache.jena.cmd.CmdArgModule;
 import org.apache.jena.cmd.CmdGeneral;
+import org.apache.jena.dboe.base.file.Location;
 import org.apache.jena.fuseki.Fuseki;
 import org.apache.jena.fuseki.ctl.ActionDumpRequest;
 import org.apache.jena.fuseki.main.FusekiMainInfo;
@@ -44,12 +49,110 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.exec.http.DSP;
+import org.apache.jena.tdb2.DatabaseMgr;
+import org.apache.jena.tdb2.params.StoreParams;
+import org.apache.jena.tdb2.params.StoreParamsCodec;
+import org.apache.jena.tdb2.store.DatasetGraphTDB;
+import org.apache.jena.tdb2.sys.TDBInternal;
 import org.slf4j.Logger;
 
 public class RunFuseki
 {
     // SEE ALSO fuseki.evolution.*
-    public static void main(String ... a) throws Exception {
+    public static void main(String ... a) {
+
+        // Current:
+        // StoreConnection.make -> TDB2StorageBuilder.build -> StoreParamsFactory.decideStoreParams [which writes]
+        //   Better - move the params stuff out to DatabaseOps.build and write there.
+
+        // Normal: params in the switchable container.
+        // Special case: in storage for that storage only.
+
+        // Split StoreParams into SystemParams and StoreParams(Dynamic)
+        //  But keep in one file?
+
+        // [ ] : cleaner way to set params:
+        //         Currently: DatabaseConnection.build(Location, StoreParams);
+        //         ==> DatabaseOps.create(location, params);
+        //         ==> StoreConnection.make
+        //         ==> TDB2StorageBuilder.build
+        //         ==> StoreParamsFactory.decideStoreParams -- which writes.
+        // [ ] : Look up stack, combing dynamics, noting if non-standard (i.e. no settings?)
+        //         Storage/base -> Container -> Application.
+        //                    Container/base -> Application.
+        //         Storage has the base level or is "system default".
+        //         Need writing flag during build.
+        // [ ] : TestStoreParamsCreate -- switch to using DatabaseOps.create
+
+        // [x?] : Small params for 64 bit.
+        //      : Choose in DatabaseOps.createSwitchable
+        //       When is "new" decided for the switchable?
+        //       Remove from DatasetGraphTDB.build (no - storage area test).
+        // [ ] : Check compaction.
+//        public static DatasetGraphTDB build(Location location, StoreParams params) {
+//            if (params == null )
+//                params = StoreParams.getDftStoreParams();
+
+        // Tidy up when finished in
+        //   TDB2StorageBuilder
+
+
+        String DIR = "DB2";
+        Location locationContainer = Location.create(DIR);
+        Location locationStorage = locationContainer.getSubLocation("Data-0001");
+
+        FileOps.ensureDir(DIR);
+        FileOps.clearAll(DIR);
+        IOX.createDirectory(Path.of(locationStorage.getDirectoryPath()));
+        boolean isNewArea = true;
+
+        // Insert StoreParams.
+        StoreParams params = StoreParams.getSmallStoreParams();
+        //StoreParamsCodec.write(locationStorage, params);
+        StoreParamsCodec.write(locationContainer, params);
+
+        // -- End setup
+
+        StoreParams appParams = null;
+
+        StoreParams switchableParams = StoreParamsCodec.read(locationContainer);
+        StoreParams storageParams    = StoreParamsCodec.read(locationStorage);
+        StoreParams locParams        = storageParams != null ? storageParams : switchableParams;
+        StoreParams dftParams =
+                //location.isMem() ? StoreParams.getMemParams() :
+                StoreParams.getDftStoreParams();
+
+        //StoreParams params = StoreParamsFactory.decideStoreParams(locationContainer, isNewArea, appParams, switchableParams, storageParams, dftParams);
+
+        if ( isNewArea && appParams != null && storageParams == null ) {
+            // Writer to storage.
+        }
+    }
+
+    public static void createDatabase(String DIR) {
+        Location LOC = Location.create(DIR);
+        FileOps.ensureDir(DIR);
+        FileOps.clearAll(DIR);
+        // Insert StoreParams.
+        StoreParams params = StoreParams.getSmallStoreParams();
+        StoreParamsCodec.write(LOC, params);
+
+        // DatasetGraph dsg0 = DatabaseMgr.createDatasetGraph();
+        // TDB2StorageBuilder
+        // TDB2StorageBuilder.build only looks in storage directory.
+
+        //DatabaseConnection.connectCreate(LOC, params);
+
+        DatasetGraph dsg0 = DatabaseMgr.connectDatasetGraph(LOC);
+
+        //TDBInternal.getDatabaseContainer(dsg0);
+        DatasetGraphTDB dsg = TDBInternal.getDatasetGraphTDB(dsg0);
+
+        StoreParams storeParams = dsg.getStoreParams();
+        System.out.println(storeParams);
+    }
+
+    public static void main0() {
         //System.setProperty("fuseki.loglogging", "true");
         // Warning - this can pick up log4j.properties files from test jars.
         // Skip test-classes

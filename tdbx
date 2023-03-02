@@ -1,0 +1,15 @@
+#!/bin/bash
+
+export JH="$HOME/ASF/afs-jena"
+C="$(jena CP)"
+H="$HOME/ASF/jena-workspace"
+
+if [[ $# == 0 ]]
+then
+    echo "No main class" 1>&2
+    exit 2
+fi
+
+JVM_ARGS=-Xmx8G
+
+java $JVM_ARGS -cp "$H/target/classes:$C" tdb.tdbx "$@"

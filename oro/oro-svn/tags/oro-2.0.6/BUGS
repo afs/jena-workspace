@@ -1,0 +1,5 @@
+$Id: BUGS 54392 2002-03-30 04:14:45Z  $
+
+o It is possible that Perl5Util may not handle backslashing properly
+  for certain rare cases.  Need to collect bug reports on this count
+  and fix it if this is true.

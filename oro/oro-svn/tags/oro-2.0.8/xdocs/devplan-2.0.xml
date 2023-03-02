@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<!-- $Id: devplan-2.0.xml 54440 2003-12-29 03:12:59Z dfs $ -->
+<document>
+
+  <properties>
+    <author>Daniel Savarese</author>
+    <title>Development Plan: 2.0 to 3.0</title>
+  </properties>
+
+  <body>
+
+    <section name="Development Plan: 2.0 to 3.0">
+
+    <p>
+      <em>The development plan is not ready yet, but the idea is that
+      we'll go through a series of iterative develop, test, bug
+      fix, test again, release, revisit objectives, cycles and
+      incrementally release stable versions of the software.  The
+      primary objective of the work taking us from 2.0 through 2.1,
+      2.2, etc. up to 3.0 is to achieve Perl 5.6 regular expression
+      compatibility in version 3.0 for the org.apache.oro.text.regex
+      and org.apache.oro.text.perl packages.  This is the driving
+      force because the Perl expressions are the library's most
+      popular feature.  Other development will transpire, but the
+      focus will be on the Perl regular expression support.</em>
+    </p>
+
+    <p>
+        <ol>
+        <li><a href="#Overview">Overview</a></li>
+          <ol>
+            <li><a href="#Purpose">Purpose</a></li>
+            <li><a href="#Deliverables">Deliverables</a></li>
+          </ol>
+        <li><a href="#Development Work">Development Work</a></li>
+          <ol>
+            <li><a href="#Regression and Unit Testing">
+                 Regression and Unit Testing</a></li>
+            <li><a href="#Performance Testing and Optimization">
+                 Performance Testing and Optimization</a></li>
+            <li><a href="#Defect Correction">Defect Correction</a></li>
+            <li><a href="#Functionality Enhancement">
+                 Functionality Enhancement</a></li>
+          </ol>
+        <li><a href="#User Support">User Support</a></li>
+          <ol>
+            <li><a href="#Documentation">Documentation</a></li>
+            <li><a href="#Example Code">Example Code</a></li>
+          </ol>
+        <li><a href="#Code Development and Maintenance">
+            Code Development and Maintenance</a></li>
+          <ol>
+            <li><a href="#Code Cleanup">Code Cleanup</a></li>
+            <li><a href="#Committers">Committers</a></li>
+          </ol>
+        <li><a href="#Release Schedule">
+               Release Schedule</a></li>
+        <li><a href="#Beyond 3.0">Beyond 3.0</a></li>
+        </ol>
+    </p>
+
+    </section>
+<!--
+    <section name="Overview">
+
+      <subsection name="Purpose">
+-->
+      <!--
+        <ol>
+          <li>Achieve compatibily with Perl 5.6 regular expressions in
+          the org.apache.oro.text.regex and org.apache.oro.text.perl
+          packages.</li>
+          <li>Improve the performance of the org.apache.oro.text.regex
+          and org.apache.oro.text.perl packages.</li>
+          <li>Prevent the number of defects from increasing.</li>
+          <li>Make the package as easy to use as possible.</li>
+        </ol>
+	-->
+<!--
+  </subsection>
+
+      <subsection name="Deliverables">
+
+      </subsection>
+
+    </section>
+
+    <section name="Development Work">
+
+      <subsection name="Regression and Unit Testing">
+
+      </subsection>
+
+      <subsection name="Performance Testing and Optimization">
+
+      </subsection>
+
+      <subsection name="Defect Correction">
+
+      </subsection>
+
+      <subsection name="Functionality Enhancement">
+
+      </subsection>
+
+    </section>
+
+    <section name="User Support">
+
+      <subsection name="Documentation">
+
+      </subsection>
+
+      <subsection name="Example Code">
+
+      </subsection>
+
+    </section>
+
+    <section name="Code Development and Maintenance">
+
+      <subsection name="Code Cleanup">
+
+      </subsection>
+
+      <subsection name="Committers">
+
+      </subsection>
+ 
+   </section>
+
+    <section name="Release Schedule">
+
+    </section>
+
+    <section name="Beyond 3.0">
+
+    </section>
+-->
+
+  </body>
+
+</document>

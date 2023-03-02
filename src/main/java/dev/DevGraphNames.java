@@ -49,9 +49,10 @@ public class DevGraphNames {
      *
      * [x] Extract XMLChar and XML11Char [ ] Xerces Regex
      *
-     * [ ] Year 0 and calculations [ ] New test suite [ ] gYear difference = years
+     * [ ] Year 0 and calculations
+     * [ ] New test suite
+     * [ ] gYear difference = years
      */
 
-    public static void main(String...args) {
-    }
+    public static void main(String...args) { }
 }

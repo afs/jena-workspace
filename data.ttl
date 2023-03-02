@@ -1,7 +1,6 @@
 PREFIX : <http://example/>
 
-:s :p [ :r 1 ] .
-:s :p 2 .
-:z :p 3 .
-:s :q :z .
+:s1 :p "abc" .
+:s2 :p 123 .
+
 

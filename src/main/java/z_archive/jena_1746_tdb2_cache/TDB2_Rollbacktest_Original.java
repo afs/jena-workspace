@@ -53,13 +53,13 @@ public class TDB2_Rollbacktest_Original {
         // Make the cache small enough
 
         final StoreParams params =
-            StoreParamsBuilder.create(StoreParams.getDftStoreParams())
+            StoreParamsBuilder.create(null, StoreParams.getDftStoreParams())
                 .node2NodeIdCacheSize(26)
                 .nodeId2NodeCacheSize(26)
                 .build();
         final Dataset tdb =
             DatasetFactory.wrap(
-                connectCreate(Location.create(tempDirWithPrefix.toAbsolutePath().toString()), params)
+                connectCreate(Location.create(tempDirWithPrefix.toAbsolutePath().toString()), params, null)
                     .getDatasetGraph());
 
         // Create some fix resources and properties:

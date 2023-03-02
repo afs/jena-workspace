@@ -18,13 +18,13 @@
 
 package dsg.buffering.quads;
 
+import static org.apache.jena.sparql.core.Match.match;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import dsg.buffering.DatasetGraphBuffering;
-import dsg.buffering.M;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.lib.NotImplemented;
 import org.apache.jena.graph.Graph;
@@ -35,6 +35,7 @@ import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.GraphView;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.system.buffering.DatasetGraphBuffering;
 
 /**
  * A {@link DatasetGraph} that provides buffering of changes.
@@ -60,11 +61,11 @@ public class BufferingDatasetGraphQuads extends DatasetGraphQuads2 implements Da
     private Set<Quad>    deletedQuads = new HashSet<>();
 
     private static Iterator<Quad> find(Collection<Quad> quads, Node g, Node s, Node p, Node o) {
-        return quads.stream().filter(q->M.match(q,g,s,p,o)).iterator();
+        return quads.stream().filter(q->match(q,g,s,p,o)).iterator();
     }
 
     private Iterator<Quad> findInAdded(Node g, Node s, Node p, Node o) {
-        return addedQuads.stream().filter(q->M.match(q,g,s,p,o)).iterator();
+        return addedQuads.stream().filter(q->match(q,g,s,p,o)).iterator();
 //        return addedQuads.find(g,s,p,o);
     }
 

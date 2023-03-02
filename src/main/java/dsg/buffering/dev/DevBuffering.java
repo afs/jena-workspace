@@ -18,7 +18,6 @@
 
 package dsg.buffering.dev;
 
-import dsg.buffering.BufferingDatasetGraph;
 import org.apache.jena.dboe.storage.StoragePrefixes;
 import org.apache.jena.dboe.storage.prefixes.PrefixesDboeFactory;
 import org.apache.jena.dboe.storage.prefixes.StoragePrefixMap;
@@ -33,8 +32,12 @@ import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.sse.SSE;
+import org.apache.jena.system.buffering.BufferingDatasetGraph;
 
 public class DevBuffering {
+
+    // COPIED to Jena.
+    // Issue ; tests for TDBx
 
     // Std tests
 //    AbstractTestPrefixMap t1;

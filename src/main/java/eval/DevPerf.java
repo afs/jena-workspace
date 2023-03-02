@@ -29,7 +29,7 @@ import org.apache.jena.tdb2.params.StoreParams;
 public class DevPerf {
     public static void main(String... args) throws IOException {
         StoreParams params = StoreParams.getDftStoreParams();
-        params = StoreParams.builder(params).nodeId2NodeCacheSize(2*params.getNodeId2NodeCacheSize()).build();
+        params = StoreParams.builder("DevPerf", params).nodeId2NodeCacheSize(2*params.getNodeId2NodeCacheSize()).build();
         String DIR = "/home/afs/Projects/BSBM/Local/";
 
         // StageGeneratorGeneric, OpExecutorTDB1, OpExecutorTDB2

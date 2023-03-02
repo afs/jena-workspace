@@ -1,0 +1,8 @@
+$Id: CONTRIBUTORS,v 1.1 2001/01/29 00:19:00 dfs Exp $
+
+Daniel Savarese <dfs@savarese.org> is the original author of the
+OROMatcher, PerlTools, AwkTools, and TextTools packages that became
+the Jakarta-ORO project.
+
+Takashi Okamoto <tokamoto@rd.nttdata.co.jp> has contributed a unicode
+character class fix and an initial posix character class implementation.

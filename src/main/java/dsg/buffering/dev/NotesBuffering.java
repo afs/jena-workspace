@@ -19,6 +19,11 @@
 package dsg.buffering.dev;
 
 public class NotesBuffering {
+
+    // [ ] TestBufferingDatasetGraph - no flush tests
+    // [ ] TestBufferingGraph - more tests.
+    // [ ] Transaction journal. RDF Patch + single file.
+
     // ** Graph case
     // [ ] ** Transactions! Need planning for the contract on the underlying graph.
     //   PROMOTE in BufferingDatasetGraph
@@ -27,33 +32,17 @@ public class NotesBuffering {
 
     // Else ready.
 
-    //  Cases:
-    //     No DSG -> raw. Single threaded, no need for TXN.
-    //     Companion DSG
-    //   And flush points.
-    //   e.g. start no txn or start PROMOTE-READ-COMMITED when first used.
-    //        or run READ then stop-WRITE-begine(READ) in flush.
-    //   On flush, end transaction and restart.
+    // =====================
 
     // ** DatasetGraph case
 
     // [ ] Graph TransactionHandler adapter not reentrant?
 
-    // [ ] GraphTxn is an interface.
-    //   Implemented by GraphView.
-    //   GraphTxnWrapper(other graph) Standalone mode = MRSW
-
-    // [ ] flushDirect and flushDirect - different cases!
-    //     BufferingGraph to use graph txnhandler? Transactional.
-
-
-    // ----
-    // [ ] Library for "plain" graph operations. Code in BufferingGraph.containsByEquals to G
-    // [ ] G-ify BufferingGraph. (Is G complete for DSGs?)
-    // [ ] L.executeTxn to G.
-    // [ ] test e.g. graph from DSG.
-    // [ ] TestBufferingDatasetGraph - no flush tests
-    // [ ] TestBufferingGraph - more tests.
+    // No -- BufferingDatasetGraphQuads
+    //   Not worth the trouble.
+    //   Only advantage is that it does not take default quads apart.
+    //   But graph views may be better as BufferingDatasetGraph
+    //   Needs the transaction lifecycle but can't share a super class
 
     // Graph:
     // BufferingGraph

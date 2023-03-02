@@ -18,46 +18,42 @@
 
 package tdb2;
 
-import static java.util.Arrays.stream;
-
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.jena.tdb2.params.StoreParams;
-
 public class StoreParamsOps {
 
-    public static void main(String ...args) {
-        StoreParams params = StoreParams.getDftStoreParams();
-        
-        params.getPrimaryIndexTriples();
-        params.getTripleIndexes();
-
-        params.getPrimaryIndexQuads();
-        params.getQuadIndexes();
-        
-        tripleIndexes = stream(params.getTripleIndexes())
-            .map(StoreParamsOps::canonical)
-            .collect(Collectors.toSet());
-        quadIndexes = stream(params.getQuadIndexes())
-            .map(StoreParamsOps::canonical)
-            .collect(Collectors.toSet());
-        
-        for ( String idxName : params.getTripleIndexes() ) {
-            idxName = canonical(idxName);
-            tripleIndexes.add(idxName);
-        }
-        
-        }
-
+//    public static void main(String ...args) {
+//        StoreParams params = StoreParams.getDftStoreParams();
+//
+//        params.getPrimaryIndexTriples();
+//        params.getTripleIndexes();
+//
+//        params.getPrimaryIndexQuads();
+//        params.getQuadIndexes();
+//
+//        tripleIndexes = stream(params.getTripleIndexes())
+//            .map(StoreParamsOps::canonical)
+//            .collect(Collectors.toSet());
+//        quadIndexes = stream(params.getQuadIndexes())
+//            .map(StoreParamsOps::canonical)
+//            .collect(Collectors.toSet());
+//
+//        for ( String idxName : params.getTripleIndexes() ) {
+//            idxName = canonical(idxName);
+//            tripleIndexes.add(idxName);
+//        }
+//
+//        }
+//
     static Set<String> tripleIndexes = new HashSet<>();
     static Set<String> quadIndexes = new HashSet<>();
-    
+
     static String canonical(String idxName) { return idxName.toUpperCase(Locale.ROOT) ; }
-    
+
     static boolean isIndex(String idxName) {
         return isIndexTriples(idxName) || isIndexQuads(idxName);
     }
@@ -65,7 +61,7 @@ public class StoreParamsOps {
     private static boolean isIndexTriples(String idxName) {
         return tripleIndexes.contains(canonical(idxName));
     }
-    
+
     private static boolean isIndexQuads(String idxName) {
         return quadIndexes.contains(canonical(idxName));
     }
@@ -73,5 +69,5 @@ public class StoreParamsOps {
     private static <X> Set<X> toSet(Stream<X> stream) {
         return stream.collect(Collectors.toSet());
     }
-    
+
 }

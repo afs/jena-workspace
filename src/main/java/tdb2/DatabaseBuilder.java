@@ -22,6 +22,8 @@ import org.apache.jena.dboe.base.file.Location;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.engine.optimizer.reorder.ReorderTransformation;
+import org.apache.jena.tdb.setup.StoreParamsDynamic;
 import org.apache.jena.tdb.sys.SystemTDB;
 import org.apache.jena.tdb2.params.StoreParams;
 import org.apache.jena.tdb2.params.StoreParamsBuilder;
@@ -41,12 +43,13 @@ public class DatabaseBuilder {
         System.out.println(params1);
     }
 
-    private StoreParamsBuilder paramBuilder;
-    private Location location;
+    private StoreParamsBuilder paramBuilder = null;
+    private Location location = null;
+    private ReorderTransformation reorderTransform = null;
 
     public DatabaseBuilder() {
         // All the defaults.
-        paramBuilder = StoreParamsBuilder.create();
+        paramBuilder = StoreParamsBuilder.create("DatabaseBuilder");
     }
 
     public static DatabaseBuilder create() {
@@ -63,14 +66,33 @@ public class DatabaseBuilder {
         return this;
     }
 
+    // Separate "create" and "dynamic" StoreParams.
+    // StoreParams. has two subobjects.
+
     /**
      * Replace the current {@link StoreParamsBuilder} and use the given argument as
      * the basis for the {@link StoreParamsBuilder}.
      */
-    public DatabaseBuilder storeParams(StoreParams storeParams) {
-        paramBuilder = StoreParamsBuilder.create(storeParams);
+    public DatabaseBuilder storeParamsCreate(StoreParams storeParams) {
+        paramBuilder = StoreParamsBuilder.create("DatabaseBuilder", storeParams);
         return this;
     }
+
+    public DatabaseBuilder storeParamsExistsing(StoreParamsDynamic storeParams) {
+        //paramBuilder = StoreParamsBuilder.create("DatabaseBuilder", storeParams);
+        return this;
+    }
+
+
+    /**
+     * Set the reorder trransformation.
+     */
+    public DatabaseBuilder reorderTransform(ReorderTransformation reorderTransform) {
+        this.reorderTransform = reorderTransform;
+        return this;
+    }
+
+
 
     public DatabaseBuilder mem() {
         this.location = Location.mem();
@@ -80,6 +102,7 @@ public class DatabaseBuilder {
     /** Set */
     public DatabaseBuilder small() {
         paramBuilder
+            .label("Small")
             .node2NodeIdCacheSize(10000)
             .nodeId2NodeCacheSize(10000)
             .nodeMissCacheSize(100);
@@ -104,9 +127,9 @@ public class DatabaseBuilder {
         }
     }
 
-    public int node2NodeIdCacheSize() { return  paramBuilder.getNode2NodeIdCacheSize(); }
+    public int node2NodeIdCacheSize() { return paramBuilder.getNode2NodeIdCacheSize(); }
 
-    public int nodeId2NodeCacheSize() { return  paramBuilder.getNodeId2NodeCacheSize(); }
+    public int nodeId2NodeCacheSize() { return paramBuilder.getNodeId2NodeCacheSize(); }
 
 
     // Just the caches.
@@ -122,7 +145,7 @@ public class DatabaseBuilder {
 //        if ( DatabaseConnection.alreadyBuilt ) {
 //            error.
 //        }
-        DatabaseConnection dbConn = DatabaseConnection.connectCreate(location, paramBuilder.build());
+        DatabaseConnection dbConn = DatabaseConnection.connectCreate(location, paramBuilder.build(), reorderTransform);
         return dbConn.getDatasetGraph();
     }
 

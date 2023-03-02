@@ -75,7 +75,7 @@ public class TDB2_RollBacktest {
     // Make the cache small enough
 
     StoreParams params =
-        StoreParamsBuilder.create(StoreParams.getDftStoreParams())
+        StoreParamsBuilder.create(null, StoreParams.getDftStoreParams())
             // 26, 20 fail
             // 260, 18, 15, 2 pass
             .node2NodeIdCacheSize(26)
@@ -92,7 +92,7 @@ public class TDB2_RollBacktest {
     FileOps.clearAll("TEST");
     Location loc = Location.mem("TEST");
 
-    StoreConnection.connectCreate(loc, params);
+    StoreConnection.connectCreate(loc, params, null);
     Dataset tdb = TDB2Factory.connectDataset(loc);
     Txn.executeWrite(tdb,  ()->{
     tdb.getDefaultModel().setNsPrefix("prop", "http://virzrt.hu/test-prop#");

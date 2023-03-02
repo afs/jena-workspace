@@ -16,7 +16,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <ver.jena>4.7.0-SNAPSHOT</ver.jena>
+    <ver.jena>4.8.0-SNAPSHOT</ver.jena>
     <ver.fuseki>${ver.jena}</ver.fuseki>
 
     <ver.slf4j>1.7.36</ver.slf4j>
@@ -26,9 +26,11 @@
   </properties>
 
   <dependencies>
-
-
-
+    <dependency>
+      <groupId>com.hrakaroo</groupId>
+      <artifactId>glob</artifactId>
+      <version>0.9.0</version>
+    </dependency>
     <!-- JWT -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
@@ -62,13 +64,6 @@
       <version>${ver.jena}</version>
     </dependency> 
     -->
-
-    <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>jena-base</artifactId>
-      <version>${ver.jena}</version>
-      <classifier>tests</classifier>
-    </dependency>
 
 	<!--
     <dependency>
@@ -108,6 +103,16 @@
     </dependency>
     -->
 
+    <!-- Test code -->
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-base</artifactId>
+      <version>${ver.jena}</version>
+      <classifier>tests</classifier>
+    </dependency>
+
+
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-core</artifactId>
@@ -115,14 +120,6 @@
       <classifier>tests</classifier> 
       <scope>compile</scope>
     </dependency>
-
-    <!--
-    <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>jena-sdb</artifactId>
-      <version>${ver.jena}</version>
-    </dependency>
-    -->
 
     <dependency>
       <groupId>org.apache.jena</groupId>
@@ -133,15 +130,8 @@
 
     <dependency>
       <groupId>org.apache.jena</groupId>
-      <artifactId>jena-tdb</artifactId>
-      <version>${ver.jena}</version>
-      <classifier>tests</classifier> 
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.jena</groupId>
       <artifactId>jena-cmds</artifactId>
-      <version>${ver.jena}</version> 
+      <version>4.8.0-SNAPSHOT</version> 
       <!-- JUL
       <exclusions>
         <exclusion>
@@ -156,7 +146,6 @@
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-cmds</artifactId>
       <version>${ver.jena}</version> 
-      <scope>runtime</scope>
       <classifier>tests</classifier> 
     </dependency>
 
@@ -222,9 +211,33 @@
     </dependency>
     -->
 
+    <!--
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js</artifactId>
+      <version>22.3.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js-scriptengine</artifactId>
+      <version>22.3.0</version>
+    </dependency>
+    -->
+
   </dependencies>
 
   <build>
+
+    <resources>
+      <!-- Legacy -->
+      <resource>
+        <directory>etc</directory>
+        <targetPath>etc</targetPath>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

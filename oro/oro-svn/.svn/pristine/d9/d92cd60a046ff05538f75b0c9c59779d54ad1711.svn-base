@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!-- $Id: status.xml,v 1.6 2002/06/27 22:55:08 dfs Exp $ -->
+<document>
+
+  <properties>
+    <author>Daniel Savarese</author>
+    <title>Project Status</title>
+  </properties>
+
+  <body>
+
+    <section name="Project Status">
+
+      <p>
+      Version 2.0.6 is the latest stable release.  It currently supports Perl
+      5.003 regular expressions in the org.apache.oro.text.regex and
+      org.apache.oro.text.perlpackages.  The main development goal is
+      to upgrade these packages to support Perl 5.6 regular
+      expressions.  The development plan will lay out the path to
+      achieving this objective and this status page will report the
+      state of our progress.  Our current objective is to settle on a
+      development plan sometime in the near future.
+      </p>
+	
+    </section>
+
+  </body>
+
+</document>
+

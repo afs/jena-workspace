@@ -21,8 +21,11 @@ package dev;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
+import com.hrakaroo.glob.GlobPattern;
+import com.hrakaroo.glob.MatchingEngine;
+
+import org.apache.commons.io.FilenameUtils;
 import org.apache.jena.atlas.lib.Timer;
 import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.cmd.*;
@@ -34,27 +37,35 @@ import org.apache.jena.fuseki.main.sys.FusekiModules;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.graph.Factory;
 import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdfxml.xmlinput.RDFXMLReader;
-import org.apache.jena.riot.*;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RIOT;
+import org.apache.jena.riot.rowset.rw.RowSetWriterTSV;
 import org.apache.jena.riot.system.AsyncParser;
-import org.apache.jena.riot.system.ErrorHandler;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFLib;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transformer;
 import org.apache.jena.sparql.algebra.optimize.TransformJoinStrategy;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.engine.main.JoinClassifier;
+import org.apache.jena.sparql.engine.main.QueryEngineMain;
+import org.apache.jena.sparql.engine.ref.QueryEngineRef;
 import org.apache.jena.sparql.exec.QueryExec;
 import org.apache.jena.sparql.exec.RowSet;
 import org.apache.jena.sparql.exec.RowSetOps;
-import org.apache.jena.sparql.exec.http.GSP;
 import org.apache.jena.sparql.exec.http.QueryExecHTTP;
-import org.apache.jena.sparql.exec.http.UpdateExecHTTP;
+import org.apache.jena.sparql.graph.GraphFactory;
+import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.sys.JenaSystem;
 
 public class Report {
@@ -64,56 +75,102 @@ public class Report {
 //            org.slf4j.bridge.SLF4JBridgeHandler.removeHandlersForRootLogger();
 //        } catch (Throwable th) {}
         // JenaSystem.DEBUG_INIT = true;
+        LogCtl.setLog4j2();
+        //FusekiLogging.setLogging();
+        //LogCtl.setLevel("org.apache.jena.fuseki.Server", "WARN");
         JenaSystem.init();
-        //LogCtl.setLog4j2();
-        FusekiLogging.setLogging();
         RIOT.getContext().set(RIOT.symTurtleDirectiveStyle, "sparql");
     }
 
     public static void main(String...args) {
-        mainGraphTxnNested();
+        Graph g = GraphFactory.createDefaultGraph();
+        g .add(Triple.create(NodeFactory.createURI("x"),
+                             NodeFactory.createURI("p"),
+                             NodeFactory.createLiteral("abc\n\tdef")));
+        System.out.println(g.find().next().getObject());
+        RowSet rs = QueryExec.graph(g).query("SELECT * { ?s ?p ?o}").select();
+        RowSetWriterTSV.factory.create(Lang.TSV).write(System.out, rs, null) ;
     }
 
-    public static void mainGraphTxnNested() {
-        FusekiServer server = FusekiServer.construct("--verbose", "--conf=/home/afs/tmp/Report/config.ttl").start();
-        try {
-            GSP.service("http://localhost:"+server.getPort()+"/data/get").defaultGraph().GET();
-            GSP.service("http://localhost:"+server.getPort()+"/data/get").defaultGraph().GET();
+    public static void mainPath1616(String...args) {
+        // Simple version of PathLib - no clever stuff about start points.
 
-            UpdateExecHTTP.service("http://localhost:3030/data/update").update("INSERT DATA { <x:s> <x:p> 123 }").execute();
-            UpdateExecHTTP.service("http://localhost:3030/data/update").update("INSERT DATA { <x:s> <x:p> 123 }").execute();
+        Graph g = SSE.parseGraph("""
+                (graph
+                    (:s :p 123)
+                    (:s :p 456)
+                    (:s :q "def")
+                    )""");
 
-            //server.join();
-        } finally { server.stop(); }
+        DatasetGraph dsg = DatasetGraphFactory.wrap(g);
 
-        System.out.println("DONE");
-    }
+        String qs = """
+                PREFIX : <http://example/>
+                SELECT * { ?s :p{0} ?o }
+                """;
+        Query query = QueryFactory.create(qs);
+        Op op = Algebra.compile(query);
 
-    public static void mainErrorHandling(String...args) {
-        ErrorHandler eh = new ErrorHandler() {
+        // ----
+        //ARQ.getContext().set(ARQ.optPathFlatten, false);
+        if ( false ) {
+            Op op1a = Algebra.optimize(op);
+            System.out.println(op1a);
+            System.out.println("==");
+            System.out.println();
 
-            @Override
-            public void warning(String message, long line, long col) {
-                System.out.println("W: " + SysRIOT.fmtMessage(message, line, col));
-            }
+            with(()->ARQ.getContext().set(ARQ.optPathFlatten, false),
+                 ()->ARQ.getContext().set(ARQ.optPathFlatten, true),
+                 ()-> {
+                     Op op1b = Algebra.optimize(op);
+                     System.out.println(op1b);
+                     System.out.println("==");
+                 });
+        }
 
-            @Override
-            public void error(String message, long line, long col) {
-                System.out.println("E: " + SysRIOT.fmtMessage(message, line, col));
-            }
+        // ----
 
-            @Override
-            public void fatal(String message, long line, long col) {
-                System.out.println("F: " + SysRIOT.fmtMessage(message, line, col));
-            }
-        };
+        RowSet rowset = QueryExec.graph(g).query(query)
+                .set(ARQ.optPathFlatten, false)
+                //.set(ARQ.optPathFlattenExtended, true)
+                .select();
+        RowSetOps.out(rowset);
+        // -- ref eval
+        if ( false ) {
+            QueryEngineMain.unregister();
 
-        RDFParser.fromString("<http://ex/abc\txyz> <http://ex/abc\txyz> <http://ex/abc\txyz> .")
-            .lang(Lang.TTL)
-            .errorHandler(eh)
-            .toGraph();
-        System.out.println("DONE");
+            QueryEngineRef.register();
+            RowSet rowsetRef = QueryExec.graph(g).query(query)
+                    //.set(ARQ.optPathFlatten, false)
+                    //.set(ARQ.optPathFlattenExtended, true)
+                    .select();
+            RowSetOps.out(rowsetRef);
+        }
         System.exit(0);
+    }
+
+    private static void with(Runnable before, Runnable after, Runnable action) {
+        before.run();
+        try {
+            action.run();
+        } finally {
+            after.run();
+        }
+    }
+
+    public static void mainGlob() {
+        dwinGlob("abc*", "ABCD");
+        dwinGlob("abc*", "abcd");
+        dwinGlob("ab*c", "abcd");
+        dwinGlob("ab*cd", "abcd");
+        dwinGlob("ab*cd", "abxxxcd");
+        System.exit(0);
+    }
+
+    public static void dwinGlob(String pattern, String str) {
+        MatchingEngine m = GlobPattern.compile(pattern);
+        System.out.printf("'%s' '%s' -> %s\n", pattern, str, m.matches(str));
+        System.out.printf("'%s' '%s' => %s\n", pattern, str, FilenameUtils.wildcardMatch(str,  pattern));
     }
 
     public static void mainParse(String...args) {
@@ -134,7 +191,8 @@ public class Report {
         reader.read(m, sr, null );
         System.exit(0);
 
-        FusekiServer server = FusekiServer.construct("--mem", "/ds").start();
+        FusekiLogging.setLogging();
+        FusekiServer server = FusekiServer.construct("-v", "--mem", "/ds").start();
         try {
             QueryExec qExec = QueryExecHTTP
                     .service("http://localhost:"+server.getPort()+"/ds")
@@ -148,21 +206,6 @@ public class Report {
             server.stop();
         }
         System.exit(0);
-
-
-        System.out.println(currentMethod());
-
-
-
-        System.exit(0);
-
-        Graph g = RDFParser.create()
-            .fromString("BASE <base:> <s> <x:p> <invalid\t>")
-            .lang(Lang.TURTLE)
-//            .resolveURIs(false)
-//            .errorHandler(ErrorHandlerFactory.errorHandlerWarning(null))
-            .toGraph();
-        RDFWriter.source(g).lang(Lang.NT).output(System.out);
     }
 
     public static void mainExplain() {
@@ -283,26 +326,6 @@ public class Report {
         System.out.println(headers);
     }
 
-    /** The callers current method or function (static). */
-        public static String currentMethod() {
-            StackWalker walker = StackWalker.getInstance();
-    //        Optional<String> methodName = walker.walk(frames -> frames
-    //                                                  // Move to caller.
-    //                                                  .skip(1)
-    //                                                  .findFirst()
-    //                                                  .map(StackWalker.StackFrame::getMethodName)
-    //                                                  );
-    //        return methodName.orElseGet(()->null);
-
-
-            Optional<String> x = walker.walk(frames -> frames
-                                             .skip(1)
-                                             .findFirst()
-                                             .map(f-> f.getClassName()+"."+f.getMethodName())
-                                             );
-            return x.orElseGet(()->null);
-        }
-
     public static void joinClassification(Query query) {
         Op op = Algebra.compile(query);
         System.out.println(op);
@@ -313,7 +336,7 @@ public class Report {
         System.out.println(op1);
     }
 
-    public static void mainGrapMem(String...args) {
+    public static void mainGraphMem(String...args) {
         Graph g = Factory.createDefaultGraph();
         String DATA = "/home/afs/Datasets/BSBM/bsbm-50m.nt.gz";
         int N = 50_000_000;
@@ -336,17 +359,5 @@ public class Report {
 
     public static long memory() {
         return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-    }
-
-    public static void mainJSONLD(String...args) {
-        String s = """
-                PREFIX ex: <http://example/ex#>
-                PREFIX : <http://example/>
-                :s ex:p 124 ;
-                   ex:q ex:o .
-                """;
-
-        Graph g = RDFParser.fromString(s).lang(Lang.TTL).toGraph();
-        RDFWriter.source(g).lang(Lang.JSONLD11).output(System.out);
     }
 }

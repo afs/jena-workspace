@@ -50,8 +50,8 @@ import org.apache.jena.sparql.util.QueryExecUtils ;
 public class DevLib {
 
     public static void queryExec() {
-      String DIR = "/home/afs/ws/jena-1121-perf-regress/" ;
-      Query query = QueryFactory.read(DIR+"Q2.rq") ;
+      String DIR = "/home/afs/tmp/" ;
+      Query query = QueryFactory.read(DIR+"Q.rq") ;
       //Query query = QueryFactory.create("SELECT * { ?s ?p ?o }") ;
       Dataset ds = RDFDataMgr.loadDataset(DIR+"D.ttl") ;
       QueryExecution qExec = QueryExecutionFactory.create(query, ds) ;
@@ -165,7 +165,7 @@ public class DevLib {
     }
 
     public static void joinClassification(String... args) {
-        String qs = StrUtils.strjoinNL("");
+        String qs = StrUtils.strjoinNL(args);
         Query query = QueryFactory.create(qs);
         Op op = Algebra.compile(query);
 

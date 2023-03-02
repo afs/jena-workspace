@@ -24,13 +24,17 @@ import java.util.function.Function;
 
 import org.apache.jena.graph.Node;
 
-public class BuildContext {
+public class BuildContext implements AutoCloseable {
 
+    private boolean inBuild = false;
     private Map<Node, Object> built = new HashMap<>();
 
     @SuppressWarnings("unchecked")
     <X> X computeIfAbsent(Node description, Function<? super Node, ? extends X> supplier) {
         return (X)built.computeIfAbsent(description, supplier);
     }
-
+    @Override
+    public void close() {
+        built.clear();
+    }
 }

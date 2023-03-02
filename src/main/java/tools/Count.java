@@ -127,10 +127,10 @@ public class Count {
 
     public static Dataset makeTDB2() {
         org.apache.jena.tdb2.params.StoreParams params = org.apache.jena.tdb2.params.StoreParams.getDftStoreParams();
-            org.apache.jena.tdb2.params.StoreParams.builder(params)
+            org.apache.jena.tdb2.params.StoreParams.builder(null, params)
                 .nodeId2NodeCacheSize(2*params.getNodeId2NodeCacheSize())
                 .build();
-        DatabaseConnection conn = DatabaseConnection.connectCreate(Location.create(TDB2_database), params);
+        DatabaseConnection conn = DatabaseConnection.connectCreate(Location.create(TDB2_database), params, null);
         return DatasetFactory.wrap(conn.getDatasetGraph());
         //return TDB2Factory.connectDataset(TDB2_database);
     }

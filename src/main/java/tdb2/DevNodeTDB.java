@@ -32,6 +32,8 @@ import org.apache.jena.tdb2.store.value.IntegerNode;
 /** Node wrapper to TDB2 NodeIds */
 public class DevNodeTDB {
 
+    // The idea: TDBx works in Nodes.
+
     public static void main(String[] args) {
         //Node n = SSE.parseNode("123");
         //NodeId nid = NodeIdFactory.createPtr(x);
@@ -41,8 +43,10 @@ public class DevNodeTDB {
     }
 
     static class NodeTDB2 extends Node_Ext<NodeId>{
+        // extends Node { // Package visibility issues.
 
         private NodeId nid;
+        private Node node;
 
         NodeTDB2(NodeId nid) {
             super(nid);
@@ -53,8 +57,6 @@ public class DevNodeTDB {
         public String getURI() {
             return "uri:";
         }
-
-
 
         @Override
         public Object getLiteralValue() {

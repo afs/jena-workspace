@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- $Id: project.xml 54418 2003-01-26 02:26:54Z dfs $ -->
+<project name="Jakarta ORO"
+        href="http://jakarta.apache.org/oro">
+
+    <title>Jakarta ORO</title>
+
+    <logo href="/images/logo.gif">Jakarta-ORO</logo>
+    
+    <body>
+    <menu name="About">
+        <item name="Overview"            href="/index.html"/>
+        <item name="Development plan"
+	 href="/devplan-2.0.html"/>
+        <item name="Status" href="/status.html"/>
+        <item name="Issue tracking"   href="/bugs.html"/>
+        <item name="CVS"
+         href="http://cvs.apache.org/viewcvs/jakarta-oro/"/>
+        <item name="Changes"
+         href="http://cvs.apache.org/viewcvs/~checkout~/jakarta-oro/CHANGES?content-type=text/plain"/>
+        <item name="License"
+         href="http://cvs.apache.org/viewcvs/~checkout~/jakarta-oro/LICENSE?content-type=text/plain"/>
+    </menu>
+
+    <menu name="Software">
+        <item name="Download"
+         href="http://jakarta.apache.org/site/binindex.cgi"/>
+        <item name="Demonstration" href="/demo.html"/>
+    </menu>
+
+    <menu name="Community">
+        <item name="Get Involved"        href="/site/getinvolved.html"/>
+        <item name="Mailing Lists"       href="/site/mail.html"/>
+        <item name="CVS Repositories"    href="/site/cvsindex.html"/>
+        <item name="Projects Using ORO"  href="/users.html"/>
+    </menu>
+
+    <menu name="Documentation">
+        <item name="API"                 href="/api/index.html"/>
+        <!-- To be added
+        <item name="User's guide"/>
+        <item name="FAQ"/>         
+        -->
+    </menu>
+
+    <menu name="Related Projects">
+        <item name="Regexp"
+        href="http://jakarta.apache.org/regexp/index.html"/>
+    </menu>
+    </body>
+</project>

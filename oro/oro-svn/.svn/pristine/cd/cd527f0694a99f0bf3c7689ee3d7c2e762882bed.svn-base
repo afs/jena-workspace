@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<!-- $Id: build-oro.xml,v 1.1 2000/07/23 23:08:36 jon Exp $ -->
+
+<project name="Jakarta-ORO" default="main" basedir=".">
+
+<!-- Initialize build properties. -->
+
+<target name="init">
+  <property name="Name" value="Jakarta-ORO"/>
+  <property name="year" value="2000"/>
+  <property name="version" value="2.0"/>
+  <property name="project" value="jakarta-oro"/>
+  <property name="build.compiler" value="classic"/>
+  <property name="build.src" value="../src/java"/>
+  <property name="build.dest" value="../classes"/>
+  <property name="javadoc.destdir" value="../doc/api"/>
+  <property name="final.name" value="${project}-${version}"/>
+  <property name="final.dir" value="../${final.name}/"/>
+  <property name="debug" value="off"/>
+  <property name="optimize" value="on"/>
+  <property name="deprecation" value="off"/>
+  <property name="ant.home" value="."/>
+</target>
+
+    <!-- prepare target.  Creates build directory. -->
+
+    <target name="prepare" depends="init">
+        <mkdir dir="${build.dest}"/>
+        <chmod src="bin/antRun" perm="744"/>
+    </target>
+
+    <!-- lib target.  Compiles the library classes only -->
+
+    <target name="lib" depends="prepare">
+        <javac srcdir="${build.src}"
+            destdir="${build.dest}"
+            excludes="examples/**,tools/**"
+            debug="${debug}"
+            deprecation="${deprecation}"
+            optimize="${optimize}"/>
+    </target>
+
+    <!-- examples target.  Compiles the example classes. -->
+
+    <target name="examples" depends="prepare,lib">
+        <javac srcdir="${build.src}/examples"
+	    excludes="awk/**"
+            destdir="${build.dest}"
+            debug="${debug}"
+            deprecation="${deprecation}"
+            optimize="${optimize}"/>
+    </target>
+
+    <!-- awk-examples target.  Compiles the example classes. -->
+
+    <target name="examples-awk" depends="prepare,lib">
+        <javac srcdir="${build.src}/examples/awk"
+            destdir="${build.dest}"
+            debug="${debug}"
+            deprecation="${deprecation}"
+            optimize="${optimize}"/>
+    </target>
+
+    <!-- tools target.  Compiles the tool classes. -->
+
+    <target name="tools" depends="prepare,lib">
+        <javac srcdir="${build.src}/tools"
+            destdir="${build.dest}"
+            debug="${debug}"
+            deprecation="${deprecation}"
+            optimize="${optimize}"/>
+    </target>
+    
+
+    <!-- jar target.  Compiles the source directory and creates a .jar file -->
+
+    <target name="jar" depends="lib">
+        <jar jarfile="../${final.name}.jar"
+            basedir="${build.dest}"
+            includes="org/**"
+            excludes="**/package.html,**/overview.html"/>
+    </target>
+
+    <!-- javadocs target.  Creates the API documentation -->
+
+    <target name="javadocs" depends="prepare">
+        <mkdir dir="${javadoc.destdir}"/>
+        <javadoc packagenames="org.apache.oro.io,org.apache.oro.text,org.apache.oro.text.regex,org.apache.oro.text.awk,org.apache.oro.text.perl,org.apache.oro.util"
+            sourcepath="${build.src}"
+            destdir="${javadoc.destdir}"
+            overview="${build.src}/org/apache/oro/overview.html"
+            author="true"
+            version="true"
+            windowtitle="${Name} ${version} API"
+            doctitle="${Name} ${version} API"
+            bottom="Copyright &#169; ${year} Apache Software Foundation. All Rights Reserved."
+        />
+    </target>
+    
+    <!-- package target -->
+
+    <target name="package" depends="jar,javadocs">
+        <mkdir dir="${final.dir}"/>
+        <mkdir dir="${final.dir}/src"/>
+        <copydir src="${build.src}/" dest="${final.dir}/src/"/>
+        <copydir src="../doc" dest="${final.dir}/doc"
+            excludes="**/dist/**"/>
+        <copydir src="../build" dest="${final.dir}/build"/>
+        <copyfile src="../LICENSE" dest="${final.dir}/LICENSE"/>
+        <copyfile src="../BUGS" dest="${final.dir}/BUGS"/>
+        <copyfile src="../BUILD" dest="${final.dir}/BUILD"/>
+        <copyfile src="../CHANGES" dest="${final.dir}/CHANGES"/>
+        <copyfile src="../README" dest="${final.dir}/README"/>
+        <copyfile src="../STYLE" dest="${final.dir}/STYLE"/>
+        <copyfile src="../TODO" dest="${final.dir}/TODO"/>
+        <copyfile src="../${final.name}.jar" dest="${final.dir}/${final.name}.jar"/>
+    </target>
+  
+
+    <!-- package-zip target.  Packages the distribution with ZIP -->
+
+    <target name="package-zip" depends="package">
+        <zip zipfile="../${Name}-${version}.zip" basedir="../" includes="**/${final.name}/**"/>
+    </target>
+    
+    <!-- Packages the distribution with TAR-GZIP -->
+
+    <target name="package-tgz" depends="package">
+        <tar tarfile="../${Name}-${version}.tar" basedir="../" includes="**/${final.name}/**"/>
+        <gzip zipfile="../${Name}-${version}.tar.gz" src="../${Name}-${version}.tar"/>
+    </target>
+    
+    <!-- Packages the distribution with ZIP and TAG-GZIP -->
+
+    <target name="package-all" depends="package-zip, package-tgz">
+    </target>
+
+    <!-- Makes an attempt to clean up a little. -->
+
+    <target name="clean">
+        <deltree dir="${build.dest}"/>
+        <deltree dir="${javadoc.destdir}"/>
+        <deltree dir="${final.dir}"/>
+	<delete file="../${final.name}.jar"/>
+	<delete file="../${Name}-${version}.tar"/>
+	<delete file="../${Name}-${version}.tar.gz"/>
+	<delete file="../${Name}-${version}.zip"/>
+    </target>
+
+</project>

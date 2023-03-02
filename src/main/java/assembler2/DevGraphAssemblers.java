@@ -36,19 +36,22 @@ public class DevGraphAssemblers {
         Node node1 = SSE.parseNode("ex:node");
         Node node2 = SSE.parseNode("ex:nodex");
 
-        BuildContext buildCxt = new BuildContext();
-        Manufacturer<DatasetGraph> constructor = new PrototypeTIM();
-
         Node description1 = node1;
         Node description2 = node1;
 
-        DatasetGraph dsg = constructor.construct(buildCxt, descriptionGraph, description1);
-        DatasetGraph dsg2 = constructor.construct(buildCxt, descriptionGraph, description2);
+        DatasetGraph dsg;
+        DatasetGraph dsg2;
+
+        try ( BuildContext buildCxt = new BuildContext() ) {
+            Manufacturer<DatasetGraph> constructor = new PrototypeTIM();
+            dsg = constructor.construct(buildCxt, descriptionGraph, description1);
+            dsg2 = constructor.construct(buildCxt, descriptionGraph, description2);
+        }
 
         if ( description1.equals(description2) && dsg != dsg2 )
             System.out.println("*** Unexpected: Same description nodes, different objects");
         if ( ! description1.equals(description2) && dsg == dsg2 )
-            System.out.println("*** Unexpected: Different description nodes, same objects");
+                System.out.println("*** Unexpected: Different description nodes, same objects");
 
         System.out.println("DONE");
     }
