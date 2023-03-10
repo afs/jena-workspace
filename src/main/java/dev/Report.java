@@ -37,17 +37,13 @@ import org.apache.jena.fuseki.main.sys.FusekiModules;
 import org.apache.jena.fuseki.system.FusekiLogging;
 import org.apache.jena.graph.Factory;
 import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdfxml.xmlinput.RDFXMLReader;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RIOT;
-import org.apache.jena.riot.rowset.rw.RowSetWriterTSV;
 import org.apache.jena.riot.system.AsyncParser;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFLib;
@@ -64,7 +60,6 @@ import org.apache.jena.sparql.exec.QueryExec;
 import org.apache.jena.sparql.exec.RowSet;
 import org.apache.jena.sparql.exec.RowSetOps;
 import org.apache.jena.sparql.exec.http.QueryExecHTTP;
-import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.sys.JenaSystem;
 
@@ -83,13 +78,8 @@ public class Report {
     }
 
     public static void main(String...args) {
-        Graph g = GraphFactory.createDefaultGraph();
-        g .add(Triple.create(NodeFactory.createURI("x"),
-                             NodeFactory.createURI("p"),
-                             NodeFactory.createLiteral("abc\n\tdef")));
-        System.out.println(g.find().next().getObject());
-        RowSet rs = QueryExec.graph(g).query("SELECT * { ?s ?p ?o}").select();
-        RowSetWriterTSV.factory.create(Lang.TSV).write(System.out, rs, null) ;
+        System.out.println("DONE");
+        System.exit(0);
     }
 
     public static void mainPath1616(String...args) {

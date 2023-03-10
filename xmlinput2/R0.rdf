@@ -1,0 +1,5 @@
+<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:ex='file:///base/'>
+  <rdf:Description rdf:about="x">
+    <ex:p rdf:resource="file:rel"/>
+  </rdf:Description>
+</rdf:RDF>

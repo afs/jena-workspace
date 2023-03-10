@@ -1,0 +1,3 @@
+BASE <http://base/>
+PREFIX ex: <http://base/>
+<x> ex:p <file:rel> .

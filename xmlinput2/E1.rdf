@@ -1,0 +1,35 @@
+<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' 
+         xmlns:ex='http://example/'>
+  <!--
+  <rdf:Description rdf:about="x" xml:base='http://other/'>
+    <ex:p>string</ex:p>
+    <ex:q rdf:resource="http://ex/q"/>
+    <ex:r rdf:resource="../foo"/>
+  </rdf:Description>
+  -->
+
+  <rdf:Description rdf:about="aa">
+    <ex:p>BEFORE</ex:p>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://example/X{}X">
+    <ex:p>DURING 1</ex:p>
+    <ex:r rdf:resource="r"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="XX">
+    <ex:p>DURING 1</ex:p>
+    <ex:r rdf:resource="r"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="zz">
+    <ex:p>AFTER</ex:p>
+  </rdf:Description>
+
+  <!--
+  <rdf:Description rdf:about="zz">
+    <ex:p rdf:resource="e"/>
+  </rdf:Description>
+  -->
+
+</rdf:RDF>
